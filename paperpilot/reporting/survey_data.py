@@ -1,0 +1,41 @@
+"""Compatibility exports for deterministic survey evidence data."""
+
+from .citations import (
+    CitationEntry,
+    CitationRegistry,
+    CitationRegistryError,
+    PublicReportCitationIndex,
+    CorePaperProfile,
+    EvidenceLedgerEntry,
+    FishboneReadinessAssessment,
+    LiteratureTimelineEntry,
+    ReferenceEntry,
+    ReferenceIntegrityValidator,
+    SurveyEvidenceData,
+    SurveyEvidenceDataBuilder,
+    citation_group,
+    citation_token,
+    public_citation_refs,
+    build_public_report_citation_index,
+    resolve_statement_locators,
+)
+
+__all__ = [
+    "CitationEntry",
+    "CitationRegistry",
+    "CitationRegistryError",
+    "PublicReportCitationIndex",
+    "CorePaperProfile",
+    "EvidenceLedgerEntry",
+    "FishboneReadinessAssessment",
+    "LiteratureTimelineEntry",
+    "ReferenceEntry",
+    "ReferenceIntegrityValidator",
+    "SurveyEvidenceData",
+    "SurveyEvidenceDataBuilder",
+    "citation_group",
+    "citation_token",
+    "public_citation_refs",
+    "build_public_report_citation_index",
+    "resolve_statement_locators",
+]
