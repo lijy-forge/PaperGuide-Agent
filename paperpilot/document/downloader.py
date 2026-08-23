@@ -5,6 +5,7 @@ import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 from urllib.error import URLError
 from urllib.request import Request, urlopen
 
@@ -34,6 +35,7 @@ class PdfDownloader:
         max_size_bytes: int = DEFAULT_MAX_SIZE_BYTES,
         user_agent: str = DEFAULT_USER_AGENT,
         opener: Callable[..., Any] | None = None,
+        manual_source_dir: str | Path | None = None,
     ):
         if timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be greater than zero")
@@ -46,9 +48,18 @@ class PdfDownloader:
         self.max_size_bytes = max_size_bytes
         self.user_agent = user_agent.strip()
         self._opener = opener or urlopen
+        self.manual_source_dir = (
+            Path(manual_source_dir).resolve(strict=False)
+            if manual_source_dir is not None
+            else None
+        )
 
     def download(self, paper: PaperCandidate) -> DownloadedPDF:
         """Download, validate, and atomically store a candidate's PDF."""
+
+        if paper.pdf_url and paper.pdf_url.startswith("paperpilot-upload://"):
+            payload = self._load_manual_pdf(paper.pdf_url)
+            return self._store_pdf(paper, payload)
 
         pdf_url = MetadataNormalizer.normalize_url(paper.pdf_url)
         if pdf_url is None:
@@ -64,6 +75,29 @@ class PdfDownloader:
         )
         payload = self._fetch_pdf(request)
         return self._store_pdf(paper, payload)
+
+    def _load_manual_pdf(self, reference: str) -> bytes:
+        if self.manual_source_dir is None:
+            raise InvalidPDFError("manual PDF storage is not configured")
+        try:
+            upload_id = UUID(reference.removeprefix("paperpilot-upload://"))
+        except (ValueError, AttributeError) as error:
+            raise InvalidPDFError("invalid manual PDF reference") from error
+        target = (self.manual_source_dir / f"{upload_id}.pdf").resolve(strict=False)
+        if target.parent != self.manual_source_dir:
+            raise InvalidPDFError("invalid manual PDF path")
+        try:
+            size = target.stat().st_size
+            if size <= 0 or size > self.max_size_bytes:
+                raise InvalidPDFError("manual PDF has an invalid size")
+            payload = target.read_bytes()
+        except FileNotFoundError as error:
+            raise InvalidPDFError("manual PDF upload was not found") from error
+        except OSError as error:
+            raise PdfDownloadError("Unable to read manual PDF upload") from error
+        if not payload.startswith(b"%PDF"):
+            raise InvalidPDFError("manual upload does not have a PDF magic header")
+        return payload
 
     def _fetch_pdf(self, request: Request) -> bytes:
         try:

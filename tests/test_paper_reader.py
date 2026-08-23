@@ -247,7 +247,7 @@ class TestPaperReader(unittest.TestCase):
     def test_prompt_version_and_model_name_are_recorded(self):
         result = self._reader()[0].analyze(make_document())
 
-        self.assertEqual(result.prompt_version, "v2")
+        self.assertEqual(result.prompt_version, "v3")
         self.assertEqual(result.model_name, "fake-reader-model")
 
     def test_prompt_contains_controlled_context_and_schema_contract(self):
@@ -260,8 +260,10 @@ class TestPaperReader(unittest.TestCase):
         self.assertIn("Simplified Chinese", system_prompt)
         self.assertIn("evidence quote in its original language", system_prompt)
         self.assertIn("[PAGE 2][SECTION Method]", user_prompt)
-        self.assertIn("at most 6 evidence entries", user_prompt)
-        self.assertIn("quote under 500 characters", user_prompt)
+        self.assertIn("at most 10 evidence entries", user_prompt)
+        self.assertIn("semantically supported by its exact quote", user_prompt)
+        self.assertIn("verbatim quote under", user_prompt)
+        self.assertIn("500 characters", user_prompt)
         self.assertIs(response_model, PaperReaderOutput)
 
 

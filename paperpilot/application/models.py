@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from paperpilot.export import ArtifactMetadata, ExportFormat, ExportResult
+from paperpilot.domain import ManualPaperSource
 from paperpilot.reporting import ResearchReport, SurveyReport
 
 
@@ -21,6 +22,7 @@ class ResearchRequest(BaseModel):
     # downstream limit for compatibility and cost control.
     max_papers: int = Field(default=10, ge=1, le=50)
     export_format: ExportFormat = ExportFormat.MARKDOWN
+    manual_sources: list[ManualPaperSource] = Field(default_factory=list, max_length=20)
 
     @field_validator("question")
     @classmethod

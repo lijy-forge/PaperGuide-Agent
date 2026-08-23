@@ -37,6 +37,7 @@ def submit_research(
         question=payload.question,
         max_papers=payload.max_papers,
         export_format=payload.export_format,
+        manual_sources=list(payload.manual_sources),
     )
     handle = dependencies.task_host_client.submit(request)
     return TaskAcceptedResponse(

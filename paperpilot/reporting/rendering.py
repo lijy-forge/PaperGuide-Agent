@@ -222,7 +222,9 @@ class SurveyMarkdownRenderer:
         for item in sorted(report.references, key=lambda ref: ref.citation_number):
             authors = ", ".join(item.authors)
             metadata = ", ".join(str(value) for value in (item.venue, item.year) if value)
-            lines.append(f"[{item.citation_number}] {authors}. {_md(item.title)}" + (f". {metadata}" if metadata else "") + ".")
+            source_url = item.source_url or (f"https://arxiv.org/abs/{item.arxiv_id}" if item.arxiv_id else None) or (f"https://doi.org/{item.doi}" if item.doi else None)
+            source_label = f"arXiv:{item.arxiv_id}" if item.arxiv_id else f"DOI:{item.doi}" if item.doi else "Source"
+            lines.append(f"[{item.citation_number}] {authors}. {_md(item.title)}" + (f". {metadata}" if metadata else "") + "." + (f" [{source_label}]({source_url})" if source_url else ""))
         return lines + [""]
 
     def _appendix_profiles(self, report: SurveyReport, title: str) -> list[str]:
@@ -323,9 +325,13 @@ class SurveyHtmlRenderer:
         return f'<section id="literature-timeline"><h2>{html.escape(strings("timeline"))}</h2><figure class="figure-placeholder"><figcaption>{html.escape(strings("timeline"))}</figcaption><div class="table-scroll"><table><thead><tr>{headers}</tr></thead><tbody>' + "".join(rows) + "</tbody></table></div></figure></section>"
 
     def _html_references(self, report: SurveyReport, language: str) -> str:
-        items = "".join(f"<li id=\"reference-{item.citation_number}\">[{item.citation_number}] {html.escape(', '.join(item.authors))}. {html.escape(item.title)}.</li>" for item in sorted(report.references, key=lambda ref: ref.citation_number))
+        items = []
+        for item in sorted(report.references, key=lambda ref: ref.citation_number):
+            source_label = f"arXiv:{item.arxiv_id}" if item.arxiv_id else f"DOI:{item.doi}" if item.doi else ""
+            source = f' <span class="source-id">{html.escape(source_label)}</span>' if source_label else ""
+            items.append(f'<li id="reference-{item.citation_number}">[{item.citation_number}] {html.escape(", ".join(item.authors))}. {html.escape(item.title)}.{source}</li>')
+        items = "".join(items)
         return f'<section id="references"><h2>{html.escape(SurveyPresentationStrings.get(language, "references"))}</h2><ol>{items}</ol></section>'
-
     def _html_appendices(self, report: SurveyReport, language: str) -> str:
         strings = lambda key: SurveyPresentationStrings.get(language, key)
         profiles = "".join(f"<li>[{item.get('citation_number')}] {html.escape(str(item.get('title', '')))} - {html.escape(strings('evidence_coverage'))}: {item.get('verified_evidence_count', 0)}</li>" for item in report.core_paper_profiles)

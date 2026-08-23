@@ -72,11 +72,11 @@ class SurveyContextBudget(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    max_core_papers: int = Field(default=10, ge=1, le=50)
+    max_core_papers: int = Field(default=20, ge=1, le=50)
     max_statements_per_paper: int = Field(default=20, ge=1, le=100)
     max_evidence_quotes_per_statement: int = Field(default=3, ge=1, le=10)
     max_conflicted_statements: int = Field(default=10, ge=0, le=100)
-    max_context_characters: int = Field(default=30_000, ge=1_000, le=200_000)
+    max_context_characters: int = Field(default=100_000, ge=1_000, le=200_000)
 
 
 class SurveyReportContext(BaseModel):
@@ -126,11 +126,23 @@ class LiteratureMethodFacts(BaseModel):
     final_rejected: int = Field(default=0, ge=0)
     unassessable: int = Field(default=0, ge=0)
     selected_core: int = Field(default=0, ge=0)
+    requested_start_year: int | None = Field(default=None, ge=1)
+    requested_end_year: int | None = Field(default=None, ge=1)
+    configured_sources: list[str] = Field(default_factory=list)
+    source_result_counts: dict[str, int] = Field(default_factory=dict)
+    source_error_names: list[str] = Field(default_factory=list)
+    manual_source_count: int = Field(default=0, ge=0)
 
     @classmethod
     def from_state(cls, state: ResearchState) -> "LiteratureMethodFacts":
         retrieval = state.get("retrieval_audit")
         final = state.get("final_relevance_audit")
+        config = state.get("research_config")
+        search_result = state.get("search_result")
+        configured_sources = [
+            getattr(source, "value", str(source))
+            for source in getattr(config, "sources", [])
+        ]
         return cls(
             planned_queries=getattr(retrieval, "planned_query_count", 0),
             executed_queries=getattr(retrieval, "executed_query_count", 0),
@@ -145,6 +157,12 @@ class LiteratureMethodFacts(BaseModel):
             final_rejected=getattr(final, "final_rejected_count", 0),
             unassessable=getattr(final, "papers_unassessable", 0),
             selected_core=getattr(final, "selected_core_count", 0),
+            requested_start_year=getattr(config, "start_year", None),
+            requested_end_year=getattr(config, "end_year", None),
+            configured_sources=configured_sources,
+            source_result_counts=dict(getattr(search_result, "source_results", {}) or {}),
+            source_error_names=list((getattr(search_result, "source_errors", {}) or {}).keys()),
+            manual_source_count=len(getattr(config, "manual_sources", []) or []),
         )
 
 
@@ -404,7 +422,11 @@ class SurveyReportContextBuilder:
             query_language=normalize_query_language(query_language, question=question),
             report_mode=report_mode,
             scope_summary=facts.model_dump_json(),
-            retrieval_statistics=facts.model_dump(),
+            retrieval_statistics={
+                key: value
+                for key, value in facts.model_dump().items()
+                if isinstance(value, int)
+            },
             core_papers=[item.public_dict() for item in papers],
             references=[item for item in data.references if item.citation_number <= len(papers)],
             grounded_statements=grounded,
@@ -496,6 +518,10 @@ class SurveyPublicContentValidator:
         re.I,
     )
     _CITATION = re.compile(r"\[(\d+(?:\s*,\s*(?:\d+|p\.\s*\d+))*)\]")
+    _PLACEHOLDER_URL = re.compile(r"https?://[^\s/]*\.invalid(?:[/:]|$)", re.I)
+    _PLACEHOLDER_ARXIV = re.compile(r"^demo\.\d+$", re.I)
+    _PLACEHOLDER_VENUE = re.compile(r"\boffline\s+demo\b", re.I)
+    _GENERIC_FAMILY = re.compile(r"\bmethod\s+family\s+\d+\b", re.I)
 
     @classmethod
     def contains_internal_identifier(cls, value: str) -> bool:
@@ -513,6 +539,41 @@ class SurveyPublicContentValidator:
         self._validate_language_contract(report)
         payload = report.public_dict()
         self._validate_public_payload(payload, {item.citation_number for item in report.references})
+        self._validate_export_authenticity(report)
+
+    def _validate_export_authenticity(self, report: SurveyReport) -> None:
+        """Fail closed when placeholder or unverifiable records reach production export."""
+
+        preview = str(report.metadata.get("export_profile") or "production").casefold() == "preview"
+        placeholder_fields: list[str] = []
+        incomplete_fields: list[str] = []
+        for reference in report.references:
+            if reference.source_url and self._PLACEHOLDER_URL.search(reference.source_url):
+                placeholder_fields.append(f"reference[{reference.citation_number}].source_url")
+            if reference.arxiv_id and self._PLACEHOLDER_ARXIV.fullmatch(reference.arxiv_id):
+                placeholder_fields.append(f"reference[{reference.citation_number}].arxiv_id")
+            if reference.venue and self._PLACEHOLDER_VENUE.search(reference.venue):
+                placeholder_fields.append(f"reference[{reference.citation_number}].venue")
+            stable_id = any((
+                reference.doi,
+                reference.arxiv_id,
+                reference.semantic_scholar_id,
+                reference.openalex_id,
+                reference.source_url,
+            ))
+            if not stable_id or not reference.sources:
+                incomplete_fields.append(f"reference[{reference.citation_number}].provenance")
+            if reference.full_text_status != "available":
+                incomplete_fields.append(f"reference[{reference.citation_number}].full_text_status")
+        for index, family in enumerate(report.taxonomy_summary.get("families", [])):
+            if self._GENERIC_FAMILY.search(str(family.get("name") or "")):
+                placeholder_fields.append(f"taxonomy.families[{index}].name")
+        if preview:
+            return
+        if placeholder_fields:
+            raise self._validation_error("PLACEHOLDER_CONTENT_BLOCKED", placeholder_fields[0])
+        if incomplete_fields:
+            raise self._validation_error("REFERENCE_PROVENANCE_INCOMPLETE", incomplete_fields[0])
 
     @staticmethod
     def _validate_language_contract(report: SurveyReport) -> None:
@@ -559,7 +620,14 @@ class SurveyPublicContentValidator:
                     # EvidenceLedgerEntry.quote is a literal source excerpt.
                     # Bracketed numbers in it belong to the source paper's own
                     # bibliography, not to this report's public registry.
-                    literal_source_quote=literal_source_quote or key == "quote",
+                    literal_source_quote=(
+                        literal_source_quote
+                        or key == "quote"
+                        or (
+                            key == "statement_text"
+                            and field_path.startswith("report.evidence_appendix")
+                        )
+                    ),
                 )
             return
         if isinstance(value, list):

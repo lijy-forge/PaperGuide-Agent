@@ -23,6 +23,7 @@ from .routes import (
     health_router,
     internal_router,
     metrics_router,
+    manual_sources_router,
     research_router,
     tasks_router,
 )
@@ -114,6 +115,7 @@ def create_api_app(
     app.add_middleware(APISecurityMiddleware)
     install_error_handlers(app)
     app.include_router(research_router, prefix=settings.api_prefix)
+    app.include_router(manual_sources_router, prefix=settings.api_prefix)
     app.include_router(tasks_router, prefix=settings.api_prefix)
     app.include_router(events_router, prefix=settings.api_prefix)
     app.include_router(artifacts_router, prefix=settings.api_prefix)

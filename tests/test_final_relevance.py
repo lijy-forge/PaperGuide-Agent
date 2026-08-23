@@ -119,3 +119,23 @@ def test_generalization_topic_does_not_use_domain_words():
     intent = ResearchIntent(research_question="retrieval augmented generation", required_concepts=["retrieval augmented generation", "hallucination mitigation"], relation_requirements=["reducing hallucinations"])
     result = EvidenceAwareFinalRelevanceService().assess(paper, analysis, verified, intent)
     assert result.final_classification is not FinalRelevanceClassification.CORE
+
+def test_paper_title_and_abstract_contribute_to_final_topic_match():
+    paper, analysis, verified = make_result()
+    paper = paper.model_copy(
+        update={
+            "title": "UniqueTopicToken: a technical study",
+            "abstract": "UniqueTopicToken is the central research focus.",
+        }
+    )
+    intent = ResearchIntent(
+        research_question="UniqueTopicToken review",
+        required_concepts=["UniqueTopicToken"],
+    )
+
+    result = EvidenceAwareFinalRelevanceService().assess(
+        paper, analysis, verified, intent
+    )
+
+    assert result.matched_concepts == ["UniqueTopicToken"]
+    assert result.research_focus_match == 1.0

@@ -112,6 +112,36 @@ def test_source_quote_local_bibliography_is_not_a_report_citation():
     SurveyPublicContentValidator().validate(changed)
 
 
+def test_evidence_statement_local_bibliography_is_not_a_report_citation():
+    """Evidence statements may retain the source paper's bracket references."""
+
+    report = make_report()
+    entry = report.evidence_appendix[0].model_copy(
+        update={"statement_text": "The source reports this result [999]."}
+    )
+    changed = report.model_copy(
+        update={"evidence_appendix": [entry, *report.evidence_appendix[1:]]}
+    )
+    SurveyPublicContentValidator().validate(changed)
+
+
+def test_unknown_public_citation_in_report_narrative_remains_rejected():
+    report = make_report()
+    section = report.sections[0]
+    paragraph = section.paragraphs[0].model_copy(
+        update={"text": "This report-level claim uses an unknown citation [999]."}
+    )
+    changed = report.model_copy(
+        update={
+            "sections": [
+                section.model_copy(update={"paragraphs": [paragraph]}),
+                *report.sections[1:],
+            ]
+        }
+    )
+    with pytest.raises(ReportSchemaValidationError, match="UNKNOWN_PUBLIC_CITATION"):
+        SurveyPublicContentValidator().validate(changed)
+
 def test_source_quote_still_rejects_internal_uuid_leaks():
     report = make_report()
     entry = report.evidence_appendix[0].model_copy(
@@ -201,4 +231,7 @@ def test_multiple_papers_use_one_grouped_paragraph_citation_across_formats():
         assert "[1][1]" not in artifact
         assert "[1][2]" not in artifact
     assert "href=\"#reference-1\"" not in html  # Citations are public text, not internal links.
-    assert not links
+    # Timeline and reference source URLs are intentionally clickable, but they
+    # must remain ordinary external HTTPS links rather than internal IDs.
+    assert links
+    assert all(link["kind"] == 2 and link["uri"].startswith("https://") for link in links)

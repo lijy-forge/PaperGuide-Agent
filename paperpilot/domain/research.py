@@ -3,6 +3,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .enums import PaperSource
+from .manual_source import ManualPaperSource
 
 
 class ResearchConfig(BaseModel):
@@ -19,6 +20,7 @@ class ResearchConfig(BaseModel):
     sources: list[PaperSource]
     open_access_only: bool = True
     language: str = "zh-CN"
+    manual_sources: list[ManualPaperSource] = Field(default_factory=list, max_length=20)
 
     @field_validator("question", "language")
     @classmethod

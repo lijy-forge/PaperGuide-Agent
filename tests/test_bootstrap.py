@@ -294,7 +294,7 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(llm.model_name, "fake-structured-model")
         self.assertEqual(llm.max_tokens, 2048)
 
-    def test_default_retrievers_skip_unauthenticated_semantic_scholar(self) -> None:
+    def test_default_retrievers_include_unauthenticated_semantic_scholar(self) -> None:
         with tempfile.TemporaryDirectory() as directory, patch.dict(
             os.environ, {"SEMANTIC_SCHOLAR_API_KEY": ""}, clear=False
         ):
@@ -308,7 +308,7 @@ class BootstrapTests(unittest.TestCase):
         retriever_node = factory.calls[0][1]
         self.assertEqual(
             [name for name, _ in retriever_node.pipeline._retrievers],
-            ["arxiv"],
+            ["arxiv", "semantic_scholar"],
         )
 
     def test_default_retrievers_enable_authenticated_semantic_scholar(self) -> None:

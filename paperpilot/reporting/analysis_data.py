@@ -136,9 +136,9 @@ class TaxonomyContextBudget(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    max_core_papers: int = Field(default=10, ge=1, le=50)
+    max_core_papers: int = Field(default=20, ge=1, le=50)
     max_statements_per_paper: int = Field(default=12, ge=1, le=50)
-    max_context_characters: int = Field(default=20_000, ge=1_000, le=100_000)
+    max_context_characters: int = Field(default=100_000, ge=1_000, le=100_000)
 
 
 class TaxonomyContext(BaseModel):
@@ -176,12 +176,22 @@ class TaxonomyContextBuilder:
         allowed: list[str] = []
         papers: list[dict] = []
         for profile in profiles:
+            candidates = [
+                *([profile.primary_contribution] if profile.primary_contribution else []),
+                *profile.additional_contributions,
+                *profile.key_findings,
+                *([profile.primary_limitation] if profile.primary_limitation else []),
+                *profile.additional_limitations,
+            ]
             statements = [
                 item
-                for item in [*([profile.primary_contribution] if profile.primary_contribution else []), *profile.additional_contributions, *profile.key_findings]
+                for item in candidates
                 if item.is_evidence_grounded
                 and item.support_status in {StatementSupportStatus.SUPPORTED, StatementSupportStatus.PARTIALLY_SUPPORTED}
-            ][: self.budget.max_statements_per_paper]
+            ]
+            statements = list({item.statement_key: item for item in statements}.values())[
+                : self.budget.max_statements_per_paper
+            ]
             for statement in statements:
                 allowed.append(statement.statement_key)
             papers.append({
@@ -330,51 +340,80 @@ class TaxonomyService:
 
 
 class DeterministicTaxonomyBuilder:
-    """Offline/demo grouping based only on grounded statement token overlap."""
+    """Evidence-conservative fallback using a controlled SLAM taxonomy."""
 
-    _STOP = {"the", "and", "with", "for", "from", "using", "into", "based", "method"}
+    _CJK_RE = re.compile(r"[\u3400-\u9fff]")
+    _CONTROLLED = (
+        ("semantic-learning", "\u8bed\u4e49\u4e0e\u5b66\u4e60\u589e\u5f3a SLAM", "Semantic and learning-enhanced SLAM", "\u8bed\u4e49\u611f\u77e5\u6216\u5b66\u4e60\u578b\u8868\u793a\u4e0e\u51e0\u4f55\u4f30\u8ba1\u7ed3\u5408\u3002", "Semantic or learned representations are coupled with geometric estimation.", (r"semantic|\u8bed\u4e49|deep learning|neural|\u6df1\u5ea6\u5b66\u4e60|\u795e\u7ecf\u7f51\u7edc|yolo|learned|\u5b66\u4e60\u578b",)),
+        ("multisensor-fusion", "\u591a\u4f20\u611f\u5668\u7d27\u8026\u5408\u4e0e\u878d\u5408", "Tightly coupled multi-sensor fusion", "\u901a\u8fc7\u9884\u79ef\u5206\u3001\u8bef\u5dee\u72b6\u6001\u6ee4\u6ce2\u6216\u56e0\u5b50\u56fe\u7edf\u4e00\u878d\u5408\u591a\u6a21\u6001\u7ea6\u675f\u3002", "Multimodal constraints are combined through preintegration, error-state filtering, or factor graphs.", (r"multi[- ]sensor|\u591a\u4f20\u611f\u5668|\u591a\u6a21\u6001|\u878d\u5408|lidar[- ]inertial|visual[- ]inertial|lvi|lio|vio|\u7d27\u8026\u5408|imu|inertial|gnss",)),
+        ("filtering-estimation", "\u6982\u7387\u6ee4\u6ce2\u4e0e\u7c92\u5b50\u4f30\u8ba1", "Probabilistic filtering and particle estimation", "\u91c7\u7528 EKF\u3001UKF \u6216 Rao-Blackwellized \u7c92\u5b50\u6ee4\u6ce2\u9012\u63a8\u66f4\u65b0\u540e\u9a8c\u3002", "The posterior is updated recursively with Kalman or particle filtering.", (r"fastslam|gmapping|ekf|ukf|kalman|\u5361\u5c14\u66fc|rao[- ]blackwell|particle filter|\u7c92\u5b50\u6ee4\u6ce2|\u8d1d\u53f6\u65af\u6ee4\u6ce2",)),
+        ("graph-optimization", "\u56fe\u4f18\u5316\u4e0e\u5168\u5c40\u4e00\u81f4\u6027", "Graph optimization and global consistency", "\u4f7f\u7528\u4f4d\u59ff\u56fe\u3001\u56e0\u5b50\u56fe\u3001\u5e73\u6ed1\u4f18\u5316\u6216 Bundle Adjustment \u8054\u5408\u6c42\u89e3\u72b6\u6001\u3002", "State is jointly solved with pose graphs, factor graphs, smoothing, or bundle adjustment.", (r"pose[- ]graph|factor[- ]graph|\u4f4d\u59ff\u56fe|\u56e0\u5b50\u56fe|graph optimization|\u56fe\u4f18\u5316|bundle adjustment|smoothing|isam|loop closure|\u56de\u73af",)),
+        ("lidar-odometry", "LiDAR \u91cc\u7a0b\u8ba1\u4e0e\u626b\u63cf\u5339\u914d", "LiDAR odometry and scan matching", "\u901a\u8fc7\u7279\u5f81\u70b9\u3001\u76f4\u63a5\u70b9\u4e91\u914d\u51c6\u3001ICP \u6216\u626b\u63cf\u5230\u5730\u56fe\u5339\u914d\u4f30\u8ba1\u4f4d\u59ff\u3002", "Pose is estimated with point-cloud registration, ICP, or scan-to-map matching.", (r"loam|icp|lidar|laser|\u6fc0\u5149\u96f7\u8fbe|\u6fc0\u5149|point cloud|\u70b9\u4e91|scan matching|\u626b\u63cf\u5339\u914d",)),
+        ("visual-slam", "\u89c6\u89c9 SLAM \u4e0e\u89c6\u89c9\u91cc\u7a0b\u8ba1", "Visual SLAM and visual odometry", "\u57fa\u4e8e\u7279\u5f81\u8ddf\u8e2a\u3001\u76f4\u63a5\u6cd5\u6216\u89c6\u89c9\u91cd\u6295\u5f71\u8bef\u5dee\u5b8c\u6210\u5b9a\u4f4d\u4e0e\u5efa\u56fe\u3002", "Localization and mapping use feature tracking, direct methods, or reprojection error.", (r"visual slam|visual odometry|\u89c6\u89c9slam|\u89c6\u89c9\u91cc\u7a0b\u8ba1|orb[- ]slam|monocular|stereo|rgb[- ]d|camera|\u5355\u76ee|\u53cc\u76ee|\u76f8\u673a",)),
+    )
 
     def build(self, context: TaxonomyContext) -> TaxonomyAssessment:
-        groups: list[dict] = []
+        chinese = bool(self._CJK_RE.search(context.context_text))
+        groups: dict[str, dict] = {}
         assignments: list[MethodFamilyAssignment] = []
         for paper in context.papers:
             statements = paper.get("grounded_statements", [])
             if not statements:
                 assignments.append(MethodFamilyAssignment(citation_number=paper["citation_number"], primary_method_family="UNCLASSIFIED", assignment_status="unclassified"))
                 continue
-            tokens = self._tokens(" ".join(item["text"] for item in statements))
-            target = next((group for group in groups if self._overlap(tokens, group["tokens"]) >= 0.35), None)
-            if target is None:
-                target = {"name": f"Method family {len(groups) + 1}", "tokens": tokens, "members": [], "keys": []}
-                groups.append(target)
+            text = " ".join([
+                str(paper.get("title") or ""),
+                str(paper.get("method_summary") or ""),
+                *(str(item.get("text") or "") for item in statements),
+            ]).casefold()
+            matches = [
+                family
+                for family in self._CONTROLLED
+                if any(re.search(pattern, text, re.I) for pattern in family[5])
+            ]
+            if not matches:
+                assignments.append(MethodFamilyAssignment(citation_number=paper["citation_number"], primary_method_family="UNCLASSIFIED", assignment_status="unclassified"))
+                continue
+            family = matches[0]
+            family_key = f"controlled-{family[0]}"
+            target = groups.setdefault(
+                family_key,
+                {"family": family, "members": [], "keys": [], "advantages": [], "limitations": []},
+            )
             target["members"].append(paper["citation_number"])
             target["keys"].extend(item["statement_key"] for item in statements)
-            assignments.append(MethodFamilyAssignment(citation_number=paper["citation_number"], primary_method_family="UNCLASSIFIED", assignment_status="unclassified"))
+            for item in statements:
+                value = str(item.get("text") or "").strip()
+                if item.get("kind") == StatementKind.LIMITATION.value and value:
+                    target["limitations"].append(value)
+                elif item.get("kind") in {StatementKind.CONTRIBUTION.value, StatementKind.FINDING.value} and value:
+                    target["advantages"].append(value)
+            assignments.append(MethodFamilyAssignment(citation_number=paper["citation_number"], primary_method_family=family_key))
         families: list[MethodFamily] = []
-        for group in groups:
+        for family_key, group in groups.items():
             members = sorted(set(group["members"]))
-            key = hashlib.sha256(f"{group['name'].casefold()}|{','.join(map(str, members))}".encode()).hexdigest()[:16]
+            _, name_zh, name_en, mechanism_zh, mechanism_en, _ = group["family"]
+            name = name_zh if chinese else name_en
+            mechanism = mechanism_zh if chinese else mechanism_en
             families.append(MethodFamily(
-                family_key=key,
-                name=group["name"],
-                description="Deterministic grouping of papers sharing grounded mechanism terms.",
-                common_mechanism=" ".join(sorted(group["tokens"])),
-                advantages=[], limitations=[], member_citation_numbers=members,
-                source_statement_keys=list(dict.fromkeys(group["keys"])), confidence=0.5,
+                family_key=family_key,
+                name=name,
+                description=mechanism,
+                common_mechanism=mechanism,
+                advantages=list(dict.fromkeys(group["advantages"]))[:3],
+                limitations=list(dict.fromkeys(group["limitations"]))[:3],
+                member_citation_numbers=members,
+                source_statement_keys=list(dict.fromkeys(group["keys"])),
+                confidence=0.65,
                 support_level=SupportLevel.MULTI_PAPER if len(members) > 1 else SupportLevel.SINGLE_PAPER,
             ))
-        by_citation = {number: family.family_key for family in families for number in family.member_citation_numbers}
-        assignments = [MethodFamilyAssignment(citation_number=item.citation_number, primary_method_family=by_citation.get(item.citation_number, "UNCLASSIFIED"), assignment_status="assigned" if item.citation_number in by_citation else "unclassified") for item in assignments]
         warnings = ["TAXONOMY_UNCLASSIFIED_CORE"] if any(item.primary_method_family == "UNCLASSIFIED" for item in assignments) else []
-        return TaxonomyAssessment(taxonomy=families, assignments=assignments, warnings=warnings, available=bool(families))
-
-    @classmethod
-    def _tokens(cls, text):
-        return {token for token in re.findall(r"[\w]+", text.casefold()) if token not in cls._STOP}
-
-    @staticmethod
-    def _overlap(left, right):
-        return len(left & right) / max(1, min(len(left), len(right)))
+        summary = (
+            f"\u57fa\u4e8e\u660e\u786e\u6280\u672f\u673a\u5236\u5f62\u6210 {len(families)} \u4e2a\u53d7\u63a7\u65b9\u6cd5\u65cf\uff1b\u672a\u5339\u914d\u8bba\u6587\u4fdd\u7559\u4e3a\u672a\u5206\u7c7b\u3002"
+            if chinese
+            else f"Built {len(families)} controlled method families from explicit mechanisms; unmatched papers remain unclassified."
+        )
+        return TaxonomyAssessment(taxonomy=families, assignments=assignments, warnings=warnings, available=bool(families), summary=summary)
 
 
 class GroundingStatus(str, Enum):
@@ -602,7 +641,14 @@ class ComparisonDataBuilder:
         if statement is None:
             return ComparisonCell(value=None, value_type="statement", grounding_status=GroundingStatus.MISSING, notes=missing_note or None)
         status = GroundingStatus.VERIFIED if statement.support_status is StatementSupportStatus.SUPPORTED else GroundingStatus.PARTIAL if statement.support_status is StatementSupportStatus.PARTIALLY_SUPPORTED else GroundingStatus.MISSING
-        return ComparisonCell(value=statement.text, value_type="statement", grounding_status=status, source_statement_keys=[statement.statement_key], citation_tokens=list((tokens or {}).get(statement.statement_key, [])), notes=missing_note or None)
+        return ComparisonCell(
+            value=statement.text,
+            value_type="statement",
+            grounding_status=status,
+            source_statement_keys=[statement.statement_key],
+            citation_tokens=list((tokens or {}).get(statement.statement_key, [])),
+            notes=None,
+        )
 
     @classmethod
     def _findings_cell(cls, linked: EvidenceLinkedPaperAnalysis | None, tokens: Mapping[str, list[str]] | None = None) -> ComparisonCell:

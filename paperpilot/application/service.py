@@ -119,6 +119,7 @@ class ResearchApplicationService:
             end_year=end_year,
             max_papers=request.max_papers,
             sources=list(self.sources),
+            manual_sources=list(request.manual_sources),
         )
         initial_state = create_initial_state(request.question, config)
         if task_id is None:

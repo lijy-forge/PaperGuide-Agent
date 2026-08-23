@@ -17,6 +17,14 @@ from .protocols import QueryExpansionProtocol, ResearchIntentPlannerProtocol
 class RetrievalPlanService:
     """Build a bounded plan and isolate planner/expander failures."""
 
+    _OUTPUT_FORM_CONCEPTS = {
+        "literature review",
+        "overview",
+        "report",
+        "review",
+        "survey",
+    }
+
     def __init__(self, planner: ResearchIntentPlannerProtocol, expander: QueryExpansionProtocol):
         self._planner = planner
         self._expander = expander
@@ -34,7 +42,22 @@ class RetrievalPlanService:
             raise ValueError("research question must not be empty")
         if not 1 <= max_core_papers <= 50:
             raise ValueError("max_core_papers must be between 1 and 50")
-        effective_budget = (budget or RetrievalBudget(max_core_papers=max_core_papers)).model_copy(update={"max_core_papers": max_core_papers})
+        if budget is None:
+            # Honour the user-facing paper count throughout the funnel.  The
+            # old fixed 10-paper reader cap silently reduced a requested
+            # 15-paper survey to a much smaller report after year filtering.
+            scaled = min(50, max_core_papers)
+            effective_budget = RetrievalBudget(
+                max_candidates_per_query=max(10, scaled),
+                max_candidates_after_dedup=max(30, scaled * 2),
+                max_documents_to_ingest=max(12, scaled),
+                max_papers_to_read=max(10, scaled),
+                max_core_papers=max_core_papers,
+            )
+        else:
+            effective_budget = budget.model_copy(
+                update={"max_core_papers": max_core_papers}
+            )
         warnings: list[str] = []
         planner_started = monotonic()
         self._emit(
@@ -78,6 +101,9 @@ class RetrievalPlanService:
                     **self._intent_counts(intent),
                 ),
             )
+        intent, removed_output_form_terms = self._remove_output_form_terms(intent)
+        if removed_output_form_terms:
+            warnings.append("INTENT_OUTPUT_FORM_TERMS_REMOVED")
         # User-visible language is derived once from the original request, not
         # from an optional LLM field or later rendered prose.
         intent = intent.model_copy(
@@ -167,6 +193,44 @@ class RetrievalPlanService:
             query_variants=variants,
             budget=effective_budget,
             warnings=list(dict.fromkeys(warnings)),
+        )
+
+    @classmethod
+    def _remove_output_form_terms(
+        cls, intent: ResearchIntent
+    ) -> tuple[ResearchIntent, bool]:
+        """Keep report-format words from becoming per-paper relevance gates."""
+
+        required = [
+            value
+            for value in intent.required_concepts
+            if " ".join(value.casefold().split()) not in cls._OUTPUT_FORM_CONCEPTS
+        ]
+        # Never erase the only concept: survey methodology and similar
+        # research questions can legitimately study a review-related concept.
+        if not required:
+            required = list(intent.required_concepts)
+
+        relations = [
+            value
+            for value in intent.relation_requirements
+            if not any(
+                re.search(rf"\b{re.escape(term)}s?\b", value, re.IGNORECASE)
+                for term in cls._OUTPUT_FORM_CONCEPTS
+            )
+        ]
+        changed = (
+            required != intent.required_concepts
+            or relations != intent.relation_requirements
+        )
+        return (
+            intent.model_copy(
+                update={
+                    "required_concepts": required,
+                    "relation_requirements": relations,
+                }
+            ),
+            changed,
         )
 
     @staticmethod

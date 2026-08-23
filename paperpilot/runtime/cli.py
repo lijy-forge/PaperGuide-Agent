@@ -90,7 +90,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="optional demo question; synthetic evidence remains fixed",
     )
-    demo.add_argument("--max-papers", type=int, default=3)
+    demo.add_argument("--max-papers", type=int, default=15)
     demo.add_argument(
         "--format",
         dest="export_format",

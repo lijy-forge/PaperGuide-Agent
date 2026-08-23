@@ -54,6 +54,22 @@ class RetrievalPlanTests(unittest.TestCase):
     self.assertEqual(plan.intent.query_language, "zh")
 
 
+  def test_output_form_terms_do_not_become_per_paper_relevance_gates(self) -> None:
+    intent = ResearchIntent(
+        research_question="SLAM文献综述",
+        required_concepts=["SLAM", "survey", "review"],
+        relation_requirements=["surveys of SLAM published between 2000 and 2026"],
+    )
+    plan = RetrievalPlanService(
+        type("P", (), {"plan": lambda self, question: intent})(),
+        type("E", (), {"expand": lambda self, value: [QueryVariant(query="SLAM", purpose="direct")]})(),
+    ).build("SLAM文献综述", max_core_papers=15)
+
+    self.assertEqual(plan.intent.required_concepts, ["SLAM"])
+    self.assertEqual(plan.intent.relation_requirements, [])
+    self.assertIn("INTENT_OUTPUT_FORM_TERMS_REMOVED", plan.warnings)
+
+
   def test_invalid_budget_is_rejected(self) -> None:
     with self.assertRaises(ValueError):
         RetrievalBudget(max_core_papers=0)

@@ -6,8 +6,11 @@ must hold between concepts, useful adjacent terminology, exclusions, domain, and
 explicit publication year range when present. Preserve research_question in its
 original language, but express concepts, relationships, exclusions, and domain with
 canonical English academic terminology suitable for scholarly search, even when the
-question is not English. Do not invent years, papers, or concepts not supported by
-the question."""
+question is not English. Treat words that describe the requested deliverable—such as
+survey, review, literature review, report, or overview—as output-form instructions,
+not required technical concepts or relation requirements. Publication years belong
+only in time_range, not in relation_requirements. Do not invent years, papers, or
+concepts not supported by the question."""
 
 QUERY_EXPANSION_SYSTEM_PROMPT = """Generate short academic search queries from the supplied research intent.
 Return only structured query variants. Cover required concepts and, when possible,
