@@ -20,13 +20,21 @@ class PaperContextConfig(BaseModel):
     preferred_sections: tuple[str, ...] = (
         "abstract",
         "introduction",
+        "contributions",
+        "contribution",
+        "limitations",
+        "limitation",
+        "discussion",
+        "threats to validity",
+        "conclusion",
+        "future work",
         "method",
         "methodology",
         "proposed method",
         "experiment",
+        "experiments",
         "experimental results",
         "results",
-        "conclusion",
     )
     include_abstract: bool = True
     include_conclusion: bool = True

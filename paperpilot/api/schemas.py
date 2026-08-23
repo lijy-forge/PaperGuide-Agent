@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from paperpilot.application import ResearchTaskStatus
+from paperpilot.domain import ManualPaperSource
 from paperpilot.export import ExportFormat
 from paperpilot.runtime.host import TaskEventType
 from paperpilot.progress.models import ProgressEventPayload
@@ -64,6 +65,7 @@ class CreateResearchRequest(BaseModel):
     question: str
     max_papers: int = Field(default=10, ge=1, le=50)
     export_format: ExportFormat = ExportFormat.MARKDOWN
+    manual_sources: list[ManualPaperSource] = Field(default_factory=list, max_length=20)
 
     @field_validator("question")
     @classmethod
@@ -72,6 +74,17 @@ class CreateResearchRequest(BaseModel):
         if not value:
             raise ValueError("question must not be empty")
         return value
+
+
+class ManualSourceUploadResponse(BaseModel):
+    """Validated reference to an uploaded manual-source PDF."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    upload_id: UUID
+    size_bytes: int = Field(gt=0)
+    page_count: int = Field(gt=0)
+    sha256: str
 
 
 class TaskAcceptedResponse(BaseModel):

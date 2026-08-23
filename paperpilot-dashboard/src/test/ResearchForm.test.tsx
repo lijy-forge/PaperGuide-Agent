@@ -99,12 +99,12 @@ describe("ResearchForm", () => {
     ).toBeTruthy();
   });
 
-  it("defaults Maximum Papers to ten", () => {
+  it("defaults Maximum Papers to fifteen", () => {
     renderForm();
     expect(
       (screen.getByRole("spinbutton", { name: "最大论文数量" }) as HTMLInputElement)
         .value
-    ).toBe("10");
+    ).toBe("15");
   });
 
   it("validates Maximum Papers between one and fifty", () => {
@@ -138,7 +138,7 @@ describe("ResearchForm", () => {
     await waitFor(() => expect(mocks.createResearch).toHaveBeenCalledOnce());
     expect(mocks.createResearch.mock.calls[0][0]).toMatchObject({
       question: validQuestion,
-      max_papers: 10,
+      max_papers: 15,
       export_format: "markdown"
     });
   });
@@ -248,6 +248,17 @@ describe("ResearchForm", () => {
     await waitFor(() => expect(mocks.createResearch).toHaveBeenCalledOnce());
   });
 
+  it("shows the hybrid source mode and can add a manual paper card", async () => {
+    renderForm();
+    expect(screen.getByText("混合文献来源模式")).toBeTruthy();
+    expect(screen.getByText(/arXiv 与 Semantic Scholar 自动检索/)).toBeTruthy();
+    await userEvent.click(
+      screen.getByRole("button", { name: /添加 Google Scholar \/ 知网文献/ })
+    );
+    expect(screen.getByText("人工文献 1")).toBeTruthy();
+    expect(screen.getByText("全文 PDF")).toBeTruthy();
+    expect(screen.getByText(/不会要求或保存账号密码/)).toBeTruthy();
+  });
   it("does not print the question or errors to console", async () => {
     const spies = [
       vi.spyOn(console, "log"),

@@ -1,6 +1,8 @@
 """Node adapter over the existing PaperSearchPipeline."""
 
 from paperpilot.pipeline import PaperSearchPipeline
+from paperpilot.domain import Author, FullTextStatus, PaperCandidate
+from paperpilot.services import MetadataNormalizer
 from paperpilot.relevance import MultiQueryRetrievalService, RetrievalPlanService
 from paperpilot.orchestration.enums import NextAction, ResearchStep
 from paperpilot.orchestration.state import ResearchState
@@ -45,6 +47,9 @@ class RetrieverNode(BaseNode):
             state["candidate_relevance"] = pool.records
         else:
             result = self.pipeline.search(state["research_config"])
+        result = self._merge_manual_sources(
+            result, state["research_config"].manual_sources
+        )
         state["papers"] = list(result.papers)
         state["search_result"] = result
         state["warnings"] = self._stable_unique(
@@ -69,6 +74,67 @@ class RetrieverNode(BaseNode):
         if audit is not None:
             self._publish(state, TaskEventType.METADATA_FILTERING_COMPLETED, ProgressEventPayload(stage=ProgressStage.METADATA_FILTERING, completed=audit.deduplicated_candidate_count, total=audit.deduplicated_candidate_count, message=f"{audit.selected_for_ingestion_count} selected"))
         return state
+
+    @staticmethod
+    def _merge_manual_sources(result, manual_sources):
+        if not manual_sources:
+            return result
+        papers = list(result.papers)
+        title_index = {paper.normalized_title: index for index, paper in enumerate(papers)}
+        for manual in manual_sources:
+            normalized_title = MetadataNormalizer.normalize_title(manual.title)
+            authors = [
+                Author(full_name=name, affiliations=[]) for name in manual.authors
+            ]
+            upload_url = f"paperpilot-upload://{manual.upload_id}"
+            existing_index = title_index.get(normalized_title)
+            if existing_index is not None:
+                existing = papers[existing_index]
+                papers[existing_index] = existing.model_copy(
+                    update={
+                        "abstract": existing.abstract or manual.abstract,
+                        "authors": existing.authors or authors,
+                        "publication_year": existing.publication_year or manual.publication_year,
+                        "doi": existing.doi or manual.doi,
+                        "sources": list(dict.fromkeys([*existing.sources, manual.source])),
+                        "landing_page_url": manual.source_url,
+                        "pdf_url": upload_url,
+                        "full_text_status": FullTextStatus.AVAILABLE,
+                        "selection_reason": "人工补充的全文 PDF，参与统一证据分析。",
+                    }
+                )
+                continue
+            title_index[normalized_title] = len(papers)
+            papers.append(
+                PaperCandidate(
+                    title=manual.title,
+                    normalized_title=normalized_title,
+                    abstract=manual.abstract,
+                    authors=authors,
+                    publication_year=manual.publication_year,
+                    doi=manual.doi,
+                    sources=[manual.source],
+                    landing_page_url=manual.source_url,
+                    pdf_url=upload_url,
+                    full_text_status=FullTextStatus.AVAILABLE,
+                    selection_reason="人工补充的全文 PDF，参与统一证据分析。",
+                )
+            )
+        return result.model_copy(
+            update={
+                "papers": papers,
+                "source_results": {
+                    **result.source_results,
+                    "manual": len(manual_sources),
+                },
+                "warnings": [
+                    *result.warnings,
+                    f"已纳入 {len(manual_sources)} 篇人工补充全文。",
+                ],
+                "total_found": result.total_found + len(manual_sources),
+                "total_after_dedup": len(papers),
+            }
+        )
 
     def _publish(self, state: ResearchState, event_type: TaskEventType, payload: ProgressEventPayload) -> None:
         if self.progress_publisher is not None:

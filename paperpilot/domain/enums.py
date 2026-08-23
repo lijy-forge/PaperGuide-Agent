@@ -11,6 +11,8 @@ class PaperSource(str, Enum):
     OPENALEX = "openalex"
     PUBMED_CENTRAL = "pubmed_central"
     WEB = "web"
+    GOOGLE_SCHOLAR = "google_scholar"
+    CNKI = "cnki"
     USER_UPLOAD = "user_upload"
 
 

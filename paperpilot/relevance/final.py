@@ -139,7 +139,7 @@ class EvidenceAwareFinalRelevanceService:
         if analysis is None or verified is None:
             return FinalRelevanceAssessment(paper_id=paper.id, preliminary_classification=preliminary, final_classification=FinalRelevanceClassification.ADJACENT, assessment_status=AssessmentStatus.UNASSESSABLE, fulltext_concept_coverage=0, relation_evidence_strength=0, research_focus_match=0, verified_evidence_coverage=0, evidence_quality=0, conflict_penalty=0, overall_score=0, reasons=["processing_failure_unassessable"])
         verified_items = [item for item in verified.verification.verified_evidence if item.status in {VerificationStatus.VERIFIED, VerificationStatus.PARTIALLY_SUPPORTED}]
-        text = self._normalize(" ".join([analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions, *analysis.experiment_summary.findings, *(item.claim for item in verified_items), *(item.evidence.quote for item in verified_items)]))
+        text = self._normalize(" ".join([paper.title, paper.abstract or "", analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions, *analysis.experiment_summary.findings, *(item.claim for item in verified_items), *(item.evidence.quote for item in verified_items)]))
         concepts = [self._normalize(value) for value in intent.required_concepts]
         matched = [original for original, value in zip(intent.required_concepts, concepts) if value in text]
         missing = [original for original, value in zip(intent.required_concepts, concepts) if value not in text]
@@ -147,7 +147,7 @@ class EvidenceAwareFinalRelevanceService:
         relations = [self._normalize(value) for value in intent.relation_requirements]
         matched_relations = [original for original, relation in zip(intent.relation_requirements, relations) if self._relation_in_evidence(relation, concepts, verified_items)]
         relation_strength = len(matched_relations) / len(relations) if relations else 1.0
-        focus_text = self._normalize(" ".join([analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions]))
+        focus_text = self._normalize(" ".join([paper.title, paper.abstract or "", analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions]))
         focus_match = (sum(value in focus_text for value in concepts) / len(concepts)) if concepts else 0.0
         evidence_coverage = min(1.0, len(verified_items) / max(1, len(analysis.evidence)))
         evidence_quality = self._evidence_quality(verified_items)

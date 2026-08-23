@@ -1,5 +1,6 @@
 #Ignore env containing secrets
 .env
+.env.local
 
 # PaperPilot local runtime artifacts and default SQLite state
 runtime-data/

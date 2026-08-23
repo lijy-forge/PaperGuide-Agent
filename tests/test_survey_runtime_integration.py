@@ -344,7 +344,8 @@ def test_production_survey_uses_planned_chinese_locale_for_limited_pdf():
     )
     report = _survey_service(FakeChineseStageLLM()).generate(state)
     assert report.query_language == "zh"
-    assert report.title.endswith("证据驱动文献综述")
+    assert "SLAM 研究综述" in report.title
+    assert report.title.endswith("证据评估")
     from paperpilot.reporting import SurveyPdfRenderer
     import pymupdf
 
@@ -353,7 +354,8 @@ def test_production_survey_uses_planned_chinese_locale_for_limited_pdf():
         text = "\n".join(page.get_text() for page in document).replace("\xa0", " ")
     finally:
         document.close()
-    assert question in text
+    assert "SLAM" in text
+    assert "结构化摘要" in text
     assert "摘要" in text and "研究背景与关键技术" in text
 
 

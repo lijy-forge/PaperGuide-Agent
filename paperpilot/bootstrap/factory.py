@@ -175,6 +175,7 @@ def create_application(
         max_size_bytes=pdf_config.max_size_bytes,
         user_agent=pdf_config.user_agent,
         opener=pdf_opener,
+        manual_source_dir=pdf_config.download_directory.parent / "manual-sources",
     )
     parser = PdfParser(pymupdf_module)
     cleaner = DocumentTextCleaner()
@@ -292,20 +293,17 @@ def create_application(
 
 
 def _default_retrievers() -> list[RetrieverProtocol]:
-    """Build reliable production retrievers without unauthenticated rate-limit risk.
+    """Build the two automatic discovery sources used by hybrid mode.
 
-    arXiv is available without credentials and remains the baseline source.  The
-    Semantic Scholar Graph API is enabled when its optional API key is supplied;
-    otherwise its frequent anonymous 429 responses must not degrade a complete
-    research task.
+    arXiv and Semantic Scholar are always attempted.  A Semantic Scholar API
+    key is optional and raises its rate limit; source failures remain isolated
+    by the search pipeline so arXiv can still produce a degraded result.
     """
 
-    retrievers: list[RetrieverProtocol] = [ArxivClient()]
     semantic_scholar_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip()
-    if semantic_scholar_key:
-        retrievers.append(
-            SemanticScholarClient(
-                SemanticScholarConfig(api_key=semantic_scholar_key)
-            )
-        )
-    return retrievers
+    return [
+        ArxivClient(),
+        SemanticScholarClient(
+            SemanticScholarConfig(api_key=semantic_scholar_key or None)
+        ),
+    ]

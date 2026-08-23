@@ -54,6 +54,44 @@ class FakeReader:
             ),
             confidence=0.94,
         )
+        rich_demo = bool(metadata.get("rich_demo"))
+        advantage_evidence = Evidence(
+            id=uuid5(
+                NAMESPACE_URL,
+                f"https://paperpilot.local/demo/{document.paper_id}/advantage",
+            ),
+            paper_id=document.paper_id,
+            evidence_type=EvidenceType.DIRECT,
+            quote=str(metadata["advantage"]),
+            normalized_fact=str(metadata["advantage"]),
+            locator=SourceLocator(
+                paper_id=document.paper_id,
+                section_title="Strengths and limitations",
+                page_start=1,
+                page_end=1,
+            ),
+            confidence=0.93,
+        )
+        limitation_evidence = Evidence(
+            id=uuid5(
+                NAMESPACE_URL,
+                f"https://paperpilot.local/demo/{document.paper_id}/limitation",
+            ),
+            paper_id=document.paper_id,
+            evidence_type=EvidenceType.DIRECT,
+            quote=str(metadata["limitation"]),
+            normalized_fact=str(metadata["limitation"]),
+            locator=SourceLocator(
+                paper_id=document.paper_id,
+                section_title="Strengths and limitations",
+                page_start=1,
+                page_end=1,
+            ),
+            confidence=0.92,
+        )
+        evidence = [method_evidence, experiment_evidence]
+        if rich_demo:
+            evidence.extend([advantage_evidence, limitation_evidence])
         return PaperAnalysisResult(
             paper_id=document.paper_id,
             document_id=document.id,
@@ -61,7 +99,8 @@ class FakeReader:
                 "Improve visual SLAM robustness and semantic mapping with YOLO "
                 "observations."
             ),
-            contributions=[str(metadata["method_quote"])],
+            contributions=[str(metadata["method_quote"])]
+            + ([str(metadata["advantage"])] if rich_demo else []),
             method_summary=MethodSummary(
                 paper_id=document.paper_id,
                 name=str(metadata["method_name"]),
@@ -71,10 +110,11 @@ class FakeReader:
                 ),
                 summary=str(metadata["method_quote"]),
                 innovations=[str(metadata["method_name"])],
-                limitations=[
-                    "Evidence is synthetic and intended only for product demonstration."
+                limitations=[str(metadata["limitation"])],
+                evidence_ids=[
+                    method_evidence.id,
+                    *([advantage_evidence.id, limitation_evidence.id] if rich_demo else []),
                 ],
-                evidence_ids=[method_evidence.id],
                 confidence=0.95,
             ),
             experiment_summary=ExperimentSummary(
@@ -86,10 +126,8 @@ class FakeReader:
                 evidence_ids=[experiment_evidence.id],
                 confidence=0.93,
             ),
-            evidence=[method_evidence, experiment_evidence],
-            limitations=[
-                "Synthetic offline data must not be treated as academic findings."
-            ],
+            evidence=evidence,
+            limitations=[str(metadata["limitation"])],
             warnings=["Demo analysis was generated deterministically without an LLM."],
             confidence=0.94,
             model_name="paperpilot-demo-reader",

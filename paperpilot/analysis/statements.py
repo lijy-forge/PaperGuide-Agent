@@ -259,7 +259,7 @@ class EvidenceLinkingService:
     def _basis(kind, text):
         if kind is not StatementKind.LIMITATION: return None
         lowered = text.casefold()
-        if any(term in lowered for term in ["paper", "study", "evaluation", "experiment"]): return LimitationBasis.EVIDENCE_BOUND_OBSERVATION
+        if any(term in lowered for term in ["paper", "study", "evaluation", "experiment", "本文", "本研究", "实验", "评测"]): return LimitationBasis.EVIDENCE_BOUND_OBSERVATION
         return LimitationBasis.READER_INFERENCE
 
     @staticmethod

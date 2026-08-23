@@ -45,11 +45,12 @@ def test_limited_chinese_report_keeps_title_abstract_and_headings_intact() -> No
     report = _report(ReportMode.EVIDENCE_LIMITED_REVIEW, chinese=True)
     payload, text = _pdf_text(report)
     assert report.query_language == "zh"
-    assert QUESTION in report.title
-    assert "证据驱动文献综述" in report.title
-    assert "本报告围绕" in report.abstract
+    assert "SLAM 研究综述" in report.title
+    assert QUESTION in report.abstract
+    assert report.title.endswith("证据评估")
+    assert all(label in report.abstract for label in ("背景：", "方法：", "结果：", "局限："))
     assert all(any("\u4e00" <= char <= "\u9fff" for char in section.title) for section in report.sections)
-    assert QUESTION in text.replace("\xa0", " ")
+    assert "SLAM" in text.replace("\xa0", " ")
     assert "摘要" in text and "研究背景与关键技术" in text and "未来研究方向" in text
     assert "?" not in report.title
     assert payload.startswith(b"%PDF-")

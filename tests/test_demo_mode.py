@@ -40,7 +40,7 @@ def make_config(root: Path) -> BootstrapConfig:
 class DemoModeTests(unittest.TestCase):
     """Verify the complete demo remains offline, persistent, and exportable."""
 
-    def test_fake_retriever_satisfies_protocol_and_returns_three_papers(self) -> None:
+    def test_fake_retriever_satisfies_protocol_and_returns_three_landmarks(self) -> None:
         retriever = FakeRetriever()
 
         papers = retriever.search(DEMO_QUESTION, max_results=3)
@@ -49,7 +49,7 @@ class DemoModeTests(unittest.TestCase):
         self.assertEqual(len(papers), 3)
         self.assertEqual(
             [paper.publication_year for paper in papers],
-            [2024, 2025, 2026],
+            [1988, 2002, 2007],
         )
 
     def test_demo_does_not_require_credentials_or_network(self) -> None:

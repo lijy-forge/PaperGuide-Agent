@@ -69,11 +69,32 @@ export interface ProgressEventPayload {
   message: string | null;
 }
 
+export type ManualSourceProvider = "google_scholar" | "cnki";
+
+export interface ManualPaperSource {
+  source: ManualSourceProvider;
+  title: string;
+  source_url: string;
+  upload_id: string;
+  authors: string[];
+  publication_year?: number;
+  abstract?: string;
+  doi?: string;
+}
+
+export interface ManualSourceUploadResponse {
+  upload_id: string;
+  size_bytes: number;
+  page_count: number;
+  sha256: string;
+}
+
 /** JSON body accepted by POST /api/v1/research. */
 export interface ResearchRequest {
   question: string;
   max_papers: number;
   export_format: ExportFormat;
+  manual_sources?: ManualPaperSource[];
 }
 
 /** Backwards-compatible name used by the existing form. */

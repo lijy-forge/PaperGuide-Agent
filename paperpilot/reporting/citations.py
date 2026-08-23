@@ -62,6 +62,8 @@ class CitationEntry(BaseModel):
     semantic_scholar_id: str | None = None
     openalex_id: str | None = None
     source_url: str | None = None
+    sources: list[str] = Field(default_factory=list)
+    full_text_status: str = "unknown"
     final_relevance: str | None = None
     selected_for_report: bool = False
 
@@ -83,7 +85,11 @@ class ReferenceEntry(BaseModel):
     venue: str | None = None
     doi: str | None = None
     arxiv_id: str | None = None
+    semantic_scholar_id: str | None = None
+    openalex_id: str | None = None
     source_url: str | None = None
+    sources: list[str] = Field(default_factory=list)
+    full_text_status: str = "unknown"
 
 
 class EvidenceLedgerEntry(BaseModel):
@@ -132,7 +138,11 @@ class CorePaperProfile(BaseModel):
     verified_evidence_count: int = Field(ge=0)
     grounded_statement_count: int = Field(ge=0)
     evidence_confidence_summary: float = Field(ge=0.0, le=1.0)
+    contribution_availability: str = "NO_VERIFIED_CONTRIBUTION"
     limitation_availability: str
+    source_url: str | None = None
+    sources: list[str] = Field(default_factory=list)
+    full_text_status: str = "unknown"
 
     def public_dict(self) -> dict:
         """Return profile content without raw evidence identifiers."""
@@ -161,12 +171,22 @@ class LiteratureTimelineEntry(BaseModel):
     authors_short: str
     short_title: str
     primary_contribution: str | None = None
+    contribution_kind: str = "contribution"
     contribution_status: StatementSupportStatus | None = None
     contribution_evidence_keys: list[str]
     primary_limitation: str | None = None
     limitation_status: StatementSupportStatus | None = None
     limitation_basis: LimitationBasis | None = None
     limitation_evidence_keys: list[str]
+    source_url: str | None = None
+    doi: str | None = None
+    arxiv_id: str | None = None
+    semantic_scholar_id: str | None = None
+    openalex_id: str | None = None
+    sources: list[str] = Field(default_factory=list)
+    full_text_status: str = "unknown"
+    contribution_availability: str = "NO_VERIFIED_CONTRIBUTION"
+    limitation_availability: str = "AUTHOR_LIMITATION_NOT_LOCATED"
     method_family: str | None = None
     selected_for_report: bool = True
 
@@ -304,7 +324,11 @@ class SurveyEvidenceDataBuilder:
             venue=entry.venue,
             doi=entry.doi,
             arxiv_id=entry.arxiv_id,
+            semantic_scholar_id=entry.semantic_scholar_id,
+            openalex_id=entry.openalex_id,
             source_url=entry.source_url,
+            sources=list(entry.sources),
+            full_text_status=entry.full_text_status,
         )
 
     def _ledger(self, entry, linked, evidence):
@@ -357,14 +381,27 @@ class SurveyEvidenceDataBuilder:
             verified_evidence_count=sum(1 for item in evidence.values() if item.status in {VerificationStatus.VERIFIED, VerificationStatus.PARTIALLY_SUPPORTED}),
             grounded_statement_count=linked.linking_statistics.grounded_statements,
             evidence_confidence_summary=(sum(item.confidence for item in [*contributions, *limitations, *linked.findings]) / max(1, len([*contributions, *limitations, *linked.findings]))),
-            limitation_availability="VERIFIED_LIMITATION" if grounded_lim else "NO_VERIFIED_LIMITATION",
+            contribution_availability=(
+                "VERIFIED_CONTRIBUTION" if grounded_contrib else self._missing_availability(entry, "contribution")
+            ),
+            limitation_availability=(
+                "VERIFIED_LIMITATION" if grounded_lim else self._missing_availability(entry, "limitation")
+            ),
+            source_url=entry.source_url,
+            sources=list(entry.sources),
+            full_text_status=entry.full_text_status,
         )
 
     @staticmethod
     def _timeline(entry, linked):
         contributions = [item for item in linked.contributions if item.is_evidence_grounded]
+        findings = [item for item in linked.findings if item.is_evidence_grounded]
         limitations = [item for item in linked.limitations if item.is_evidence_grounded and item.statement_basis in {LimitationBasis.AUTHOR_STATED, LimitationBasis.EVIDENCE_BOUND_OBSERVATION}]
         contribution = contributions[0] if contributions else None
+        contribution_kind = "contribution"
+        if contribution is None and findings:
+            contribution = findings[0]
+            contribution_kind = "key_finding"
         limitation = limitations[0] if limitations else None
         return LiteratureTimelineEntry(
             citation_number=entry.citation_number,
@@ -374,13 +411,43 @@ class SurveyEvidenceDataBuilder:
             authors_short=entry.first_author or "",
             short_title=entry.title[:120],
             primary_contribution=contribution.text if contribution else None,
+            contribution_kind=contribution_kind,
             contribution_status=contribution.support_status if contribution else None,
             contribution_evidence_keys=list(contribution.supporting_evidence_keys) if contribution else [],
             primary_limitation=limitation.text if limitation else None,
             limitation_status=limitation.support_status if limitation else StatementSupportStatus.UNMAPPED,
             limitation_basis=limitation.statement_basis if limitation else None,
             limitation_evidence_keys=list(limitation.supporting_evidence_keys) if limitation else [],
+            source_url=entry.source_url,
+            doi=entry.doi,
+            arxiv_id=entry.arxiv_id,
+            semantic_scholar_id=entry.semantic_scholar_id,
+            openalex_id=entry.openalex_id,
+            sources=list(entry.sources),
+            full_text_status=entry.full_text_status,
+            contribution_availability=(
+                "VERIFIED_CONTRIBUTION"
+                if contribution and contribution_kind == "contribution"
+                else "VERIFIED_KEY_FINDING"
+                if contribution
+                else SurveyEvidenceDataBuilder._missing_availability(entry, "contribution")
+            ),
+            limitation_availability=(
+                "VERIFIED_LIMITATION"
+                if limitation
+                else SurveyEvidenceDataBuilder._missing_availability(entry, "limitation")
+            ),
         )
+
+    @staticmethod
+    def _missing_availability(entry: CitationEntry, kind: str) -> str:
+        """Explain a missing claim without silently converting absence into evidence."""
+
+        if entry.full_text_status != "available":
+            return "FULL_TEXT_UNAVAILABLE"
+        if kind == "limitation":
+            return "AUTHOR_LIMITATION_NOT_LOCATED"
+        return "AUTHOR_CONTRIBUTION_NOT_LOCATED"
 
     @staticmethod
     def _readiness(entries):
@@ -452,6 +519,8 @@ class CitationRegistry:
             semantic_scholar_id=paper.semantic_scholar_id,
             openalex_id=paper.openalex_id,
             source_url=paper.landing_page_url or paper.pdf_url,
+            sources=[source.value for source in paper.sources],
+            full_text_status=paper.full_text_status.value,
             final_relevance=assessment.final_classification.value if assessment else None,
             selected_for_report=bool(assessment.selected_for_report) if assessment else True,
         )

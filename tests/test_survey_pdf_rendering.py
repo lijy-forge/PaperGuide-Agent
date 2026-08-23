@@ -33,7 +33,10 @@ def test_pdf_contains_fishbone_and_comparison_data():
     assert "Figure 1" in text
     assert "Contribution:" in text
     assert "Comparison" in text or "comparison" in text
-    assert "No verified limitation evidence" in text
+    assert "Contents" in text
+    assert document.get_toc()
+    assert any(page.get_links() for page in document)
+    assert "No author-stated limitation" in text
     document.close()
 
 
