@@ -1,7 +1,7 @@
 """Evidence-grounded structured analysis of one parsed paper."""
 
 from collections.abc import Iterable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from paperguide.document import Document
 from paperguide.domain import ExperimentSummary, MethodSummary
@@ -144,7 +144,7 @@ class PaperReader:
             confidence=output.confidence,
             model_name=getattr(self.llm, "model_name", None),
             prompt_version=PAPER_READER_PROMPT_VERSION,
-            analyzed_at=datetime.now(timezone.utc),
+            analyzed_at=datetime.now(UTC),
         )
 
     @staticmethod

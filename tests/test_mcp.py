@@ -23,9 +23,8 @@ Prerequisites:
 """
 
 import asyncio
-import os
 import logging
-from typing import Dict, List, Any
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -116,30 +115,30 @@ async def test_web_search_mcp():
         print("🚀 Starting web search research...")
         context = await researcher.conduct_research()
         
-        print(f"📊 Web search research completed!")
+        print("📊 Web search research completed!")
         print(f"📈 Context collected: {len(str(context)) if context else 0} chars")
         
         # Generate a brief report
         print("📝 Generating report...")
         report = await researcher.write_report()
         
-        print(f"✅ Report generated successfully!")
+        print("✅ Report generated successfully!")
         print(f"📄 Report length: {len(report)} characters")
         
         # Save test report
         filename = "../test_web_search_mcp_report.md"
         with open(filename, "w", encoding="utf-8") as f:
-            f.write(f"# Test Report: Web Search MCP Integration\n\n")
+            f.write("# Test Report: Web Search MCP Integration\n\n")
             f.write(f"**Query:** {researcher.query}\n\n")
-            f.write(f"**MCP Server:** Tavily (Web Search)\n\n")
-            f.write(f"**Generated Report:**\n\n")
+            f.write("**MCP Server:** Tavily (Web Search)\n\n")
+            f.write("**Generated Report:**\n\n")
             f.write(report)
         
         print(f"💾 Test report saved to: {filename}")
         
         # Print summary
-        print(f"\n📋 Web Search MCP Test Summary:")
-        print(f"   • News query processed successfully")
+        print("\n📋 Web Search MCP Test Summary:")
+        print("   • News query processed successfully")
         print(f"   • Context gathered: {len(str(context)):,} chars")
         print(f"   • Report generated: {len(report):,} chars")
         print(f"   • Cost: ${researcher.get_costs():.4f}")
@@ -178,30 +177,30 @@ async def test_github_mcp():
         print("🚀 Starting GitHub code research...")
         context = await researcher.conduct_research()
         
-        print(f"📊 GitHub research completed!")
+        print("📊 GitHub research completed!")
         print(f"📈 Context collected: {len(str(context)) if context else 0} chars")
         
         # Generate a brief report
         print("📝 Generating report...")
         report = await researcher.write_report()
         
-        print(f"✅ Report generated successfully!")
+        print("✅ Report generated successfully!")
         print(f"📄 Report length: {len(report)} characters")
         
         # Save test report
         filename = "../test_github_mcp_report.md"
         with open(filename, "w", encoding="utf-8") as f:
-            f.write(f"# Test Report: GitHub MCP Integration\n\n")
+            f.write("# Test Report: GitHub MCP Integration\n\n")
             f.write(f"**Query:** {researcher.query}\n\n")
-            f.write(f"**MCP Server:** GitHub (Code Repository)\n\n")
-            f.write(f"**Generated Report:**\n\n")
+            f.write("**MCP Server:** GitHub (Code Repository)\n\n")
+            f.write("**Generated Report:**\n\n")
             f.write(report)
         
         print(f"💾 Test report saved to: {filename}")
         
         # Print summary
-        print(f"\n📋 GitHub MCP Test Summary:")
-        print(f"   • Code query processed successfully")
+        print("\n📋 GitHub MCP Test Summary:")
+        print("   • Code query processed successfully")
         print(f"   • Context gathered: {len(str(context)):,} chars")
         print(f"   • Report generated: {len(report):,} chars")
         print(f"   • Cost: ${researcher.get_costs():.4f}")

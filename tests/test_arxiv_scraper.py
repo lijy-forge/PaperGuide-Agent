@@ -1,10 +1,8 @@
 """Regression: ArxivScraper must use arxiv.Client, not Search.results()."""
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
-from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from gpt_researcher.scraper.arxiv.arxiv import ArxivScraper, _paper_id_from_link
 
@@ -20,7 +18,7 @@ def test_scrape_uses_client_results_not_search_results():
         title="Example Paper",
         summary="An abstract long enough to matter.",
         authors=[SimpleNamespace(name="Ada Lovelace")],
-        published=datetime(2026, 5, 1, tzinfo=timezone.utc),
+        published=datetime(2026, 5, 1, tzinfo=UTC),
     )
     mock_client = MagicMock()
     mock_client.results.return_value = iter([mock_paper])

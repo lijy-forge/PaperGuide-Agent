@@ -1,6 +1,6 @@
 """Serializable task submission contracts for background execution."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -15,7 +15,7 @@ class TaskHandle(BaseModel):
 
     task_id: UUID
     status: ResearchTaskStatus
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
     def validate_handle(self) -> "TaskHandle":

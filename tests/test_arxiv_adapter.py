@@ -1,12 +1,9 @@
 """Unit tests for the PaperGuide arXiv adapter without network access."""
 
 import copy
-import socket
 import unittest
 from urllib.error import URLError
 from urllib.parse import parse_qs, urlsplit
-
-from pydantic import ValidationError
 
 from paperguide.adapters.arxiv import (
     ArxivClient,
@@ -16,7 +13,7 @@ from paperguide.adapters.arxiv import (
     ArxivNetworkError,
 )
 from paperguide.domain import FullTextStatus, PaperSource
-
+from pydantic import ValidationError
 
 ARXIV_FEED = b"""<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom"
@@ -163,7 +160,7 @@ class TestArxivAdapter(unittest.TestCase):
         def opener(request, timeout):
             calls.append(request.full_url)
             if len(calls) == 1:
-                raise socket.timeout()
+                raise TimeoutError()
             return MockResponse(EMPTY_FEED)
 
         client = ArxivClient(
@@ -200,7 +197,7 @@ class TestArxivAdapter(unittest.TestCase):
         self.assertEqual(client.search("no matches"), [])
 
     def test_network_failures_raise_clear_adapter_exception(self):
-        for network_error in (URLError("connection refused"), socket.timeout()):
+        for network_error in (URLError("connection refused"), TimeoutError()):
             with self.subTest(error=type(network_error).__name__):
                 client = ArxivClient(
                     opener=lambda request, timeout, error=network_error: (_ for _ in ()).throw(error)

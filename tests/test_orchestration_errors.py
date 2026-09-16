@@ -3,8 +3,6 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.orchestration import (
     PaperStageRecord,
     PaperStageStatus,
@@ -12,6 +10,7 @@ from paperguide.orchestration import (
     ResearchStep,
     sanitize_message,
 )
+from pydantic import ValidationError
 
 
 def make_error(*, paper_id=None) -> ResearchError:

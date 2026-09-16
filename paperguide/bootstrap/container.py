@@ -2,15 +2,15 @@
 
 from dataclasses import dataclass
 
+from paperguide.analysis import StructuredLLMProtocol
 from paperguide.application import (
     ResearchApplicationService,
     ResearchGraphProtocol,
     TaskStoreProtocol,
 )
 from paperguide.export import ExportService
-from paperguide.reporting import EvidenceGroundedReportService, ProductionSurveyReportService
 from paperguide.relevance import RetrievalPlanService
-from paperguide.analysis import StructuredLLMProtocol
+from paperguide.reporting import EvidenceGroundedReportService, ProductionSurveyReportService
 
 from .config import BootstrapConfig
 

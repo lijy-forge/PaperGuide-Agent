@@ -1,6 +1,6 @@
 """Pydantic contracts for structured single-paper analysis."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -157,7 +157,7 @@ class PaperAnalysisResult(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     model_name: str | None = None
     prompt_version: str
-    analyzed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    analyzed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("research_problem", "prompt_version")
     @classmethod

@@ -4,7 +4,6 @@ import re
 
 import pymupdf
 import pytest
-
 from paperguide.reporting import (
     SurveyHtmlRenderer,
     SurveyMarkdownRenderer,
@@ -13,8 +12,8 @@ from paperguide.reporting import (
     public_citation_refs,
 )
 from paperguide.reporting.exceptions import ReportSchemaValidationError
-from tests.test_survey_rendering import make_report
 
+from tests.test_survey_rendering import make_report
 
 _UUID = re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b", re.I)
 

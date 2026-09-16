@@ -13,7 +13,6 @@ from paperguide.analysis import (
     AnalysisSchemaValidationError,
 )
 
-
 _SAFE_CLASS = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,80}$")
 
 

@@ -3,10 +3,7 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.verification import (
-    EvidenceVerificationDecision,
     EvidenceVerificationResult,
     NumericConsistencyResult,
     SupportLevel,
@@ -15,6 +12,7 @@ from paperguide.verification import (
     VerifiedEvidence,
     build_evidence_claims,
 )
+from pydantic import ValidationError
 
 from .verification_fixtures import make_analysis, make_decision, make_document, make_evidence
 

@@ -3,8 +3,6 @@
 from io import BytesIO
 
 import pymupdf
-from pypdf import PdfReader
-
 from paperguide.relevance import ReportMode
 from paperguide.reporting import (
     FullSurveySynthesisService,
@@ -12,8 +10,9 @@ from paperguide.reporting import (
     SurveyPdfRenderer,
     SurveySynthesisWriter,
 )
-from tests.test_survey_synthesis import FakeChineseStageLLM, FakeStageLLM, make_fixture
+from pypdf import PdfReader
 
+from tests.test_survey_synthesis import FakeChineseStageLLM, FakeStageLLM, make_fixture
 
 QUESTION = "目标检测与视觉 SLAM 融合研究进展"
 

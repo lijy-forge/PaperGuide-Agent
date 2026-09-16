@@ -3,14 +3,13 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.analysis import (
     PaperContextBuilder,
     PaperContextConfig,
     PaperContextError,
 )
 from paperguide.document import Document, Page, Section
+from pydantic import ValidationError
 
 
 def make_document(*, with_sections: bool = True, long_method: bool = False) -> Document:

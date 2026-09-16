@@ -22,14 +22,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
 
-      # Neither manifest is complete on its own: requirements.txt omits pypdf
-      # and pyproject.toml omits tavily-python, so both are installed here.
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
-          pip install pytest
+          pip install pytest ruff
+
+      # Lint covers the first-party package only; gpt_researcher/ is inherited.
+      - name: Lint
+        run: ruff check paperguide/ tests/
 
       # Scoped to the tests covering the paperguide package. The inherited
       # gpt_researcher tests pass individually but interfere with each other

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 import tempfile
 from collections.abc import Callable, Mapping, Sequence
@@ -10,7 +9,7 @@ from copy import deepcopy
 from pathlib import Path
 from time import monotonic
 from typing import Any, Protocol
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from paperguide.adapters import (
     ArxivClient,

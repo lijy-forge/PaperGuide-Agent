@@ -1,6 +1,6 @@
 """Safe, serializable diagnostics for real PaperGuide smoke runs."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -120,4 +120,4 @@ class SmokeTestResult(BaseModel):
 def utc_now() -> datetime:
     """Return an aware UTC timestamp for diagnostic recording."""
 
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)

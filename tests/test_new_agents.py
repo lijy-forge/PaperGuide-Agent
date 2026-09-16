@@ -1,13 +1,15 @@
-import sys
-import os
 import asyncio
+import os
+import sys
+
 from dotenv import load_dotenv
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from multi_agents.agents.fact_checker import FactCheckerAgent
-from multi_agents.agents.visualizer import VisualizerAgent
 import multi_agents.agents.fact_checker
 import multi_agents.agents.visualizer
+from multi_agents.agents.fact_checker import FactCheckerAgent
+from multi_agents.agents.visualizer import VisualizerAgent
+
 
 # Mock call_model
 async def mock_call_model(prompt, model=None, response_format=None):

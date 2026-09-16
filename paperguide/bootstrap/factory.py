@@ -12,10 +12,10 @@ from paperguide.adapters import (
     SemanticScholarConfig,
 )
 from paperguide.analysis import (
+    EvidenceLinkingService,
     EvidenceMapper,
     PaperContextBuilder,
     PaperReader,
-    EvidenceLinkingService,
     StructuredLLMProtocol,
 )
 from paperguide.application import (
@@ -50,32 +50,32 @@ from paperguide.orchestration.nodes import (
     VerifierNode,
 )
 from paperguide.pipeline import PaperSearchPipeline
+from paperguide.progress.publisher import ProgressPublisherProtocol
+from paperguide.relevance import (
+    EvidenceAwareFinalRelevanceService,
+    LLMQueryExpansionService,
+    MetadataRelevanceGate,
+    MultiQueryRetrievalService,
+    QueryExpansionProtocol,
+    ResearchIntentPlannerProtocol,
+    RetrievalPlanService,
+    StructuredLLMResearchIntentPlanner,
+)
 from paperguide.reporting import (
     EvidenceGroundedReportService,
     FullSurveySynthesisService,
     ProductionSurveyReportService,
     ReportContextBuilder,
     ReportVerifier,
+    StructuredReportWriter,
     SurveyAnalysisDataBuilder,
     SurveyEvidenceDataBuilder,
     SurveyRenderService,
     SurveyReportContextBuilder,
     SurveySynthesisWriter,
-    StructuredReportWriter,
     TaxonomyService,
 )
-from paperguide.relevance import (
-    LLMQueryExpansionService,
-    QueryExpansionProtocol,
-    ResearchIntentPlannerProtocol,
-    RetrievalPlanService,
-    StructuredLLMResearchIntentPlanner,
-    MetadataRelevanceGate,
-    MultiQueryRetrievalService,
-    EvidenceAwareFinalRelevanceService,
-)
 from paperguide.services import PaperDeduplicator
-from paperguide.progress.publisher import ProgressPublisherProtocol
 from paperguide.verification import (
     DeterministicEvidenceChecker,
     EvidenceConflictDetector,

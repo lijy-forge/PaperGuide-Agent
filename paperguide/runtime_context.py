@@ -1,10 +1,11 @@
 """Zero-dependency cooperative context shared by execution and export layers."""
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from contextvars import ContextVar, Token
 from dataclasses import dataclass
 from threading import Event
-from typing import Iterator, Protocol
+from typing import Protocol
 from uuid import UUID
 
 

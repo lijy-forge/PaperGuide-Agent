@@ -13,7 +13,6 @@ from paperguide.analysis import (
 from paperguide.domain import PaperSource, ResearchConfig
 from paperguide.orchestration import create_initial_state
 from paperguide.orchestration.nodes import PlannerNode
-from paperguide.progress.events import TaskEventType
 from paperguide.progress.publisher import ProgressPublisher
 from paperguide.relevance import (
     QueryVariant,

@@ -1,7 +1,8 @@
 import asyncio
-from gpt_researcher.utils.llm import get_llm
-from gpt_researcher import GPTResearcher
+
 from dotenv import load_dotenv
+from gpt_researcher.utils.llm import get_llm
+
 load_dotenv()
 
 async def main():

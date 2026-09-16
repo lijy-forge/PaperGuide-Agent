@@ -9,8 +9,8 @@ from .diagnostics import (
     PlanningStageDiagnostic,
     classify_planning_failure,
 )
-from .models import QueryVariant, ResearchIntent, RetrievalBudget, RetrievalPlan
 from .language import language_from_question
+from .models import QueryVariant, ResearchIntent, RetrievalBudget, RetrievalPlan
 from .protocols import QueryExpansionProtocol, ResearchIntentPlannerProtocol
 
 

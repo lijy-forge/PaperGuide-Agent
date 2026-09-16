@@ -5,8 +5,6 @@ import unittest
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from pydantic import ValidationError
-
 from paperguide.document import (
     Document,
     DocumentIngestionPipeline,
@@ -17,6 +15,7 @@ from paperguide.document import (
     PaperIngestionItem,
 )
 from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource
+from pydantic import ValidationError
 
 
 def make_paper(

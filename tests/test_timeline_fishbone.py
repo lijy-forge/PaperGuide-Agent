@@ -1,6 +1,6 @@
-import re
 
 from paperguide.reporting import TimelineFishboneRenderer
+
 from tests.test_survey_synthesis import make_fixture
 
 

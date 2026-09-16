@@ -1,17 +1,15 @@
 """R0.5 safe Reader telemetry and behavior-preservation tests."""
 
+import json
 import tempfile
 import threading
 import time
 import unittest
-import json
 from pathlib import Path
 from uuid import uuid4
-from pydantic import BaseModel, ValidationError
 
 from paperguide.analysis import (
     AnalysisLLMResponseError,
-    PaperReaderOutput,
 )
 from paperguide.document import Document
 from paperguide.orchestration import ResearchStep, create_initial_state
@@ -22,6 +20,7 @@ from paperguide.progress.diagnostics import (
 )
 from paperguide.progress.events import TaskEventType
 from paperguide.runtime.host import SQLiteHostBroker
+from pydantic import BaseModel, ValidationError
 
 from .verification_fixtures import make_document
 

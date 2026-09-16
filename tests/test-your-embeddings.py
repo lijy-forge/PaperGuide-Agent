@@ -1,8 +1,10 @@
-from gpt_researcher.config.config import Config
-from gpt_researcher.memory.embeddings import Memory
 import asyncio
 import os
+
 from dotenv import load_dotenv
+from gpt_researcher.config.config import Config
+from gpt_researcher.memory.embeddings import Memory
+
 load_dotenv()
 
 async def main():

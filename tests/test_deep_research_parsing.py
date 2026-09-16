@@ -1,11 +1,10 @@
 from types import SimpleNamespace
 
-import pytest
-
 import gpt_researcher.skills.deep_research as deep_research_module
+import pytest
 from gpt_researcher.skills.deep_research import (
-    DeepResearchSkill,
     MAX_CONTEXT_WORDS,
+    DeepResearchSkill,
     parse_follow_up_questions_response,
     parse_research_results_response,
     parse_search_queries_response,

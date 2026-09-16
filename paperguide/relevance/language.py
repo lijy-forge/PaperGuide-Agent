@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import re
 
-
 _CJK_RE = re.compile(r"[\u3400-\u9fff]")
 
 

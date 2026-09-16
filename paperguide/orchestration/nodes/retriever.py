@@ -1,14 +1,14 @@
 """Node adapter over the existing PaperSearchPipeline."""
 
-from paperguide.pipeline import PaperSearchPipeline
 from paperguide.domain import Author, FullTextStatus, PaperCandidate
-from paperguide.services import MetadataNormalizer
-from paperguide.relevance import MultiQueryRetrievalService, RetrievalPlanService
 from paperguide.orchestration.enums import NextAction, ResearchStep
 from paperguide.orchestration.state import ResearchState
+from paperguide.pipeline import PaperSearchPipeline
+from paperguide.progress.events import TaskEventType
 from paperguide.progress.models import ProgressEventPayload, ProgressStage
 from paperguide.progress.publisher import ProgressPublisherProtocol
-from paperguide.progress.events import TaskEventType
+from paperguide.relevance import MultiQueryRetrievalService, RetrievalPlanService
+from paperguide.services import MetadataNormalizer
 
 from .base import BaseNode
 

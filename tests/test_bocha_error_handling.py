@@ -10,8 +10,6 @@ research run with an unhandled ``KeyError`` / ``JSONDecodeError``.
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 def _make_search():
     with patch.dict(os.environ, {"BOCHA_API_KEY": "test-key"}):

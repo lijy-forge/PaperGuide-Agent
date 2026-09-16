@@ -4,8 +4,6 @@ import copy
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.domain import PaperSource, ResearchConfig
 from paperguide.orchestration import create_initial_state
 from paperguide.orchestration.checkpoint import (
@@ -14,6 +12,7 @@ from paperguide.orchestration.checkpoint import (
     CheckpointStore,
     MemoryCheckpointStore,
 )
+from pydantic import ValidationError
 
 
 def make_state(question: str = "Analyze SLAM"):

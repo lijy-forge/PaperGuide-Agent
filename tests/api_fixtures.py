@@ -3,10 +3,9 @@
 import hashlib
 import tempfile
 from pathlib import Path
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
-
 from paperguide.api import APISettings, create_api_app
 from paperguide.api.schemas import HealthCheckResponse, HealthResponse
 from paperguide.application import ResearchTask, ResearchTaskStatus

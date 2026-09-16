@@ -2,7 +2,7 @@
 
 import re
 import unittest
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from paperguide.analysis import AnalysisLLMInvocationError
 from paperguide.verification import (

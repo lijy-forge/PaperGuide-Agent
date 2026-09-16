@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "gpt-researcher"
-version = "0.14.7"
-description = "GPT Researcher is an autonomous agent designed for comprehensive online research on a variety of tasks."
-authors = ["Assaf Elovic <assaf.elovic@gmail.com>"]
+name = "paperguide-agent"
+version = "0.1.0"
+description = "PaperGuide is an evidence-grounded autonomous research agent platform for academic literature surveys, built on GPT Researcher."
+authors = ["李佳垚 <lijiayao@beisen.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{ include = "gpt_researcher" }, { include = "paperguide" }]
@@ -44,6 +44,7 @@ python-multipart = ">=0.0.6"
 pyyaml = ">=6.0.1"
 requests = ">=2.31.0"
 SQLAlchemy = ">=2.0.28"
+tavily-python = ">=0.7.12"
 tiktoken = ">=0.7.0"
 unstructured = ">=0.13"
 uvicorn = ">=0.24.0.post1"
@@ -56,6 +57,38 @@ langchain-mcp-adapters = ">=0.1.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.ruff]
+# Only the first-party package is gated; gpt_researcher/ is inherited upstream.
+src = ["paperguide", "tests"]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B", "SIM"]
+ignore = [
+    "E501",    # long lines are widespread in the report templates
+    "E701",    # the renderers use compact one-line guards throughout
+    "E731",    # short lambdas read better than nested defs in the renderers
+    "B008",    # FastAPI/pydantic dependency defaults rely on call-in-default
+    "B905",    # zip(strict=) would change behaviour; revisit deliberately
+    "UP042",   # str-Enum to StrEnum changes semantics; revisit deliberately
+    "SIM102",  # nested ifs are often clearer than a combined condition here
+    "SIM105",  # contextlib.suppress hides the except body from readers
+    "SIM117",  # nested with-statements keep the resource scopes explicit
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E731"]
+# The converter under test consumes typing.Optional/Union, so the legacy
+# annotation spelling is the fixture, not a style lapse.
+"tests/test_convert_env_value_optional.py" = ["UP007", "UP045"]
+# Hyphenated files are inherited upstream example scripts; pytest collects
+# only test_*.py, so they never run.
+"tests/*-*.py" = ["F841", "E402", "F401"]
+# These two extend sys.path before importing the backend package under test.
+"tests/test_logs.py" = ["E402"]
+"tests/test_agent_discovery.py" = ["E402"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "strict"
 addopts = "-v"
@@ -63,13 +96,13 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 
 [tool.uv.sources]
-gpt-researcher = { workspace = true }
+paperguide-agent = { workspace = true }
 
 [project]
-name = "gpt-researcher"
-version = "0.14.7"
-description = "GPT Researcher is an autonomous agent designed for comprehensive online research on a variety of tasks."
-authors = [{ name = "Assaf Elovic", email = "assaf.elovic@gmail.com" }]
+name = "paperguide-agent"
+version = "0.1.0"
+description = "PaperGuide is an evidence-grounded autonomous research agent platform for academic literature surveys, built on GPT Researcher."
+authors = [{ name = "李佳垚", email = "lijiayao@beisen.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11,<4.0"
@@ -193,6 +226,7 @@ dependencies = [
     "sqlalchemy>=2.0.41",
     "sse-starlette>=2.3.5",
     "starlette>=0.46.2",
+    "tavily-python>=0.7.12",
     "tenacity>=9.1.2",
     "tiktoken>=0.9.0",
     "tinycss2>=1.4.0",

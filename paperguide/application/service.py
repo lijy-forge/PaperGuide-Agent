@@ -1,7 +1,7 @@
 """Dependency-injected application entry point for complete research runs."""
 
-import re
 import inspect
+import re
 from collections.abc import Sequence
 from copy import deepcopy
 from typing import Protocol
@@ -17,10 +17,10 @@ from paperguide.orchestration import (
     validate_state,
 )
 from paperguide.orchestration.errors import sanitize_message
-from paperguide.relevance import ReportMode
+from paperguide.progress.events import TaskEventType
 from paperguide.progress.models import ProgressEventPayload, ProgressStage
 from paperguide.progress.publisher import ProgressPublisherProtocol
-from paperguide.progress.events import TaskEventType
+from paperguide.relevance import ReportMode
 from paperguide.reporting import ResearchReport, SurveyReport
 from paperguide.reporting.survey_telemetry import SurveyTelemetry
 from paperguide.verification import VerifiedPaperAnalysisResult

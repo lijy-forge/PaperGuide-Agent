@@ -1,13 +1,19 @@
-import re
 
-import pymupdf
-from pypdf import PdfReader
 from io import BytesIO
 
-from paperguide.reporting import CJKFontResolver, SurveyPdfRenderer, SurveyRenderFormat, SurveyRenderService
+import pymupdf
+from paperguide.reporting import (
+    CJKFontResolver,
+    FullSurveySynthesisService,
+    SurveyPdfRenderer,
+    SurveyRenderFormat,
+    SurveyRenderService,
+    SurveySynthesisWriter,
+)
+from pypdf import PdfReader
+
 from tests.test_survey_rendering import make_report
 from tests.test_survey_synthesis import FakeChineseStageLLM, make_fixture
-from paperguide.reporting import FullSurveySynthesisService, SurveySynthesisWriter
 
 
 def test_pdf_is_valid_a4_and_has_metadata():

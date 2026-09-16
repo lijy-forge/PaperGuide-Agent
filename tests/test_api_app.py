@@ -9,8 +9,8 @@ import threading
 import unittest
 
 from fastapi import FastAPI
-
 from paperguide.api import create_api_app
+
 from tests.api_fixtures import APITestRuntime
 
 

@@ -6,8 +6,6 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.application import (
     InMemoryTaskStore,
     ResearchApplicationService,
@@ -30,6 +28,7 @@ from paperguide.reporting import (
     ReportSection,
     ResearchReport,
 )
+from pydantic import ValidationError
 
 
 def make_report(question: str) -> ResearchReport:

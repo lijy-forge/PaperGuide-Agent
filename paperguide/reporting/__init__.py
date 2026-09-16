@@ -1,108 +1,13 @@
 """Evidence-grounded structured research reporting."""
 
-from .context import ReportContextBuilder
-from .citations import (
-    CitationEntry,
-    CitationRegistry,
-    CitationRegistryError,
-    PublicReportCitationIndex,
-    CorePaperProfile,
-    EvidenceLedgerEntry,
-    FishboneReadinessAssessment,
-    LiteratureTimelineEntry,
-    ReferenceEntry,
-    ReferenceIntegrityValidator,
-    SurveyEvidenceData,
-    SurveyEvidenceDataBuilder,
-    citation_group,
-    citation_token,
-    public_citation_refs,
-    build_public_report_citation_index,
-    resolve_statement_locators,
-)
-from .exceptions import (
-    ReportContextBuildError,
-    ReportContextError,
-    ReportGenerationError,
-    ReportingError,
-    ReportSchemaValidationError,
-    ReportVerificationError,
-    ReportWritingError,
-    ReportWriterError,
-)
-from .models import (
-    ReportCitation,
-    ReportClaim,
-    ReportContext,
-    ReportEvidenceContext,
-    ReportPaperContext,
-    ReportSection,
-    ResearchReport,
-)
-from .service import EvidenceGroundedReportService
-from .survey_runtime import ProductionSurveyReportService
-from .survey import (
-    ClaimCertainty,
-    CitationSafeSurveyWriter,
-    LiteratureMethodFacts,
-    StatementReference,
-    SurveyClaim,
-    SurveyClaimDraft,
-    SurveyClaimType,
-    SurveyContextBudget,
-    SurveyNarrativeDraft,
-    SurveyReport,
-    SurveyReportAssembler,
-    SurveyReportContext,
-    SurveyReportContextBuilder,
-    PublicSurveyCitationValidator,
-    SurveyPublicContentValidator,
-    SurveyReportVerifier,
-    FutureDirectionKind,
-    SurveyFutureDirection,
-)
-from .verifier import ReportVerifier
-from .writer import StructuredReportWriter
-from .synthesis import (
-    CrossPaperClaimPolicy,
-    FullSurveySynthesisService,
-    ReportDensity,
-    SurveyFigureSlot,
-    SurveyParagraph,
-    SurveyParagraphDraft,
-    SurveyReportSynthesisAssembler,
-    SurveyReportSynthesisWriter,
-    SurveySection,
-    SurveyStageDraft,
-    SurveySynthesisAssembler,
-    SurveySynthesisConfig,
-    SurveySynthesisVerifier,
-    SurveySynthesisWriter,
-    SynthesisStage,
-    SynthesisStageBudget,
-    SurveyTable,
-    SurveyFutureDirectionDraft,
-    choose_report_density,
-)
-from .rendering import (
-    SurveyHtmlRenderer,
-    SurveyMarkdownRenderer,
-    SurveyPresentationStrings,
-    SurveyRenderFormat,
-    SurveyRenderResult,
-    SurveyRenderService,
-)
-from .fishbone import TimelineFishboneRenderer
-from .pdf import SurveyPdfLayoutConfig, SurveyPdfRenderer
-from .fonts import CJKFontResolutionError, CJKFontResolver
 from .analysis_data import (
+    ComparabilityAssessment,
+    ComparabilityLevel,
     ComparisonCell,
     ComparisonColumn,
     ComparisonDataBuilder,
     ComparisonMatrixData,
     ComparisonRow,
-    ComparabilityAssessment,
-    ComparabilityLevel,
     CrossPaperComparisonFacts,
     DeterministicTaxonomyBuilder,
     GroundingStatus,
@@ -119,11 +24,106 @@ from .analysis_data import (
     TaxonomyContextBudget,
     TaxonomyContextBuilder,
     TaxonomyError,
+    TaxonomyEvidenceCoverage,
     TaxonomyLLMOutput,
     TaxonomyService,
     TaxonomyValidator,
-    TaxonomyEvidenceCoverage,
 )
+from .citations import (
+    CitationEntry,
+    CitationRegistry,
+    CitationRegistryError,
+    CorePaperProfile,
+    EvidenceLedgerEntry,
+    FishboneReadinessAssessment,
+    LiteratureTimelineEntry,
+    PublicReportCitationIndex,
+    ReferenceEntry,
+    ReferenceIntegrityValidator,
+    SurveyEvidenceData,
+    SurveyEvidenceDataBuilder,
+    build_public_report_citation_index,
+    citation_group,
+    citation_token,
+    public_citation_refs,
+    resolve_statement_locators,
+)
+from .context import ReportContextBuilder
+from .exceptions import (
+    ReportContextBuildError,
+    ReportContextError,
+    ReportGenerationError,
+    ReportingError,
+    ReportSchemaValidationError,
+    ReportVerificationError,
+    ReportWriterError,
+    ReportWritingError,
+)
+from .fishbone import TimelineFishboneRenderer
+from .fonts import CJKFontResolutionError, CJKFontResolver
+from .models import (
+    ReportCitation,
+    ReportClaim,
+    ReportContext,
+    ReportEvidenceContext,
+    ReportPaperContext,
+    ReportSection,
+    ResearchReport,
+)
+from .pdf import SurveyPdfLayoutConfig, SurveyPdfRenderer
+from .rendering import (
+    SurveyHtmlRenderer,
+    SurveyMarkdownRenderer,
+    SurveyPresentationStrings,
+    SurveyRenderFormat,
+    SurveyRenderResult,
+    SurveyRenderService,
+)
+from .service import EvidenceGroundedReportService
+from .survey import (
+    CitationSafeSurveyWriter,
+    ClaimCertainty,
+    FutureDirectionKind,
+    LiteratureMethodFacts,
+    PublicSurveyCitationValidator,
+    StatementReference,
+    SurveyClaim,
+    SurveyClaimDraft,
+    SurveyClaimType,
+    SurveyContextBudget,
+    SurveyFutureDirection,
+    SurveyNarrativeDraft,
+    SurveyPublicContentValidator,
+    SurveyReport,
+    SurveyReportAssembler,
+    SurveyReportContext,
+    SurveyReportContextBuilder,
+    SurveyReportVerifier,
+)
+from .survey_runtime import ProductionSurveyReportService
+from .synthesis import (
+    CrossPaperClaimPolicy,
+    FullSurveySynthesisService,
+    ReportDensity,
+    SurveyFigureSlot,
+    SurveyFutureDirectionDraft,
+    SurveyParagraph,
+    SurveyParagraphDraft,
+    SurveyReportSynthesisAssembler,
+    SurveyReportSynthesisWriter,
+    SurveySection,
+    SurveyStageDraft,
+    SurveySynthesisAssembler,
+    SurveySynthesisConfig,
+    SurveySynthesisVerifier,
+    SurveySynthesisWriter,
+    SurveyTable,
+    SynthesisStage,
+    SynthesisStageBudget,
+    choose_report_density,
+)
+from .verifier import ReportVerifier
+from .writer import StructuredReportWriter
 
 __all__ = [
     "EvidenceGroundedReportService",

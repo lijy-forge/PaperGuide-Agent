@@ -7,9 +7,9 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from paperguide.api.schemas import HealthResponse
 from paperguide.api.exceptions import APIError
 from paperguide.api.routes.internal import provider_preflight
+from paperguide.api.schemas import HealthResponse
 from paperguide.runtime import RuntimeSettings
 from paperguide.runtime.host import (
     HostProviderPreflight,
@@ -19,8 +19,9 @@ from paperguide.runtime.host import (
     ProviderPreflightStatus,
     TaskHost,
 )
-from tests.api_fixtures import APITestRuntime
 from starlette.requests import Request
+
+from tests.api_fixtures import APITestRuntime
 
 
 class _ProviderError(RuntimeError):

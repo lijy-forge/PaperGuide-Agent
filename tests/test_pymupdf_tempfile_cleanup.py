@@ -8,10 +8,10 @@ raises) left the temp file behind on disk every time. The exception is then
 swallowed by the broad ``except``, so the leak was silent.
 """
 
-import os
 import glob
+import os
 import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from gpt_researcher.scraper.pymupdf.pymupdf import PyMuPDFScraper
 

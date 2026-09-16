@@ -1,7 +1,9 @@
+import asyncio
+
+from dotenv import load_dotenv
 from gpt_researcher.config.config import Config
 from gpt_researcher.utils.llm import create_chat_completion
-import asyncio
-from dotenv import load_dotenv
+
 load_dotenv()
 
 async def main():

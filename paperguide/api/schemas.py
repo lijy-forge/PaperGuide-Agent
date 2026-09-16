@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from paperguide.application import ResearchTaskStatus
 from paperguide.domain import ManualPaperSource
 from paperguide.export import ExportFormat
-from paperguide.runtime.host import TaskEventType
 from paperguide.progress.models import ProgressEventPayload
+from paperguide.runtime.host import TaskEventType
 
 
 class APISettings(BaseModel):

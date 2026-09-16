@@ -1,8 +1,9 @@
-import logging
-from typing import List, Dict, Any
 import asyncio
-from gpt_researcher import GPTResearcher
+import logging
+
 from backend.server.server_utils import CustomLogsHandler  # Update import
+from gpt_researcher import GPTResearcher
+
 
 async def run() -> None:
     """Run the research process and generate a report."""

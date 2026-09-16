@@ -1,6 +1,5 @@
 """External data-source adapters for PaperGuide AI."""
 
-from .base import RetrieverProtocol
 from .arxiv import (
     ArxivClient,
     ArxivClientError,
@@ -9,6 +8,7 @@ from .arxiv import (
     ArxivMapper,
     ArxivNetworkError,
 )
+from .base import RetrieverProtocol
 from .semantic_scholar import (
     SemanticScholarClient,
     SemanticScholarConfig,

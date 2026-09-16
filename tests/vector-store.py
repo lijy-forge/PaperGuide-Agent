@@ -1,13 +1,10 @@
-import asyncio
-import pytest
-from typing import List
-from gpt_researcher import GPTResearcher
 
+import pytest
+from gpt_researcher import GPTResearcher
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS, InMemoryVectorStore
 from langchain_core.documents import Document
-
+from langchain_openai import OpenAIEmbeddings
 
 # taken from https://paulgraham.com/persistence.html
 essay = """
@@ -105,7 +102,7 @@ def load_document():
     return text_splitter.split_documents(documents=document)
 
 
-def create_vectorstore(documents: List[Document]):
+def create_vectorstore(documents: list[Document]):
     embeddings = OpenAIEmbeddings()
     return FAISS.from_documents(documents, embeddings)
 

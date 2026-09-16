@@ -1,6 +1,5 @@
 """Unit tests for runtime settings, readiness checks, and CLI entry."""
 
-import copy
 import io
 import json
 import tempfile
@@ -8,8 +7,6 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
-
-from pydantic import ValidationError
 
 from paperguide.application import ResearchTaskStatus
 from paperguide.export import ExportFormat
@@ -20,6 +17,7 @@ from paperguide.runtime import (
     check_runtime_health,
     run_cli,
 )
+from pydantic import ValidationError
 
 
 class FakeApplicationService:

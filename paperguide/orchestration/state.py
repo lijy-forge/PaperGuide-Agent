@@ -1,18 +1,15 @@
 """LangGraph-ready TypedDict state contract without a LangGraph dependency."""
 
+from typing import NotRequired
 from uuid import UUID, uuid4
 
 from pydantic import TypeAdapter, ValidationError
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import TypedDict
 
 from paperguide.analysis import EvidenceLinkedPaperAnalysis, PaperAnalysisResult
 from paperguide.document import Document, DocumentIngestionResult
 from paperguide.domain import PaperCandidate, ResearchConfig
 from paperguide.pipeline import SearchResult
-from paperguide.verification import (
-    EvidenceVerificationResult,
-    VerifiedPaperAnalysisResult,
-)
 from paperguide.relevance import (
     CandidateRelevanceRecord,
     EvidenceSufficiencyAssessment,
@@ -21,6 +18,10 @@ from paperguide.relevance import (
     ReportMode,
     RetrievalAudit,
     RetrievalPlan,
+)
+from paperguide.verification import (
+    EvidenceVerificationResult,
+    VerifiedPaperAnalysisResult,
 )
 
 from .enums import NextAction, ResearchStep

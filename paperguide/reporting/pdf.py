@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from .fishbone import TimelineFishboneRenderer
 from .fonts import CJKFontResolver
-from .survey import PublicSurveyCitationValidator, SurveyParagraph, SurveyReport, SurveySection
+from .survey import PublicSurveyCitationValidator, SurveyReport
 
 
 @dataclass(frozen=True)
@@ -133,7 +132,7 @@ class SurveyPdfRenderer:
                 self._taxonomy_overview(state, ensure, report, chinese=chinese)
             if section.number == "7":
                 self._method_spotlight(state, ensure, report, chinese=chinese)
-            for figure in section.figure_slots:
+            for _slot in section.figure_slots:
                 self._figure_slot(state, ensure, write, report)
             for table in section.tables:
                 write(table.caption, size=11, bold=True, color=(0.04, 0.28, 0.35))
@@ -276,20 +275,20 @@ class SurveyPdfRenderer:
         years = [item.year for item in report.references if item.year is not None]
         if len(takeaways) < 3 and years:
             takeaways.append(
-                (f"本次可核验核心样本实际覆盖 {min(years)}—{max(years)} 年，共 {len(report.references)} 篇；未覆盖年份不作完整演进判断。"
-                 if chinese else f"The verified core sample spans {min(years)}–{max(years)} and contains {len(report.references)} papers; uncovered years are not used for complete trend claims.")
+                f"本次可核验核心样本实际覆盖 {min(years)}—{max(years)} 年，共 {len(report.references)} 篇；未覆盖年份不作完整演进判断。"
+                 if chinese else f"The verified core sample spans {min(years)}–{max(years)} and contains {len(report.references)} papers; uncovered years are not used for complete trend claims."
             )
         families = report.taxonomy_summary.get("families", [])
         if len(takeaways) < 3:
             takeaways.append(
-                (f"基于全文证据归纳出 {len(families)} 个方法族；无法稳定归类的论文保留为未分类。"
-                 if chinese else f"Full-text evidence supports {len(families)} method families; papers without stable support remain unclassified.")
+                f"基于全文证据归纳出 {len(families)} 个方法族；无法稳定归类的论文保留为未分类。"
+                 if chinese else f"Full-text evidence supports {len(families)} method families; papers without stable support remain unclassified."
             )
         missing_limitations = sum(not item.get("primary_limitation") for item in report.core_paper_profiles)
         if len(takeaways) < 3:
             takeaways.append(
-                (f"{missing_limitations} 篇核心论文未定位到作者明确陈述的局限，系统保留缺失标记而不推断补写。"
-                 if chinese else f"No author-stated limitation was located for {missing_limitations} core papers; gaps remain explicit rather than inferred.")
+                f"{missing_limitations} 篇核心论文未定位到作者明确陈述的局限，系统保留缺失标记而不推断补写。"
+                 if chinese else f"No author-stated limitation was located for {missing_limitations} core papers; gaps remain explicit rather than inferred."
             )
         return takeaways[:3]
 

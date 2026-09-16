@@ -1,7 +1,6 @@
 import unittest
 
 from gpt_researcher.utils.costs import (
-    EMBEDDING_COST,
     calculate_llm_cost,
     estimate_embedding_cost,
     estimate_llm_cost,

@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Sequence
 from html import escape
-from typing import Sequence
 
 from .citations import LiteratureTimelineEntry
 
@@ -65,7 +65,6 @@ class TimelineFishboneRenderer:
         contribution = self._truncate(entry.primary_contribution or "No verified contribution evidence")
         limitation = self._truncate(entry.primary_limitation or "No verified limitation evidence")
         year = str(entry.year) if entry.year is not None else "Year unavailable"
-        text_y = y + (0 if above else 16)
         lines = [f"{year} [{entry.citation_number}] {title}", f"Contribution: {contribution}", f"Limitation: {limitation}"]
         rect_y = y - 48 if above else y
         parts = [f'<rect x="{x}" y="{rect_y}" width="{self.node_width}" height="62" fill="#f8fafc" stroke="#94a3b8"/>']

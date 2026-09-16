@@ -4,8 +4,6 @@ import copy
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.domain import PaperSource, ResearchConfig
 from paperguide.orchestration import (
     NextAction,
@@ -28,6 +26,7 @@ from paperguide.verification import (
     EvidenceVerificationResult,
     VerifiedPaperAnalysisResult,
 )
+from pydantic import ValidationError
 
 from .verification_fixtures import make_analysis, make_document
 

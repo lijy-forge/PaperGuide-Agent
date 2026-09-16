@@ -2,9 +2,8 @@
 
 import unittest
 
-from pydantic import ValidationError
-
 from paperguide.orchestration import OrchestratorConfig
+from pydantic import ValidationError
 
 
 class TestOrchestratorConfig(unittest.TestCase):

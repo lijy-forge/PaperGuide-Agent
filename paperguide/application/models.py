@@ -1,13 +1,13 @@
 """Strict request, task, and result contracts for the application layer."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from paperguide.export import ArtifactMetadata, ExportFormat, ExportResult
 from paperguide.domain import ManualPaperSource
+from paperguide.export import ArtifactMetadata, ExportFormat, ExportResult
 from paperguide.reporting import ResearchReport, SurveyReport
 
 
@@ -67,8 +67,8 @@ class ResearchTask(BaseModel):
     report_quality_status: ReportQualityStatus = ReportQualityStatus.PENDING
     artifact: ArtifactMetadata | None = None
     error: str | None = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("question")
     @classmethod

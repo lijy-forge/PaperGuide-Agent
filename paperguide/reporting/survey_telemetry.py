@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
-from typing import Any, Protocol
+from typing import Protocol
 
 from pydantic import ValidationError
 
 from paperguide.analysis.exceptions import (
-    AnalysisLLMInvocationError,
     AnalysisLLMResponseError,
     AnalysisSchemaValidationError,
 )

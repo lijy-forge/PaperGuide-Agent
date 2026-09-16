@@ -1,18 +1,18 @@
 """SQLite command queue and heartbeat used for local cross-process coordination."""
 
+import json
 import os
 import sqlite3
-import json
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from threading import RLock
-from uuid import UUID
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from paperguide.application import ResearchRequest, ResearchTaskStatus
+from paperguide.progress.models import ProgressEventPayload
 
 from .exceptions import TaskHostAlreadyRunningError
 from .models import (
@@ -20,16 +20,15 @@ from .models import (
     HostStatus,
     LeaseLossReason,
     LeaseRenewalResult,
+    RuntimeHostMetadata,
     RuntimeMetrics,
     RuntimeRecoveryResult,
-    RuntimeHostMetadata,
     TaskEvent,
     TaskEventType,
     TaskLease,
 )
-from .schema import get_schema_version, migrate_schema
 from .preflight import ProviderPreflightResult
-from paperguide.progress.models import ProgressEventPayload
+from .schema import get_schema_version, migrate_schema
 
 
 class SQLiteHostBroker:
@@ -51,7 +50,7 @@ class SQLiteHostBroker:
         version: str = "paperguide-10.14",
         started_at: datetime | None = None,
     ) -> RuntimeHostMetadata:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         resolved_started_at = started_at or now
         resolved_pid = pid or os.getpid()
         with self._lock, self._connection() as connection:
@@ -110,7 +109,7 @@ class SQLiteHostBroker:
                 WHERE singleton = 1 AND host_id = ?
                 """,
                 (
-                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(UTC).isoformat(),
                     status.value,
                     str(host_id),
                 ),
@@ -132,7 +131,7 @@ class SQLiteHostBroker:
                 WHERE singleton = 1 AND host_id = ?
                 """,
                 (
-                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(UTC).isoformat(),
                     status.value,
                     str(host_id),
                 ),
@@ -175,7 +174,7 @@ class SQLiteHostBroker:
             return False
         if row[1] not in (HostStatus.STARTING.value, HostStatus.RUNNING.value):
             return False
-        return datetime.now(timezone.utc) - heartbeat <= timedelta(
+        return datetime.now(UTC) - heartbeat <= timedelta(
             seconds=self.heartbeat_ttl
         )
 
@@ -183,7 +182,7 @@ class SQLiteHostBroker:
         """Queue one explicit, private Host-context provider preflight."""
 
         request_id = uuid4()
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with self._lock, self._connection() as connection:
             connection.execute(
                 """
@@ -225,7 +224,7 @@ class SQLiteHostBroker:
                 SET state = 'running', updated_at = ?
                 WHERE request_id = ? AND state = 'queued'
                 """,
-                (datetime.now(timezone.utc).isoformat(), row[0]),
+                (datetime.now(UTC).isoformat(), row[0]),
             )
             return UUID(row[0]) if cursor.rowcount == 1 else None
 
@@ -244,7 +243,7 @@ class SQLiteHostBroker:
                 WHERE request_id = ? AND state = 'running'
                 """,
                 (
-                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(UTC).isoformat(),
                     result.model_dump_json(),
                     str(request_id),
                 ),
@@ -293,7 +292,7 @@ class SQLiteHostBroker:
                 (
                     str(task_id),
                     request.model_dump_json(),
-                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(UTC).isoformat(),
                 ),
             )
 
@@ -306,7 +305,7 @@ class SQLiteHostBroker:
     ) -> TaskLease | None:
         if lease_seconds <= 0:
             raise ValueError("lease_seconds must be positive")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         lease_until = now + timedelta(seconds=lease_seconds)
         with self._lock, self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -400,7 +399,7 @@ class SQLiteHostBroker:
     def renew_leases(self, host_id: UUID, *, lease_seconds: float = 30.0) -> int:
         if lease_seconds <= 0:
             raise ValueError("lease_seconds must be positive")
-        lease_until = datetime.now(timezone.utc) + timedelta(seconds=lease_seconds)
+        lease_until = datetime.now(UTC) + timedelta(seconds=lease_seconds)
         with self._lock, self._connection() as connection:
             cursor = connection.execute(
                 """
@@ -423,7 +422,7 @@ class SQLiteHostBroker:
 
         if lease_seconds <= 0:
             raise ValueError("lease_seconds must be positive")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         lease_until = now + timedelta(seconds=lease_seconds)
         with self._lock, self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -570,7 +569,7 @@ class SQLiteHostBroker:
             last_error_type=last_error_type,
             failed_stage=failed_stage,
             attempt_count=attempt_count,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
         with self._lock, self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
@@ -645,7 +644,7 @@ class SQLiteHostBroker:
 
         if max_attempts < 1:
             raise ValueError("max_attempts must be at least one")
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         retained: list[UUID] = []
         requeued: list[UUID] = []
         dead_lettered: list[UUID] = []
@@ -693,7 +692,7 @@ class SQLiteHostBroker:
     def requeue_dispatched(self) -> list[UUID]:
         """Requeue only requests whose lease has expired."""
 
-        now = datetime.now(timezone.utc).isoformat()
+        now = datetime.now(UTC).isoformat()
         with self._lock, self._connection() as connection:
             connection.execute("BEGIN IMMEDIATE")
             rows = connection.execute(
@@ -837,7 +836,7 @@ class SQLiteHostBroker:
                     status.value,
                     attempt_count,
                     duration_ms,
-                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(UTC).isoformat(),
                     dedupe_key,
                     json.dumps(safe, ensure_ascii=False, separators=(",", ":")),
                 ),
@@ -995,7 +994,7 @@ class SQLiteHostBroker:
                 status.value,
                 attempt_count,
                 duration_ms,
-                datetime.now(timezone.utc).isoformat(),
+                datetime.now(UTC).isoformat(),
                 progress.model_dump_json() if progress is not None else None,
                 dedupe_key,
             ),

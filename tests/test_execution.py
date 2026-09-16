@@ -1,6 +1,5 @@
 """Tests for the thread-pool-backed PaperGuide task execution runtime."""
 
-import copy
 import hashlib
 import threading
 import time
@@ -10,8 +9,8 @@ from uuid import uuid4
 
 from paperguide.application import (
     InMemoryTaskStore,
-    ResearchRequest,
     ResearchExecutionError,
+    ResearchRequest,
     ResearchTask,
     ResearchTaskStatus,
     TaskNotFoundError,

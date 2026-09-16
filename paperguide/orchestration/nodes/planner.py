@@ -4,10 +4,10 @@ import inspect
 
 from paperguide.orchestration.enums import NextAction, ResearchStep
 from paperguide.orchestration.state import ResearchState
-from paperguide.relevance import PlanningStageDiagnostic, RetrievalPlanService
+from paperguide.progress.events import TaskEventType
 from paperguide.progress.models import ProgressEventPayload, ProgressStage
 from paperguide.progress.publisher import ProgressPublisherProtocol
-from paperguide.progress.events import TaskEventType
+from paperguide.relevance import PlanningStageDiagnostic, RetrievalPlanService
 
 from .base import BaseNode
 

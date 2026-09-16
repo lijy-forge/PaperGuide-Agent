@@ -1,14 +1,14 @@
 import re
 
 import pytest
-
 from paperguide.analysis import EvidenceLinkingService
 from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
 from paperguide.relevance import ReportMode
 from paperguide.reporting import (
-    ClaimCertainty,
     CitationSafeSurveyWriter,
+    ClaimCertainty,
     LiteratureMethodFacts,
+    ReportSchemaValidationError,
     SurveyClaimDraft,
     SurveyClaimType,
     SurveyContextBudget,
@@ -19,6 +19,7 @@ from paperguide.reporting import (
     SurveyReportVerifier,
 )
 from paperguide.verification import apply_verification
+
 from tests.production_fixtures import production_provenance
 
 
@@ -116,7 +117,7 @@ def test_writer_does_not_accept_uuid_as_statement_key():
     context = make_context()
     fake = FakeSurveyLLM()
     fake.unknown = True
-    with pytest.raises(Exception):
+    with pytest.raises(ReportSchemaValidationError, match="UNKNOWN_REPORT_STATEMENT_KEY"):
         CitationSafeSurveyWriter(fake).write(context)
 
 

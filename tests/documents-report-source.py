@@ -1,9 +1,11 @@
 import os
-import asyncio
+
 import pytest
+from dotenv import load_dotenv
+
 # Ensure this path is correct
 from gpt_researcher import GPTResearcher
-from dotenv import load_dotenv
+
 load_dotenv()
 
 # Define the report types to test

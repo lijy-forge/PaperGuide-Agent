@@ -1,7 +1,7 @@
 """Deterministic, copyright-safe seed data for the offline demonstration."""
 
 from dataclasses import dataclass
-from uuid import UUID, NAMESPACE_URL, uuid5
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from paperguide.document import (
     Document,

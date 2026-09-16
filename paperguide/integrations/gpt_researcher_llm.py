@@ -7,7 +7,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 
 from paperguide.analysis.exceptions import (
     AnalysisLLMInvocationError,

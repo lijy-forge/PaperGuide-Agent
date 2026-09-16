@@ -1,7 +1,5 @@
 from uuid import uuid4
 
-import pytest
-
 from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
 from paperguide.pipeline import SearchResult
 from paperguide.relevance import (
@@ -10,11 +8,11 @@ from paperguide.relevance import (
     MetadataRelevancePolicy,
     MultiQueryRetrievalService,
     PreliminaryRelevanceClassification,
+    QueryVariant,
     ResearchIntent,
+    RetrievalAudit,
     RetrievalBudget,
     RetrievalPlan,
-    QueryVariant,
-    RetrievalAudit,
     TimeRange,
 )
 

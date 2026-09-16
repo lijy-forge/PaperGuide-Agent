@@ -5,7 +5,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
-
 from paperguide.analysis import EvidenceLinkingService
 from paperguide.application import (
     InMemoryTaskStore,
@@ -19,6 +18,7 @@ from paperguide.demo import (
     FakeVerifier,
     create_demo_seed,
 )
+from paperguide.domain import ResearchConfig
 from paperguide.export import ExportFormat, ExportService
 from paperguide.orchestration import (
     NextAction,
@@ -36,22 +36,23 @@ from paperguide.orchestration.nodes import (
     RetrieverNode,
     VerifierNode,
 )
-from paperguide.domain import ResearchConfig
 from paperguide.pipeline import SearchResult
-from paperguide.relevance import EvidenceAwareFinalRelevanceService
 from paperguide.relevance import (
     AssessmentStatus,
+    EvidenceAwareFinalRelevanceService,
     EvidenceSufficiencyAssessment,
     FinalRelevanceAssessment,
     FinalRelevanceClassification,
-    ReportMode,
     QueryVariant,
+    ReportMode,
     ResearchIntent,
     RetrievalBudget,
     RetrievalPlan,
 )
 from paperguide.reporting import (
     ProductionSurveyReportService,
+    ReportGenerationError,
+    ReportSchemaValidationError,
     SurveyAnalysisDataBuilder,
     SurveyEvidenceDataBuilder,
     SurveyReport,
@@ -59,8 +60,8 @@ from paperguide.reporting import (
     SurveySynthesisWriter,
 )
 from paperguide.reporting.synthesis import FullSurveySynthesisService, SynthesisStage
-from paperguide.reporting import ReportSchemaValidationError, ReportGenerationError
 from paperguide.verification import VerificationInputError, apply_verification
+
 from tests.production_fixtures import production_provenance
 from tests.test_survey_synthesis import FakeChineseStageLLM
 
@@ -348,8 +349,8 @@ def test_production_survey_uses_planned_chinese_locale_for_limited_pdf():
     assert report.query_language == "zh"
     assert "SLAM 研究综述" in report.title
     assert report.title.endswith("证据评估")
-    from paperguide.reporting import SurveyPdfRenderer
     import pymupdf
+    from paperguide.reporting import SurveyPdfRenderer
 
     document = pymupdf.open(stream=SurveyPdfRenderer().render(report), filetype="pdf")
     try:

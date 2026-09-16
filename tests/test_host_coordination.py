@@ -3,7 +3,7 @@
 import sqlite3
 import tempfile
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
@@ -198,7 +198,7 @@ class HostCoordinationTests(unittest.TestCase):
 
     @staticmethod
     def expire_lease(path: Path, task_id) -> None:
-        expired = datetime.now(timezone.utc) - timedelta(seconds=1)
+        expired = datetime.now(UTC) - timedelta(seconds=1)
         connection = sqlite3.connect(path)
         try:
             connection.execute(

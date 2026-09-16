@@ -1,5 +1,6 @@
 import importlib.util
 from pathlib import Path
+
 import pytest
 
 PATH = Path(__file__).resolve().parents[1] / "multi_agents" / "agents" / "fact_review.py"

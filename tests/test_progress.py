@@ -5,7 +5,6 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperguide.application import ResearchTaskStatus
 from paperguide.progress.events import TaskEventType
 from paperguide.progress.models import ProgressEventPayload, ProgressStage
 from paperguide.progress.publisher import ProgressPublisher

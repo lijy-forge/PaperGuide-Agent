@@ -1,6 +1,6 @@
 """Serializable contracts for report export results."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -25,7 +25,7 @@ class ArtifactMetadata(BaseModel):
     file_path: str
     size_bytes: int = Field(ge=0)
     sha256: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     execution_id: str | None = None
     task_id: UUID | None = None
 

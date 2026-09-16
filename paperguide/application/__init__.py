@@ -11,9 +11,9 @@ from .models import (
 from .service import (
     ReportExportServiceProtocol,
     ReportGeneratorProtocol,
-    SurveyReportGeneratorProtocol,
     ResearchApplicationService,
     ResearchGraphProtocol,
+    SurveyReportGeneratorProtocol,
 )
 from .store import InMemoryTaskStore, TaskStoreProtocol
 

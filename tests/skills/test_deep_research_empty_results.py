@@ -1,11 +1,9 @@
 """Deep research terminates when a level yields no results (#1579)."""
 
-import asyncio
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from gpt_researcher.skills.deep_research import DeepResearchSkill
 
 

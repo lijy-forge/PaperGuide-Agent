@@ -22,7 +22,6 @@ from paperguide.export import ArtifactMetadata, ExportFormat
 from paperguide.runtime import RuntimeSettings, run_cli
 from paperguide.runtime.host import (
     PersistentTaskHostClient,
-    SQLiteHostBroker,
     TaskHost,
 )
 

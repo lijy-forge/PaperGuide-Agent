@@ -6,11 +6,10 @@ import unittest
 from pathlib import Path
 from uuid import UUID
 
-from pydantic import ValidationError
-
 from paperguide.api import APISettings
 from paperguide.api.dependencies import create_default_dependencies
 from paperguide.runtime import RuntimeSettings
+from pydantic import ValidationError
 
 from tests.api_fixtures import APITestRuntime
 

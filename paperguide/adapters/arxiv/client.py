@@ -1,7 +1,6 @@
 """Small client for the official arXiv Atom API."""
 
 import re
-import socket
 import threading
 import time
 from collections.abc import Callable
@@ -191,7 +190,7 @@ class ArxivClient:
                 payload = response.read()
         except ArxivNetworkError:
             raise
-        except (URLError, TimeoutError, socket.timeout, OSError) as error:
+        except (URLError, TimeoutError, OSError) as error:
             raise ArxivNetworkError(f"Unable to reach arXiv API: {error}") from error
 
         if isinstance(payload, str):

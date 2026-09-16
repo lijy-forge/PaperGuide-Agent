@@ -1,18 +1,23 @@
 """Long-lived dispatcher connecting persistent requests to the existing executor."""
 
-import logging
 import inspect
+import logging
 import time
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import Event
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
+
+# The client imports this module, so the name is only available for annotations.
+if TYPE_CHECKING:
+    from .client import PersistentTaskHostClient
 
 from paperguide.application import ResearchTaskStatus
 from paperguide.bootstrap import ApplicationContainer, create_application
 from paperguide.execution import InMemoryTaskExecutor, PersistentTaskStore
-
+from paperguide.progress.publisher import ProgressPublisher
 from paperguide.runtime.settings import RuntimeSettings
 
 from .broker import SQLiteHostBroker
@@ -24,7 +29,6 @@ from .hardening import (
 from .lease import WorkerLeaseMonitor
 from .models import HostStatus, TaskEventType, TaskLease
 from .preflight import HostProviderPreflight
-from paperguide.progress.publisher import ProgressPublisher
 
 ApplicationFactory = Callable[..., ApplicationContainer]
 
@@ -75,7 +79,7 @@ class TaskHost:
         self.lease_seconds = lease_seconds
         self.max_attempts = max_attempts
         self.host_id = uuid4()
-        self.started_at = datetime.now(timezone.utc)
+        self.started_at = datetime.now(UTC)
         self.task_store = PersistentTaskStore(self.database_path)
         self.broker = SQLiteHostBroker(
             self.database_path,

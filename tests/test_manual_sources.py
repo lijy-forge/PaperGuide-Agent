@@ -6,11 +6,11 @@ from pathlib import Path
 from uuid import UUID
 
 import pymupdf
-
 from paperguide.document import PdfDownloader
 from paperguide.domain import FullTextStatus, ManualPaperSource, PaperCandidate, PaperSource
 from paperguide.orchestration.nodes.retriever import RetrieverNode
 from paperguide.pipeline import SearchResult
+
 from tests.api_fixtures import APITestRuntime
 
 

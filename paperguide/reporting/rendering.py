@@ -9,11 +9,9 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict
 
 from .survey import (
-    FutureDirectionKind,
-    SurveyFigureSlot,
+    PublicSurveyCitationValidator,
     SurveyReport,
     SurveySection,
-    PublicSurveyCitationValidator,
 )
 
 
@@ -260,7 +258,6 @@ class SurveyHtmlRenderer:
     def render(self, report: SurveyReport) -> str:
         PublicSurveyCitationValidator().validate(report)
         language = _language(report)
-        md = SurveyMarkdownRenderer()
         toc = "".join(f'<li><a href="#{_anchor(section.section_id)}">{html.escape(section.number)} {html.escape(section.title)}</a></li>' for section in report.sections)
         body = []
         for section in report.sections:

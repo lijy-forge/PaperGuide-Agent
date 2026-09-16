@@ -3,8 +3,6 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.document import (
     Document,
     DocumentCleaningConfig,
@@ -12,6 +10,7 @@ from paperguide.document import (
     Page,
     Section,
 )
+from pydantic import ValidationError
 
 
 def make_document(page_texts: list[str]) -> Document:

@@ -8,6 +8,7 @@ from paperguide.reporting import (
     SurveyRenderService,
     SurveySynthesisWriter,
 )
+
 from tests.test_survey_synthesis import FakeChineseStageLLM, FakeStageLLM, make_fixture
 
 
@@ -69,12 +70,12 @@ def test_html_semantic_structure_toc_and_escaping():
 def test_html_is_deterministic_and_responsive():
     renderer = SurveyHtmlRenderer()
     first, second = renderer.render(make_report()), renderer.render(make_report())
-    # Synthetic IDs differ across fixture construction; structural output must
-    # still retain the same semantic anchors and responsive CSS.
+    # Internal identifiers never reach the public HTML, so two renders of an
+    # equivalent report are byte-identical.
+    assert first == second
     assert "#section-1" in first and "#section-10" in first
     assert "@media(max-width:700px)" in first
     assert re.search(r"<meta name=\"viewport\"", first)
-    assert first.replace("<title>", "<title>")
 
 
 def test_render_service_formats():

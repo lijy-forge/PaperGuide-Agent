@@ -6,12 +6,13 @@ import hashlib
 import re
 import unicodedata
 from enum import Enum
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from paperguide.domain import PaperCandidate
+
 if TYPE_CHECKING:
     from paperguide.verification import VerifiedPaperAnalysisResult
 
@@ -216,7 +217,7 @@ class EvidenceLinkingService:
 
     @classmethod
     def _statement_key(cls, fingerprint, kind, text):
-        return hashlib.sha256(f"{fingerprint}|{kind.value}|{cls._normalize(text)}".encode("utf-8")).hexdigest()[:32]
+        return hashlib.sha256(f"{fingerprint}|{kind.value}|{cls._normalize(text)}".encode()).hexdigest()[:32]
 
     @classmethod
     def _normalize(cls, text):

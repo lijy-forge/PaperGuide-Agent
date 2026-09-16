@@ -3,9 +3,8 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.document import Document, Page, Section
+from pydantic import ValidationError
 
 
 class TestDocumentModels(unittest.TestCase):

@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from enum import Enum
-from typing import Literal, Mapping, Sequence
-from uuid import UUID
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from paperguide.analysis import (
-    EvidenceLinkedPaperAnalysis,
     EvidenceLinkedStatement,
     LimitationBasis,
     StatementKind,
@@ -23,14 +22,13 @@ from paperguide.relevance import ReportMode
 from paperguide.relevance.language import normalize_query_language
 
 from .citations import (
-    CitationEntry,
     EvidenceLedgerEntry,
     FishboneReadinessAssessment,
     LiteratureTimelineEntry,
     ReferenceEntry,
-    public_citation_refs,
     SurveyEvidenceData,
     citation_token,
+    public_citation_refs,
 )
 from .exceptions import ReportSchemaValidationError, ReportWriterError
 
@@ -134,7 +132,7 @@ class LiteratureMethodFacts(BaseModel):
     manual_source_count: int = Field(default=0, ge=0)
 
     @classmethod
-    def from_state(cls, state: ResearchState) -> "LiteratureMethodFacts":
+    def from_state(cls, state: ResearchState) -> LiteratureMethodFacts:
         retrieval = state.get("retrieval_audit")
         final = state.get("final_relevance_audit")
         config = state.get("research_config")
@@ -276,7 +274,7 @@ class SurveySection(BaseModel):
     claims: list[SurveyClaim] = Field(default_factory=list)
     tables: list[SurveyTable] = Field(default_factory=list)
     figure_slots: list[SurveyFigureSlot] = Field(default_factory=list)
-    subsections: list["SurveySection"] = Field(default_factory=list)
+    subsections: list[SurveySection] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 
 

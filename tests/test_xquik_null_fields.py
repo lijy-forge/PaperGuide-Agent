@@ -9,7 +9,6 @@ its value is ``None`` — so ``tweet.get("author", {})`` returns ``None`` for
 the error and silently drops *every* result.
 """
 
-import io
 import json
 import os
 import unittest

@@ -6,7 +6,7 @@ import tempfile
 import threading
 import time
 import unittest
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from uuid import UUID, uuid4
@@ -355,7 +355,7 @@ class StaleRunningReconciliationTests(unittest.TestCase):
             connection.execute(
                 "UPDATE task_requests SET lease_until = ? WHERE task_id = ?",
                 (
-                    (datetime.now(timezone.utc) - timedelta(seconds=1)).isoformat(),
+                    (datetime.now(UTC) - timedelta(seconds=1)).isoformat(),
                     str(task_id),
                 ),
             )
@@ -370,7 +370,7 @@ class StaleRunningReconciliationTests(unittest.TestCase):
             connection.execute(
                 "UPDATE runtime_host SET heartbeat = ? WHERE host_id = ?",
                 (
-                    (datetime.now(timezone.utc) - timedelta(seconds=10)).isoformat(),
+                    (datetime.now(UTC) - timedelta(seconds=10)).isoformat(),
                     str(host_id),
                 ),
             )
