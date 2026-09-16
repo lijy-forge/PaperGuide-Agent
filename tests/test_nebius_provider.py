@@ -7,12 +7,16 @@ import os
 import unittest
 
 from gpt_researcher.llm_provider.generic.base import (
-    GenericLLMProvider,
     _SUPPORTED_PROVIDERS as LLM_PROVIDERS,
+)
+from gpt_researcher.llm_provider.generic.base import (
+    GenericLLMProvider,
+)
+from gpt_researcher.memory.embeddings import (
+    _SUPPORTED_PROVIDERS as EMBEDDING_PROVIDERS,
 )
 from gpt_researcher.memory.embeddings import (
     Memory,
-    _SUPPORTED_PROVIDERS as EMBEDDING_PROVIDERS,
 )
 
 NEBIUS_BASE_URL = "https://api.tokenfactory.nebius.com/v1"

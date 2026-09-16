@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections import Counter
-from copy import deepcopy
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -12,8 +11,6 @@ from paperguide.domain import PaperCandidate, ResearchConfig
 from paperguide.pipeline import PaperSearchPipeline
 from paperguide.services import PaperDeduplicator
 
-from .gate import MetadataRelevanceAssessment, MetadataRelevanceGate, PreliminaryRelevanceClassification
-from .models import RetrievalPlan
 from .audit import (
     DedupGroupDiagnostic,
     RetrievalMetadataDiagnostic,
@@ -23,6 +20,8 @@ from .audit import (
     safe_preview,
     stable_paper_identity,
 )
+from .gate import MetadataRelevanceAssessment, MetadataRelevanceGate, PreliminaryRelevanceClassification
+from .models import RetrievalPlan
 
 
 class RetrievalAudit(BaseModel):

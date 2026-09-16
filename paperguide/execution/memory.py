@@ -1,8 +1,8 @@
 """Thread-pool-backed in-memory execution of PaperGuide application requests."""
 
+import inspect
 from concurrent.futures import Future, ThreadPoolExecutor
 from copy import deepcopy
-import inspect
 from threading import RLock
 from typing import Any
 from uuid import UUID, uuid4
@@ -17,13 +17,13 @@ from paperguide.application import (
     TaskStoreProtocol,
 )
 from paperguide.orchestration.errors import sanitize_message
-
 from paperguide.runtime_context import (
     CancellationTokenProtocol,
     ExecutionAbortedError,
     ExecutionContext,
     execution_scope,
 )
+
 from .exceptions import TaskSubmissionError
 from .models import TaskHandle
 

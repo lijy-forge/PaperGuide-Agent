@@ -1,6 +1,13 @@
 """Versioned provider-neutral prompts for structured paper reading."""
 
-from paperguide.analysis.models import PaperContext
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+# Prompts sit below analysis; the context type is needed only for annotations,
+# so importing it at runtime would close a cycle for no benefit.
+if TYPE_CHECKING:
+    from paperguide.analysis.models import PaperContext
 
 PAPER_READER_PROMPT_VERSION = "v3"
 

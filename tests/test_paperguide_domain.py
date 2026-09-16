@@ -3,8 +3,6 @@
 import unittest
 from uuid import UUID
 
-from pydantic import ValidationError
-
 from paperguide.domain import (
     Author,
     Evidence,
@@ -17,6 +15,7 @@ from paperguide.domain import (
     ResearchConfig,
     SourceLocator,
 )
+from pydantic import ValidationError
 
 
 def make_paper(**overrides) -> PaperCandidate:

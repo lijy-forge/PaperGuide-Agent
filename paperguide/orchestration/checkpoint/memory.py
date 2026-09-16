@@ -1,7 +1,7 @@
 """Process-local in-memory checkpoint store."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from paperguide.orchestration.state import ResearchState
@@ -21,7 +21,7 @@ class MemoryCheckpointStore:
 
         key = str(run_id)
         existing = self._records.get(key)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if existing is None:
             record = CheckpointRecord(
                 run_id=run_id,

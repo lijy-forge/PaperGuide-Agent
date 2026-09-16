@@ -20,7 +20,6 @@ from paperguide.runtime.metrics import MetricsExporter, MetricsExporterProtocol
 
 from .schemas import APISettings, HealthCheckResponse, HealthResponse
 
-
 LOCAL_DASHBOARD_ORIGINS = (
     "http://127.0.0.1:5173",
     "http://localhost:5173",

@@ -2,7 +2,6 @@
 from typing import Optional, Union
 
 import pytest
-
 from gpt_researcher.config.config import Config
 
 

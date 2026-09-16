@@ -16,8 +16,8 @@ from paperguide.bootstrap import (
 )
 from paperguide.orchestration import create_research_graph
 from paperguide.orchestration.nodes import IngestionNode, ReaderNode, VerifierNode
-from paperguide.reporting import ResearchReport
 from paperguide.relevance import DeterministicQueryExpansionService, ResearchIntent, TimeRange
+from paperguide.reporting import ResearchReport
 
 from .fake_reader import FakeReader
 from .fake_retriever import FakeRetriever
@@ -425,6 +425,41 @@ class DemoProvider:
             }
             for spec in paragraph_specs[stage]
         ]
+        # The synthetic corpus is a fixed SLAM set, so a question can name a
+        # topic no demo paper supports. Say so instead of silently answering
+        # about SLAM alone.
+        chinese = str(payload.get("output_language") or "").casefold().startswith("zh")
+        # research_focus echoes the question back, so reading it would make any
+        # term look covered. Only paper-derived cells count as corpus evidence.
+        paper_cells = (
+            "primary_contribution", "primary_limitation", "key_findings",
+            "method_family", "dataset", "metric", "reported_result",
+        )
+        corpus_text = json.dumps(
+            [
+                (row.get("cells") or {}).get(name)
+                for row in rows
+                for name in paper_cells
+            ],
+            ensure_ascii=False,
+        ).casefold()
+        uncovered = sorted(
+            {
+                term
+                for term in re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", question)
+                if term.casefold() not in corpus_text
+            }
+        )
+        stage_warnings = [
+            "Offline demo uses synthetic papers and must not be cited as real research."
+        ]
+        if uncovered:
+            stage_warnings.append(
+                f"演示语料为固定的 SLAM 合成文献集，未覆盖提问中的 {'、'.join(uncovered)}；相关结论不在本报告范围内。"
+                if chinese
+                else f"The synthetic demo corpus does not cover {', '.join(uncovered)} from the question; conclusions about it are out of scope."
+            )
+
         future_directions = []
         if stage == "D" and statement_keys:
             future_directions.append(
@@ -440,9 +475,7 @@ class DemoProvider:
                 "title": f"离线证据综合阶段 {stage}",
                 "paragraphs": paragraphs,
                 "future_directions": future_directions,
-                "warnings": [
-                    "Offline demo uses synthetic papers and must not be cited as real research."
-                ],
+                "warnings": stage_warnings,
             }
         )
 

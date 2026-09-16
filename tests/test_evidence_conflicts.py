@@ -3,12 +3,12 @@
 import unittest
 
 from paperguide.verification import (
+    ConflictRecord,
     EvidenceConflictDetector,
     NumericConsistencyResult,
     SupportLevel,
     VerificationStatus,
     VerifiedEvidence,
-    ConflictRecord,
 )
 
 from .verification_fixtures import make_document, make_evidence

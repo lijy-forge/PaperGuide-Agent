@@ -1,10 +1,10 @@
-import pytest
-import asyncio
-from pathlib import Path
 import json
 import logging
-from fastapi import WebSocket
 from datetime import datetime
+from pathlib import Path
+
+import pytest
+from fastapi import WebSocket
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -28,8 +28,8 @@ class TestWebSocket(WebSocket):
 @pytest.mark.asyncio
 async def test_log_output_file():
     """Test to verify logs are properly written to output file"""
-    from gpt_researcher.agent import GPTResearcher
     from backend.server.server_utils import CustomLogsHandler
+    from gpt_researcher.agent import GPTResearcher
     
     # 1. Setup like the main app
     websocket = TestWebSocket()

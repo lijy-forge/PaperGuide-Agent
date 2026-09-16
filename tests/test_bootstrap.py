@@ -7,8 +7,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from pydantic import ValidationError
-
 from paperguide.application import (
     InMemoryTaskStore,
     ResearchRequest,
@@ -38,6 +36,7 @@ from paperguide.verification import (
     VerifiedEvidence,
     VerifiedPaperAnalysisResult,
 )
+from pydantic import ValidationError
 
 from .verification_fixtures import make_analysis
 

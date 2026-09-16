@@ -1,7 +1,7 @@
 """Safe structured errors for research orchestration state."""
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -51,7 +51,7 @@ class ResearchError(BaseModel):
     message: str
     recoverable: bool
     attempt: int = Field(ge=0)
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("message", mode="before")
     @classmethod
@@ -76,7 +76,7 @@ class PaperStageRecord(BaseModel):
     status: PaperStageStatus
     attempt: int = Field(default=0, ge=0)
     last_error: ResearchError | None = None
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
     def validate_last_error_paper(self) -> "PaperStageRecord":

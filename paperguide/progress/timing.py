@@ -1,8 +1,15 @@
 """Deterministic offline timing projection from persisted progress events."""
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from pydantic import BaseModel, ConfigDict, Field
 
-from paperguide.runtime.host.models import TaskEvent
+# Progress sits below the runtime host; the event type is needed only for
+# annotations, so importing it at runtime would close a cycle for no benefit.
+if TYPE_CHECKING:
+    from paperguide.runtime.host.models import TaskEvent
 
 from .models import ProgressStage
 

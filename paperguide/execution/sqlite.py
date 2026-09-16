@@ -4,7 +4,7 @@ import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from threading import RLock
 from uuid import UUID
@@ -273,4 +273,4 @@ class PersistentTaskStore:
 
     @staticmethod
     def _utc_now() -> datetime:
-        return datetime.now(timezone.utc)
+        return datetime.now(UTC)

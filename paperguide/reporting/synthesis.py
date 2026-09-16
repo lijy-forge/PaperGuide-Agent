@@ -8,36 +8,34 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Sequence
 from enum import Enum
-from typing import Mapping, Sequence
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
+from paperguide.analysis import (
+    AnalysisSchemaValidationError,
+    StructuredLLMProtocol,
+)
 from paperguide.relevance import ReportMode
 
 from .analysis_data import SurveyAnalysisData
 from .citations import SurveyEvidenceData, public_citation_refs
 from .exceptions import ReportSchemaValidationError, ReportWriterError
 from .survey import (
-    ClaimCertainty,
+    FutureDirectionKind,
     LiteratureMethodFacts,
-    StatementReference,
     SurveyClaim,
     SurveyClaimDraft,
     SurveyClaimType,
     SurveyFigureSlot,
-    FutureDirectionKind,
     SurveyFutureDirection,
     SurveyParagraph,
+    SurveyPublicContentValidator,
     SurveyReport,
     SurveyReportContext,
     SurveySection,
     SurveyTable,
-    SurveyPublicContentValidator,
-)
-from paperguide.analysis import (
-    AnalysisSchemaValidationError,
-    StructuredLLMProtocol,
 )
 
 

@@ -7,8 +7,6 @@ and shared helpers for the human plan-approval gate (#1882).
 import importlib.util
 from pathlib import Path
 
-import pytest
-
 SENTINEL_PATH = (
     Path(__file__).resolve().parents[1]
     / "multi_agents"

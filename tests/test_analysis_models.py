@@ -3,8 +3,6 @@
 import unittest
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.analysis import (
     EvidenceReference,
     ExperimentAnalysis,
@@ -20,6 +18,7 @@ from paperguide.domain import (
     MethodSummary,
     SourceLocator,
 )
+from pydantic import ValidationError
 
 
 def make_reader_output() -> PaperReaderOutput:

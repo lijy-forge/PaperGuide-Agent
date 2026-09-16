@@ -11,7 +11,6 @@ import logging
 import unittest
 
 import pytest
-
 from gpt_researcher.utils.llm import construct_subtopics
 
 

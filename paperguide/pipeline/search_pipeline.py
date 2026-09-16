@@ -102,7 +102,9 @@ class PaperSearchPipeline:
         year = paper.publication_year
         if config.start_year is not None and (year is None or year < config.start_year):
             return False
-        if config.end_year is not None and (year is None or year > config.end_year):
+        # Kept as a guard pair: collapsing into one negated return hides which
+        # bound rejected the paper.
+        if config.end_year is not None and (year is None or year > config.end_year):  # noqa: SIM103
             return False
         return True
 

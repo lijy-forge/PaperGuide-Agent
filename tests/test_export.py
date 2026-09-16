@@ -1,6 +1,5 @@
 """Unit tests for safe ResearchReport export."""
 
-import copy
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,8 +12,8 @@ from paperguide.export import (
     ExportValidationError,
     HTMLExporter,
     MarkdownExporter,
-    PDFExportError,
     PDFExporter,
+    PDFExportError,
     PyMuPDFRenderer,
 )
 from paperguide.reporting import (

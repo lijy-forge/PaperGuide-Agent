@@ -1,6 +1,6 @@
 """Pydantic contracts for evidence claims, decisions, and verified analysis."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from uuid import UUID, uuid4
 
@@ -176,7 +176,7 @@ class VerifiedEvidence(BaseModel):
     warnings: list[str]
     verifier_model: str | None = None
     prompt_version: str
-    verified_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    verified_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @field_validator("claim", "reasoning", "prompt_version")
     @classmethod

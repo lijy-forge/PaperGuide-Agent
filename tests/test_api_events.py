@@ -4,8 +4,9 @@ import unittest
 from uuid import uuid4
 
 from paperguide.application import ResearchTaskStatus
-from paperguide.runtime.host import TaskEventType
 from paperguide.progress.models import ProgressEventPayload, ProgressStage
+from paperguide.runtime.host import TaskEventType
+
 from tests.api_fixtures import APITestRuntime
 
 

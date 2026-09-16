@@ -9,7 +9,6 @@ and propagating `None` downstream.
 import unittest
 
 from bs4 import BeautifulSoup
-
 from gpt_researcher.scraper.utils import extract_title
 
 

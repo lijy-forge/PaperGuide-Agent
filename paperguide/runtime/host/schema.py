@@ -2,7 +2,7 @@
 
 import sqlite3
 from collections.abc import Callable
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .exceptions import SchemaMigrationError
 
@@ -40,7 +40,7 @@ def migrate_schema(connection: sqlite3.Connection) -> int:
             migrations[target](connection)
             connection.execute(
                 "INSERT INTO schema_version(version, applied_at) VALUES (?, ?)",
-                (target, datetime.now(timezone.utc).isoformat()),
+                (target, datetime.now(UTC).isoformat()),
             )
         except sqlite3.Error as error:
             raise SchemaMigrationError(

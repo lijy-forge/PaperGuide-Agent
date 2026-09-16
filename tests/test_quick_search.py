@@ -1,8 +1,9 @@
-import unittest
-from unittest.mock import MagicMock, patch, AsyncMock
 import asyncio
+import unittest
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from gpt_researcher.agent import GPTResearcher
-import os
+
 
 class TestQuickSearch(unittest.TestCase):
 

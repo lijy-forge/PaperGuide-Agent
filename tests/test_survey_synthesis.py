@@ -1,20 +1,19 @@
 import pytest
-
 from paperguide.analysis import AnalysisSchemaValidationError, EvidenceLinkingService
 from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
 from paperguide.relevance import ReportMode
 from paperguide.reporting import (
+    ClaimCertainty,
     ComparisonDataBuilder,
     DeterministicTaxonomyBuilder,
     FullSurveySynthesisService,
-    MethodFamilyAssignment,
+    ReportSchemaValidationError,
+    SurveyClaimDraft,
+    SurveyClaimType,
     SurveyEvidenceDataBuilder,
     SurveyParagraphDraft,
     SurveyReportContextBuilder,
     SurveyStageDraft,
-    SurveyClaimDraft,
-    SurveyClaimType,
-    ClaimCertainty,
     SurveySynthesisWriter,
     SynthesisStage,
     TaxonomyContextBuilder,
@@ -91,7 +90,7 @@ def test_writer_rejects_stage_mismatch():
 
 def test_no_unknown_statement_key_enters_report():
     context, evidence, analysis_data = make_fixture()
-    with pytest.raises(Exception):
+    with pytest.raises(ReportSchemaValidationError, match="UNKNOWN_REPORT_STATEMENT_KEY"):
         FullSurveySynthesisService(SurveySynthesisWriter(FakeStageLLM(invalid_key=True))).generate(context, evidence, analysis_data)
 
 

@@ -1,11 +1,8 @@
 """Regression: ContextCompressor fast path must map url -> metadata.source."""
 
-import os
 from unittest.mock import MagicMock
 
 import pytest
-from langchain_core.documents import Document
-
 from gpt_researcher.context.compression import ContextCompressor
 from gpt_researcher.prompts import PromptFamily
 

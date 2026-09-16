@@ -2,7 +2,6 @@
 
 import json
 import re
-import socket
 from collections.abc import Callable, Mapping
 from typing import Any
 from urllib.error import URLError
@@ -175,7 +174,7 @@ class SemanticScholarClient:
                 payload = response.read()
         except SemanticScholarNetworkError:
             raise
-        except (URLError, TimeoutError, socket.timeout, OSError) as error:
+        except (URLError, TimeoutError, OSError) as error:
             raise SemanticScholarNetworkError(
                 f"Unable to reach Semantic Scholar API: {error}"
             ) from error

@@ -6,7 +6,6 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-
 _SAFE_CLASS = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,80}$")
 
 

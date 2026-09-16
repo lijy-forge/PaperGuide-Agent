@@ -1,7 +1,7 @@
 """Task storage protocol and isolated process-local implementation."""
 
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from threading import RLock
 from typing import Protocol, runtime_checkable
 from uuid import UUID
@@ -79,7 +79,7 @@ class InMemoryTaskStore:
                 raise TaskNotFoundError(f"research task not found: {task_id}")
             payload = current.model_dump()
             payload.update(changes)
-            payload["updated_at"] = datetime.now(timezone.utc)
+            payload["updated_at"] = datetime.now(UTC)
             updated = ResearchTask.model_validate(payload)
             self._tasks[str(task_id)] = deepcopy(updated)
             return deepcopy(updated)

@@ -8,7 +8,6 @@ from .exceptions import (
     TaskHostError,
     TaskHostUnavailableError,
 )
-from .lease import LeaseMonitorProtocol, WorkerLeaseMonitor
 from .hardening import (
     DeadLetterService,
     DeadLetterServiceProtocol,
@@ -17,6 +16,7 @@ from .hardening import (
     RuntimeRecoveryProtocol,
     RuntimeRecoveryService,
 )
+from .lease import LeaseMonitorProtocol, WorkerLeaseMonitor
 from .models import (
     DeadLetterTask,
     HostStatus,

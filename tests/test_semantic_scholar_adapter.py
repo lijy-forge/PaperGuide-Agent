@@ -2,7 +2,6 @@
 
 import copy
 import json
-import socket
 import unittest
 from urllib.parse import parse_qs, urlsplit
 
@@ -16,7 +15,6 @@ from paperguide.adapters.semantic_scholar import (
     SemanticScholarNetworkError,
 )
 from paperguide.domain import FullTextStatus, PaperSource
-
 
 SEMANTIC_SCHOLAR_RESPONSE = {
     "total": 1,
@@ -178,7 +176,7 @@ class TestSemanticScholarAdapter(unittest.TestCase):
 
     def test_timeout_is_wrapped(self):
         def raise_timeout(request, timeout):
-            raise socket.timeout("timed out")
+            raise TimeoutError("timed out")
 
         client = SemanticScholarClient(opener=raise_timeout)
 

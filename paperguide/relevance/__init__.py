@@ -1,25 +1,5 @@
 """Public retrieval-planning contracts and services."""
 
-from .expansion import DeterministicQueryExpansionService, LLMQueryExpansionService
-from .models import QueryExpansionOutput, QueryVariant, ResearchIntent, RetrievalBudget, RetrievalPlan, TimeRange
-from .gate import MetadataRelevanceAssessment, MetadataRelevanceGate, MetadataRelevancePolicy, PreliminaryRelevanceClassification
-from .pool import CandidatePoolResult, CandidateRelevanceRecord, CandidateSelectionPolicy, MultiQueryRetrievalService, RetrievalAudit
-from .final import (
-    AssessmentStatus,
-    EvidenceAwareFinalRelevanceService,
-    EvidenceSufficiencyAssessment,
-    FinalCoreSelectionPolicy,
-    FinalRelevanceAssessment,
-    FinalRelevanceAudit,
-    FinalRelevanceClassification,
-    FinalRelevancePolicy,
-    ReportMode,
-)
-from .planners import DeterministicResearchIntentPlanner, StructuredLLMResearchIntentPlanner
-from .protocols import QueryExpansionProtocol, ResearchIntentPlannerProtocol
-from .service import RetrievalPlanService
-from .diagnostics import PlanningStageDiagnostic, classify_planning_failure
-from .language import language_from_question, normalize_query_language
 from .audit import (
     DedupGroupDiagnostic,
     IntentDiagnostic,
@@ -33,6 +13,37 @@ from .audit import (
     normalize_audit_text,
     stable_paper_identity,
 )
+from .diagnostics import PlanningStageDiagnostic, classify_planning_failure
+from .expansion import DeterministicQueryExpansionService, LLMQueryExpansionService
+from .final import (
+    AssessmentStatus,
+    EvidenceAwareFinalRelevanceService,
+    EvidenceSufficiencyAssessment,
+    FinalCoreSelectionPolicy,
+    FinalRelevanceAssessment,
+    FinalRelevanceAudit,
+    FinalRelevanceClassification,
+    FinalRelevancePolicy,
+    ReportMode,
+)
+from .gate import (
+    MetadataRelevanceAssessment,
+    MetadataRelevanceGate,
+    MetadataRelevancePolicy,
+    PreliminaryRelevanceClassification,
+)
+from .language import language_from_question, normalize_query_language
+from .models import QueryExpansionOutput, QueryVariant, ResearchIntent, RetrievalBudget, RetrievalPlan, TimeRange
+from .planners import DeterministicResearchIntentPlanner, StructuredLLMResearchIntentPlanner
+from .pool import (
+    CandidatePoolResult,
+    CandidateRelevanceRecord,
+    CandidateSelectionPolicy,
+    MultiQueryRetrievalService,
+    RetrievalAudit,
+)
+from .protocols import QueryExpansionProtocol, ResearchIntentPlannerProtocol
+from .service import RetrievalPlanService
 
 __all__ = [
     "DeterministicQueryExpansionService",

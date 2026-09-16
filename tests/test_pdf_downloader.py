@@ -1,6 +1,5 @@
 """Unit tests for the validated PaperGuide PDF downloader."""
 
-import socket
 import tempfile
 import unittest
 from pathlib import Path
@@ -11,7 +10,6 @@ from paperguide.document import (
     PdfNetworkError,
 )
 from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource
-
 
 PDF_BYTES = b"%PDF-1.4\nmock paper content\n%%EOF"
 
@@ -104,7 +102,7 @@ class TestPdfDownloader(unittest.TestCase):
 
     def test_timeout_is_wrapped(self):
         def raise_timeout(request, timeout):
-            raise socket.timeout("timed out")
+            raise TimeoutError("timed out")
 
         with tempfile.TemporaryDirectory() as directory:
             downloader = PdfDownloader(directory, opener=raise_timeout)

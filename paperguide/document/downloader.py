@@ -1,13 +1,12 @@
 """Validated HTTP downloader for candidate-paper PDF files."""
 
-import socket
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
-from uuid import UUID
 from urllib.error import URLError
 from urllib.request import Request, urlopen
+from uuid import UUID
 
 from paperguide.domain import PaperCandidate
 from paperguide.services import MetadataNormalizer
@@ -111,7 +110,7 @@ class PdfDownloader:
                 payload = self._read_limited(response)
         except (PdfNetworkError, InvalidPDFError):
             raise
-        except (URLError, TimeoutError, socket.timeout, OSError) as error:
+        except (URLError, TimeoutError, OSError) as error:
             raise PdfNetworkError(f"Unable to download PDF: {error}") from error
 
         if not payload:

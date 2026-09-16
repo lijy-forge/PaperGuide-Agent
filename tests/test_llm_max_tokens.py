@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from gpt_researcher.utils.llm import create_chat_completion
 
 

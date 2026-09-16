@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from collections.abc import Iterable
 from enum import Enum
-from typing import Iterable
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field

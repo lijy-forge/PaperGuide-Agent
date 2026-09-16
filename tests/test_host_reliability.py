@@ -4,7 +4,7 @@ import os
 import tempfile
 import time
 import unittest
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -50,7 +50,7 @@ class HostReliabilityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             _, broker = make_runtime(directory)
             host_id = uuid4()
-            started_at = datetime.now(timezone.utc)
+            started_at = datetime.now(UTC)
             initial = broker.acquire_host(
                 host_id,
                 pid=os.getpid(),

@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
 from dataclasses import dataclass
-from datetime import datetime
-from enum import Enum
-from typing import Mapping, Sequence
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -18,7 +16,7 @@ from paperguide.analysis import (
     StatementKind,
     StatementSupportStatus,
 )
-from paperguide.domain import Author, PaperCandidate, SourceLocator
+from paperguide.domain import PaperCandidate, SourceLocator
 from paperguide.orchestration import ResearchState
 from paperguide.relevance import FinalRelevanceAssessment, FinalRelevanceClassification
 from paperguide.verification import VerificationStatus, VerifiedPaperAnalysisResult
@@ -31,7 +29,7 @@ class CitationRegistryError(ValueError):
 class ReferenceIntegrityValidator:
     """Validate citation/reference/ledger integrity without inspecting prose."""
 
-    def validate(self, data: "SurveyEvidenceData") -> None:
+    def validate(self, data: SurveyEvidenceData) -> None:
         CitationRegistry._validate(data.citation_registry)
         citation_numbers = {item.citation_number for item in data.citation_registry}
         reference_numbers = {item.citation_number for item in data.references}
@@ -265,7 +263,6 @@ class SurveyEvidenceDataBuilder:
     ) -> SurveyEvidenceData:
         paper_by_id = {paper.id: paper for paper in papers}
         registry = CitationRegistry().build(paper_by_id.values(), final_relevance)
-        citation_by_paper = {entry.paper_id: entry for entry in registry}
         warnings: list[str] = []
         references = [self._reference(entry) for entry in registry]
         ledger: list[EvidenceLedgerEntry] = []

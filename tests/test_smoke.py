@@ -8,8 +8,6 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from pydantic import ValidationError
-
 from paperguide.application import ResearchResult, ResearchTask, ResearchTaskStatus
 from paperguide.domain import PaperSource, SourceLocator
 from paperguide.export import ArtifactMetadata, ExportFormat, ExportResult
@@ -33,6 +31,7 @@ from paperguide.smoke import (
     safe_diagnostic_message,
 )
 from paperguide.smoke.diagnostics import safe_artifact_filename
+from pydantic import ValidationError
 
 
 def make_completed_result(question: str) -> ResearchResult:

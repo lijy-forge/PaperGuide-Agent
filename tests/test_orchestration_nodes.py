@@ -11,8 +11,8 @@ from paperguide.document import (
 )
 from paperguide.domain import (
     Author,
-    FullTextStatus,
     EvidenceType,
+    FullTextStatus,
     PaperCandidate,
     PaperSource,
     ResearchConfig,

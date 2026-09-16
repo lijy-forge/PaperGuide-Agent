@@ -1,7 +1,5 @@
 from uuid import uuid4
 
-import pytest
-
 from paperguide.analysis import (
     EvidenceLinkingService,
     LimitationBasis,

@@ -1,20 +1,19 @@
 import pytest
-
 from paperguide.analysis import EvidenceLinkingService
 from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
+from paperguide.relevance import ReportMode
 from paperguide.reporting import (
     ComparisonColumn,
     ComparisonDataBuilder,
     DeterministicTaxonomyBuilder,
-    MethodFamilyDraft,
     MethodFamilyAssignmentDraft,
+    MethodFamilyDraft,
     SurveyEvidenceDataBuilder,
     TaxonomyContextBuilder,
     TaxonomyLLMOutput,
     TaxonomyService,
     TaxonomyValidator,
 )
-from paperguide.relevance import ReportMode
 from paperguide.verification import apply_verification
 
 

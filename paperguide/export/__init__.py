@@ -12,8 +12,8 @@ from .exceptions import (
     InvalidExportFilenameError,
     PDFExportError,
 )
-from .integrity import ArtifactFormatIntegrityValidator
 from .html import HTMLExporter
+from .integrity import ArtifactFormatIntegrityValidator
 from .markdown import MarkdownExporter
 from .models import ArtifactMetadata, ExportFormat, ExportResult
 from .pdf import (

@@ -4,7 +4,6 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-
 from paperguide.application import ResearchTaskStatus
 from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
 from paperguide.orchestration import create_initial_state
@@ -24,6 +23,7 @@ from paperguide.relevance import (
     normalize_audit_text,
     stable_paper_identity,
 )
+
 from tests.api_fixtures import APITestRuntime
 
 

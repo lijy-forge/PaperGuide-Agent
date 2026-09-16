@@ -1,6 +1,6 @@
 """Serializable checkpoint records for research orchestration state."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -16,8 +16,8 @@ class CheckpointRecord(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     run_id: UUID
     state: ResearchState
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
     def validate_timestamps(self) -> "CheckpointRecord":

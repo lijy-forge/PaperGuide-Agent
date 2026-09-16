@@ -5,24 +5,21 @@ This module tests the security improvements made to file upload and deletion
 operations to prevent path traversal attacks.
 """
 
-import pytest
-import tempfile
 import os
 import shutil
-from unittest.mock import Mock, MagicMock
-from fastapi import HTTPException
-from fastapi.responses import JSONResponse
 
 # Import the functions we're testing
 import sys
+import tempfile
+from unittest.mock import Mock
+
+import pytest
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.server.server_utils import (
-    secure_filename, 
-    validate_file_path, 
-    handle_file_upload, 
-    handle_file_deletion
-)
+from backend.server.server_utils import handle_file_deletion, handle_file_upload, secure_filename, validate_file_path
 
 
 class TestSecureFilename:

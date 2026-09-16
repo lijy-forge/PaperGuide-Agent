@@ -22,8 +22,8 @@ from .routes import (
     events_router,
     health_router,
     internal_router,
-    metrics_router,
     manual_sources_router,
+    metrics_router,
     research_router,
     tasks_router,
 )

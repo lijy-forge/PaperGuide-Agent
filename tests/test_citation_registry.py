@@ -2,19 +2,19 @@ from uuid import uuid4
 
 from paperguide.analysis import EvidenceLinkingService, StatementKind, StatementSupportStatus
 from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
-from paperguide.reporting import (
-    CitationRegistry,
-    CorePaperProfile,
-    EvidenceLedgerEntry,
-    FishboneReadinessAssessment,
-    SurveyEvidenceDataBuilder,
-    citation_group,
-    citation_token,
-)
+from paperguide.domain import SourceLocator
 from paperguide.relevance import (
     EvidenceAwareFinalRelevanceService,
     FinalRelevanceClassification,
     ResearchIntent,
+)
+from paperguide.reporting import (
+    CitationRegistry,
+    CorePaperProfile,
+    FishboneReadinessAssessment,
+    SurveyEvidenceDataBuilder,
+    citation_group,
+    citation_token,
 )
 from paperguide.verification import apply_verification
 
@@ -82,7 +82,10 @@ def test_reference_missing_metadata_is_none_not_invented():
 
 def test_citation_tokens_use_locator_page_only_when_present():
     seed, _, _ = demo_data()
-    locator = seed.documents[0].pages[0]
+    paper_id = seed.papers[0].id
+    assert citation_token(3, SourceLocator(paper_id=paper_id, page_start=7)) == "[3, p.7]"
+    # A locator without a page, and no locator at all, both stay bare.
+    assert citation_token(3, SourceLocator(paper_id=paper_id)) == "[3]"
     assert citation_token(3) == "[3]"
     assert citation_group([5, 3, 3, 2]) == "[2,3,5]"
 

@@ -23,9 +23,7 @@ class MetadataNormalizer:
         characters: list[str] = []
         for character in normalized:
             category = unicodedata.category(character)
-            if character == "_" or category.startswith("P"):
-                characters.append(" ")
-            elif character.isspace():
+            if character == "_" or category.startswith("P") or character.isspace():
                 characters.append(" ")
             elif category[0] in {"L", "N", "M"}:
                 characters.append(character)

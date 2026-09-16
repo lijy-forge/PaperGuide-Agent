@@ -4,26 +4,25 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from paperguide.analysis import EvidenceLinkingService, PaperAnalysisResult
-from paperguide.verification import (
-    EvidenceVerificationResult,
-    EvidenceVerifier,
-    VerifiedPaperAnalysisResult,
-    apply_verification,
-)
+from paperguide.orchestration.concurrency import LLMCallLimiter
 from paperguide.orchestration.enums import NextAction, ResearchStep
 from paperguide.orchestration.state import ResearchState
-from paperguide.orchestration.concurrency import LLMCallLimiter
+from paperguide.progress.events import TaskEventType
+from paperguide.progress.models import ProgressEventPayload, ProgressStage
+from paperguide.progress.publisher import ProgressPublisherProtocol
 from paperguide.relevance import (
     AssessmentStatus,
     EvidenceAwareFinalRelevanceService,
     FinalCoreSelectionPolicy,
     FinalRelevanceAudit,
     FinalRelevanceClassification,
-    PreliminaryRelevanceClassification,
 )
-from paperguide.progress.models import ProgressEventPayload, ProgressStage
-from paperguide.progress.publisher import ProgressPublisherProtocol
-from paperguide.progress.events import TaskEventType
+from paperguide.verification import (
+    EvidenceVerificationResult,
+    EvidenceVerifier,
+    VerifiedPaperAnalysisResult,
+    apply_verification,
+)
 
 from .base import BaseNode
 

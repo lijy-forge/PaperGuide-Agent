@@ -1,9 +1,10 @@
-import pytest
-from unittest.mock import AsyncMock
-from fastapi import WebSocket
-from backend.server.server_utils import CustomLogsHandler
-import os
 import json
+import os
+from unittest.mock import AsyncMock
+
+import pytest
+from backend.server.server_utils import CustomLogsHandler
+
 
 @pytest.mark.asyncio
 async def test_custom_logs_handler():
@@ -29,7 +30,7 @@ async def test_custom_logs_handler():
     mock_websocket.send_json.assert_called_once_with(test_data)
     
     # Verify log file contents
-    with open(handler.log_file, 'r') as f:
+    with open(handler.log_file) as f:
         log_data = json.load(f)
         assert len(log_data['events']) == 1
         assert log_data['events'][0]['data'] == test_data 
@@ -54,7 +55,7 @@ async def test_content_update():
     mock_websocket.send_json.assert_called_once_with(content_data)
     
     # Verify log file contents
-    with open(handler.log_file, 'r') as f:
+    with open(handler.log_file) as f:
         log_data = json.load(f)
         assert log_data['content']['query'] == "test query"
         assert log_data['content']['sources'] == ["source1", "source2"]

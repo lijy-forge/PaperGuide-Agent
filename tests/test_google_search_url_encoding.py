@@ -14,7 +14,7 @@ These tests pin proper percent-encoding by inspecting the URL handed to
 import os
 import unittest
 from unittest import mock
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs, urlparse
 
 from gpt_researcher.retrievers.google.google import GoogleSearch
 

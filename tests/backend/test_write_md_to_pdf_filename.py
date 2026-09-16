@@ -1,7 +1,5 @@
 """Filename/directory hygiene for report PDF export (#1718)."""
 
-import asyncio
-import os
 from pathlib import Path
 from unittest.mock import patch
 
@@ -42,7 +40,8 @@ async def test_empty_filename_does_not_write_dot_pdf(tmp_path, monkeypatch):
 @pytest.mark.asyncio
 async def test_explicit_filename_preserved(tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
-    import sys, types
+    import sys
+    import types
 
     def fake_md2pdf(file_path, raw=None, css=None, base_url=None):
         Path(file_path).parent.mkdir(parents=True, exist_ok=True)

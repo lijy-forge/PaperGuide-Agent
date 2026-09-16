@@ -3,7 +3,6 @@ from pathlib import Path
 
 import pytest
 
-
 PLAN_REVIEW_PATH = (
     Path(__file__).resolve().parents[1] /
     "multi_agents" / "agents" / "plan_review.py"

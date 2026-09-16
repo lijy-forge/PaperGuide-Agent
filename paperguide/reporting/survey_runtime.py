@@ -1,8 +1,8 @@
 """Production bridge from a completed research state to a SurveyReport."""
 
-from copy import deepcopy
 import inspect
 import re
+from copy import deepcopy
 
 from paperguide.orchestration import ResearchState, validate_state
 from paperguide.relevance import ReportMode
@@ -11,8 +11,8 @@ from .analysis_data import SurveyAnalysisDataBuilder
 from .citations import SurveyEvidenceDataBuilder
 from .exceptions import ReportGenerationError
 from .survey import LiteratureMethodFacts, SurveyReport, SurveyReportContextBuilder
-from .synthesis import FullSurveySynthesisService
 from .survey_telemetry import NullSurveyTelemetry, SurveyTelemetryProtocol
+from .synthesis import FullSurveySynthesisService
 
 
 class ProductionSurveyReportService:

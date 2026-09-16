@@ -6,8 +6,8 @@ import hashlib
 import json
 import re
 from collections import Counter, defaultdict
+from collections.abc import Mapping, Sequence
 from enum import Enum
-from typing import Mapping, Sequence
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -19,11 +19,10 @@ from paperguide.analysis import (
     StructuredLLMProtocol,
 )
 from paperguide.domain import PaperCandidate
-from paperguide.relevance import FinalRelevanceClassification, ReportMode
-from paperguide.verification import VerificationStatus, VerifiedPaperAnalysisResult
+from paperguide.relevance import ReportMode
+from paperguide.verification import VerifiedPaperAnalysisResult
 
-from .citations import CitationEntry, SurveyEvidenceData, citation_token
-from .exceptions import ReportSchemaValidationError, ReportWriterError
+from .citations import SurveyEvidenceData, citation_token
 
 
 class TaxonomyError(ValueError):
@@ -67,7 +66,7 @@ class MethodFamilyAssignment(BaseModel):
     assignment_status: str = "assigned"
 
     @model_validator(mode="after")
-    def validate_primary_unique(self) -> "MethodFamilyAssignment":
+    def validate_primary_unique(self) -> MethodFamilyAssignment:
         if self.primary_method_family in self.secondary_method_families:
             raise ValueError("primary family cannot also be secondary")
         return self
@@ -163,9 +162,9 @@ class TaxonomyContextBuilder:
         # Accept the already compact SurveyReportContext as an integration
         # convenience without importing it (avoids a reporting-cycle import).
         if hasattr(data, "allowed_statement_keys") and hasattr(data, "core_papers") and not hasattr(data, "core_paper_profiles"):
-            raw_papers = list(getattr(data, "core_papers"))
+            raw_papers = list(data.core_papers)
             papers = [item.model_dump(mode="json") if hasattr(item, "model_dump") else item for item in raw_papers[: self.budget.max_core_papers]]
-            allowed = list(getattr(data, "allowed_statement_keys"))
+            allowed = list(data.allowed_statement_keys)
             payload = json.dumps(papers, ensure_ascii=False, separators=(",", ":"))
             truncated = len(papers) < len(raw_papers)
             if len(payload) > self.budget.max_context_characters:

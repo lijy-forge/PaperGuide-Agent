@@ -1,6 +1,5 @@
 """Unit tests for unified, atomic, checksummed report export."""
 
-import copy
 import hashlib
 import tempfile
 import unittest

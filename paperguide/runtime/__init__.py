@@ -9,9 +9,9 @@ from .exceptions import (
 from .health import check_runtime_health
 from .host import (
     CURRENT_SCHEMA_VERSION,
-    DeadLetterTask,
     DeadLetterService,
     DeadLetterServiceProtocol,
+    DeadLetterTask,
     HostStatus,
     LeaseLossReason,
     LeaseMonitorProtocol,
@@ -19,8 +19,8 @@ from .host import (
     PersistentTaskHostClient,
     RuntimeHostMetadata,
     RuntimeMetrics,
-    RuntimeRecoveryResult,
     RuntimeRecoveryProtocol,
+    RuntimeRecoveryResult,
     RuntimeRecoveryService,
     SchemaMigrationError,
     TaskEvent,

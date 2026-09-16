@@ -1,12 +1,10 @@
 """Unit tests for GPT Researcher's provider-neutral structured LLM adapter."""
 
+import asyncio
 import inspect
 import json
-import asyncio
 import unittest
 from types import SimpleNamespace
-
-from pydantic import BaseModel, ConfigDict
 
 from paperguide.analysis import (
     AnalysisLLMInvocationError,
@@ -15,6 +13,7 @@ from paperguide.analysis import (
     StructuredLLMProtocol,
 )
 from paperguide.integrations import GPTResearcherStructuredLLM
+from pydantic import BaseModel, ConfigDict
 
 
 class SmallResponse(BaseModel):
