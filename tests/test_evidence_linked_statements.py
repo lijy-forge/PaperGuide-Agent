@@ -2,16 +2,16 @@ from uuid import uuid4
 
 import pytest
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     EvidenceLinkingService,
     LimitationBasis,
     StatementKind,
     StatementSupportStatus,
 )
-from paperpilot.demo.fake_reader import FakeReader
-from paperpilot.demo.fake_verifier import FakeVerifier
-from paperpilot.demo.seed import create_demo_seed
-from paperpilot.verification import VerificationStatus, apply_verification
+from paperguide.demo.fake_reader import FakeReader
+from paperguide.demo.fake_verifier import FakeVerifier
+from paperguide.demo.seed import create_demo_seed
+from paperguide.verification import VerificationStatus, apply_verification
 
 
 def make_result(index=0):
@@ -115,7 +115,7 @@ def test_statistics_and_warnings_are_auditable():
 def test_budget_is_deterministic_and_warns_on_truncation():
     seed, analysis, verified = make_result()
     expanded = analysis.model_copy(update={"contributions": ["one", "two", "three"]})
-    from paperpilot.analysis import StatementLinkingBudget
+    from paperguide.analysis import StatementLinkingBudget
 
     service = EvidenceLinkingService(budget=StatementLinkingBudget(max_contributions=1))
     result = service.link(expanded, verified, seed.papers[0])

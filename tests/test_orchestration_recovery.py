@@ -6,25 +6,25 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import (
     NextAction,
     OrchestratorConfig,
     ResearchStep,
     create_initial_state,
 )
-from paperpilot.orchestration.checkpoint import (
+from paperguide.orchestration.checkpoint import (
     CheckpointRecord,
     MemoryCheckpointStore,
 )
-from paperpilot.orchestration.recovery import (
+from paperguide.orchestration.recovery import (
     RecoveryAction,
     RecoveryDecision,
     RecoveryError,
     RecoveryService,
     RecoveryStateInvalidError,
 )
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationResult,
     VerifiedPaperAnalysisResult,
 )

@@ -7,8 +7,8 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperpilot.domain import SourceLocator
-from paperpilot.export import (
+from paperguide.domain import SourceLocator
+from paperguide.export import (
     ArtifactFormatIntegrityError,
     ArtifactFormatIntegrityValidator,
     ArtifactMetadata,
@@ -21,7 +21,7 @@ from paperpilot.export import (
     MarkdownExporter,
     PDFExporter,
 )
-from paperpilot.reporting import (
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportSection,
@@ -233,7 +233,7 @@ class ExportServiceTests(unittest.TestCase):
 
             service.export(make_report(), ExportFormat.HTML)
 
-            leftovers = list(Path(directory).glob(".paperpilot-*"))
+            leftovers = list(Path(directory).glob(".paperguide-*"))
             self.assertEqual(leftovers, [])
 
     def test_format_integrity_rejects_extension_mime_and_magic_mismatch(self) -> None:

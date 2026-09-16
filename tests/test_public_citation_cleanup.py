@@ -5,14 +5,14 @@ import re
 import pymupdf
 import pytest
 
-from paperpilot.reporting import (
+from paperguide.reporting import (
     SurveyHtmlRenderer,
     SurveyMarkdownRenderer,
     SurveyPdfRenderer,
     SurveyPublicContentValidator,
     public_citation_refs,
 )
-from paperpilot.reporting.exceptions import ReportSchemaValidationError
+from paperguide.reporting.exceptions import ReportSchemaValidationError
 from tests.test_survey_rendering import make_report
 
 

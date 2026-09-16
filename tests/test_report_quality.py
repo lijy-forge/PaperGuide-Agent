@@ -1,8 +1,8 @@
 """Regression tests for Q2 artifact-promotion quality semantics."""
 
-from paperpilot.application.report_quality import ReportQualityContract
-from paperpilot.relevance import ReportMode
-from paperpilot.reporting import SurveyReport
+from paperguide.application.report_quality import ReportQualityContract
+from paperguide.relevance import ReportMode
+from paperguide.reporting import SurveyReport
 
 
 def _empty_survey() -> SurveyReport:

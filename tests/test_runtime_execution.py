@@ -1,4 +1,4 @@
-"""Tests for TaskExecutor integration with the PaperPilot runtime CLI."""
+"""Tests for TaskExecutor integration with the PaperGuide runtime CLI."""
 
 import hashlib
 import io
@@ -11,16 +11,16 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import UUID, uuid4
 
-from paperpilot.application import (
+from paperguide.application import (
     InMemoryTaskStore,
     ResearchRequest,
     ResearchTask,
     ResearchTaskStatus,
     TaskNotFoundError,
 )
-from paperpilot.execution import InMemoryTaskExecutor, TaskHandle
-from paperpilot.export import ArtifactMetadata, ExportFormat
-from paperpilot.runtime import RuntimeSettings, run_cli
+from paperguide.execution import InMemoryTaskExecutor, TaskHandle
+from paperguide.export import ArtifactMetadata, ExportFormat
+from paperguide.runtime import RuntimeSettings, run_cli
 
 
 def make_settings(root: Path) -> RuntimeSettings:

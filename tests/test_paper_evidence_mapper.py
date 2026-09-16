@@ -3,9 +3,9 @@
 import unittest
 from uuid import uuid4
 
-from paperpilot.analysis import EvidenceMapper, EvidenceReference
-from paperpilot.document import Document, Page, Section
-from paperpilot.domain import EvidenceType
+from paperguide.analysis import EvidenceMapper, EvidenceReference
+from paperguide.document import Document, Page, Section
+from paperguide.domain import EvidenceType
 
 
 def make_document() -> Document:

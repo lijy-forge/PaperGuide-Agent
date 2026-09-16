@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from paperpilot.document import PdfParseError, PdfParser
-from paperpilot.domain import Author, FullTextStatus, PaperCandidate, PaperSource
+from paperguide.document import PdfParseError, PdfParser
+from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource
 
 
 def make_paper() -> PaperCandidate:
@@ -47,7 +47,7 @@ class FakeDocument:
 
     def __init__(self, page_texts: list[str]):
         self.pages = [FakePage(text) for text in page_texts]
-        self.metadata = {"author": "PaperPilot Test", "title": "Parsed Paper"}
+        self.metadata = {"author": "PaperGuide Test", "title": "Parsed Paper"}
 
     def __enter__(self):
         return self

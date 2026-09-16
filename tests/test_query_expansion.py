@@ -2,14 +2,14 @@
 
 import unittest
 
-from paperpilot.relevance import (
+from paperguide.relevance import (
     DeterministicQueryExpansionService,
     QueryVariant,
     ResearchIntent,
     RetrievalBudget,
     RetrievalPlanService,
 )
-from paperpilot.relevance.prompts import (
+from paperguide.relevance.prompts import (
     INTENT_SYSTEM_PROMPT,
     QUERY_EXPANSION_SYSTEM_PROMPT,
 )

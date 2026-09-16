@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationDecision,
     EvidenceVerificationResult,
     NumericConsistencyResult,

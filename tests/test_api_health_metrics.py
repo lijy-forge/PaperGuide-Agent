@@ -3,7 +3,7 @@
 import unittest
 from dataclasses import replace
 
-from paperpilot.api import APIRuntimeHealthChecker
+from paperguide.api import APIRuntimeHealthChecker
 from tests.api_fixtures import APITestRuntime, FailingMetricsExporter
 
 
@@ -22,8 +22,8 @@ class APIHealthMetricsTests(unittest.TestCase):
     def test_readiness_returns_200_when_runtime_is_ready(self) -> None:
         runtime = APITestRuntime(ready=True)
         try:
-            dependencies = runtime.app.state.paperpilot_dependencies
-            runtime.app.state.paperpilot_dependencies = replace(
+            dependencies = runtime.app.state.paperguide_dependencies
+            runtime.app.state.paperguide_dependencies = replace(
                 dependencies,
                 runtime_health_checker=APIRuntimeHealthChecker(
                     runtime.broker,
@@ -41,8 +41,8 @@ class APIHealthMetricsTests(unittest.TestCase):
         runtime = APITestRuntime(ready=False)
         try:
             runtime.release_host()
-            dependencies = runtime.app.state.paperpilot_dependencies
-            runtime.app.state.paperpilot_dependencies = replace(
+            dependencies = runtime.app.state.paperguide_dependencies
+            runtime.app.state.paperguide_dependencies = replace(
                 dependencies,
                 runtime_health_checker=APIRuntimeHealthChecker(
                     runtime.broker,

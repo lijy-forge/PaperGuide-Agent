@@ -10,16 +10,16 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.application import ResearchResult, ResearchTask, ResearchTaskStatus
-from paperpilot.domain import PaperSource, SourceLocator
-from paperpilot.export import ArtifactMetadata, ExportFormat, ExportResult
-from paperpilot.reporting import (
+from paperguide.application import ResearchResult, ResearchTask, ResearchTaskStatus
+from paperguide.domain import PaperSource, SourceLocator
+from paperguide.export import ArtifactMetadata, ExportFormat, ExportResult
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportSection,
     ResearchReport,
 )
-from paperpilot.smoke import (
+from paperguide.smoke import (
     ProviderNotConfiguredError,
     SmokeStage,
     SmokeStageStatus,
@@ -32,7 +32,7 @@ from paperpilot.smoke import (
     real_e2e_enabled,
     safe_diagnostic_message,
 )
-from paperpilot.smoke.diagnostics import safe_artifact_filename
+from paperguide.smoke.diagnostics import safe_artifact_filename
 
 
 def make_completed_result(question: str) -> ResearchResult:
@@ -146,7 +146,7 @@ class SmokeTests(unittest.TestCase):
 
     def test_real_e2e_switch_defaults_off(self) -> None:
         self.assertFalse(real_e2e_enabled({}))
-        self.assertTrue(real_e2e_enabled({"PAPERPILOT_RUN_REAL_E2E": "1"}))
+        self.assertTrue(real_e2e_enabled({"PAPERGUIDE_RUN_REAL_E2E": "1"}))
 
     def test_runner_accepts_fake_application_and_writes_safe_json(self) -> None:
         question = "Do not persist this exact question"

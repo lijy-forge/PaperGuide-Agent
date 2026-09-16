@@ -4,8 +4,8 @@ import copy
 import unittest
 from uuid import uuid4
 
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import (
     NextAction,
     OrchestratorConfig,
     PaperStageRecord,

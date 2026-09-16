@@ -1,4 +1,4 @@
-# PaperPilot v1.0.0 release checklist
+# PaperGuide v1.0.0 release checklist
 
 Validation date: 2026-08-06
 
@@ -8,7 +8,7 @@ No publishing action is authorized by this checklist. PyPI, npm, Git tags and Gi
 
 ## Demo validation
 
-- [x] `paperpilot demo` completed without OpenAI, Anthropic or Tavily credentials.
+- [x] `paperguide demo` completed without OpenAI, Anthropic or Tavily credentials.
 - [x] A persistent task was created in the SQLite TaskStore.
 - [x] The existing LangGraph workflow reached `completed`.
 - [x] A Markdown Artifact was generated.
@@ -33,14 +33,14 @@ The validation record intentionally omits the temporary task ID, local database 
 
 ## Backend validation
 
-- [x] Historical pre-10.21.2A baseline: 532 PaperPilot tests passed.
-- [x] Current PaperPilot Backend Gate (including 10.21.2A): 542 tests passed.
+- [x] Historical pre-10.21.2A baseline: 532 PaperGuide tests passed.
+- [x] Current PaperGuide Backend Gate (including 10.21.2A): 542 tests passed.
 - [x] API tests passed.
 - [x] Document, Reader, Evidence and reporting tests passed.
 - [x] Runtime coordination, recovery, lease and dead-letter tests passed.
 - [x] Docker deployment static tests passed.
 - [x] Demo Mode tests passed.
-- [x] `python -m compileall paperpilot` passed.
+- [x] `python -m compileall paperguide` passed.
 
 Non-blocking test-environment warnings:
 
@@ -80,7 +80,7 @@ Blocker: Docker CLI and Docker Desktop are not installed in the current validati
 - [x] Runtime database and runtime-data patterns are excluded from Git and Docker build context.
 - [x] New release documentation contains no absolute developer path.
 - [x] `git diff --check` passed for release files and documentation.
-- [ ] Remove or intentionally retain the ignored local `paperpilot-runtime.sqlite3` before creating a source archive outside Git.
+- [ ] Remove or intentionally retain the ignored local `paperguide-runtime.sqlite3` before creating a source archive outside Git.
 - [ ] Review the complete dirty working tree and create an intentional release commit.
 
 ## Version consistency
@@ -89,7 +89,7 @@ Blocker: Docker CLI and Docker Desktop are not installed in the current validati
 - [ ] FastAPI application metadata is `1.0.0`.
 - [ ] Dashboard package version is `1.0.0`.
 - [x] CHANGELOG contains a v1.0.0 release section.
-- [x] README and release documentation consistently identify PaperPilot v1.
+- [x] README and release documentation consistently identify PaperGuide v1.
 
 Current metadata:
 
@@ -123,9 +123,9 @@ Do not publish v1.0.0 until all of the following are complete:
 
 ## 10.21.4C validation record (2026-08-09)
 
-- [x] PaperPilot survey gate: 233 tests passed.
+- [x] PaperGuide survey gate: 233 tests passed.
 - [x] Survey rendering/PDF/Fishbone gate: 14 tests passed.
-- [x] `python -m compileall -q paperpilot` passed.
+- [x] `python -m compileall -q paperguide` passed.
 - [x] `git diff --check` passed.
 - [x] Dashboard typecheck passed.
 - [x] Dashboard Vitest: 208 tests passed across 15 files.

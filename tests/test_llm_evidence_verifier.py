@@ -4,8 +4,8 @@ import re
 import unittest
 from uuid import UUID
 
-from paperpilot.analysis import AnalysisLLMInvocationError
-from paperpilot.verification import (
+from paperguide.analysis import AnalysisLLMInvocationError
+from paperguide.verification import (
     DeterministicEvidenceChecker,
     EvidenceClaim,
     LLMEvidenceVerifier,

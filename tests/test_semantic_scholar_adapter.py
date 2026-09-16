@@ -6,16 +6,16 @@ import socket
 import unittest
 from urllib.parse import parse_qs, urlsplit
 
-from paperpilot.adapters import RetrieverProtocol
-from paperpilot.adapters.arxiv import ArxivClient
-from paperpilot.adapters.semantic_scholar import (
+from paperguide.adapters import RetrieverProtocol
+from paperguide.adapters.arxiv import ArxivClient
+from paperguide.adapters.semantic_scholar import (
     SemanticScholarClient,
     SemanticScholarConfig,
     SemanticScholarInvalidResponseError,
     SemanticScholarMapper,
     SemanticScholarNetworkError,
 )
-from paperpilot.domain import FullTextStatus, PaperSource
+from paperguide.domain import FullTextStatus, PaperSource
 
 
 SEMANTIC_SCHOLAR_RESPONSE = {
@@ -221,7 +221,7 @@ class TestSemanticScholarAdapter(unittest.TestCase):
             api_key=" secret-key ",
             timeout_seconds=8,
             default_max_results=3,
-            user_agent="PaperPilot-Test",
+            user_agent="PaperGuide-Test",
         )
         SemanticScholarClient(config=config, opener=with_key).search("YOLO SLAM")
         headers_with_key = {
@@ -230,7 +230,7 @@ class TestSemanticScholarAdapter(unittest.TestCase):
         query = parse_qs(urlsplit(with_key.request.full_url).query)
 
         self.assertEqual(headers_with_key["x-api-key"], "secret-key")
-        self.assertEqual(headers_with_key["user-agent"], "PaperPilot-Test")
+        self.assertEqual(headers_with_key["user-agent"], "PaperGuide-Test")
         self.assertEqual(query["limit"], ["3"])
         self.assertEqual(query["query"], ["YOLO SLAM"])
         self.assertEqual(

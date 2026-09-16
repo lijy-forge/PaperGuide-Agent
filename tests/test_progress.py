@@ -5,13 +5,13 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperpilot.application import ResearchTaskStatus
-from paperpilot.progress.events import TaskEventType
-from paperpilot.progress.models import ProgressEventPayload, ProgressStage
-from paperpilot.progress.publisher import ProgressPublisher
-from paperpilot.progress.timing import summarize_progress_timing
-from paperpilot.progress.validator import PublicProgressValidator
-from paperpilot.runtime.host import SQLiteHostBroker
+from paperguide.application import ResearchTaskStatus
+from paperguide.progress.events import TaskEventType
+from paperguide.progress.models import ProgressEventPayload, ProgressStage
+from paperguide.progress.publisher import ProgressPublisher
+from paperguide.progress.timing import summarize_progress_timing
+from paperguide.progress.validator import PublicProgressValidator
+from paperguide.runtime.host import SQLiteHostBroker
 
 
 class ProgressTests(unittest.TestCase):

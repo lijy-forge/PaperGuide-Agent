@@ -1,16 +1,16 @@
-"""Unit tests for the validated PaperPilot PDF downloader."""
+"""Unit tests for the validated PaperGuide PDF downloader."""
 
 import socket
 import tempfile
 import unittest
 from pathlib import Path
 
-from paperpilot.document import (
+from paperguide.document import (
     InvalidPDFError,
     PdfDownloader,
     PdfNetworkError,
 )
-from paperpilot.domain import Author, FullTextStatus, PaperCandidate, PaperSource
+from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource
 
 
 PDF_BYTES = b"%PDF-1.4\nmock paper content\n%%EOF"

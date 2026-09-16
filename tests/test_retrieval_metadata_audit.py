@@ -5,13 +5,13 @@ from uuid import uuid4
 
 import pytest
 
-from paperpilot.application import ResearchTaskStatus
-from paperpilot.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
-from paperpilot.orchestration import create_initial_state
-from paperpilot.orchestration.nodes import RetrieverNode
-from paperpilot.pipeline import SearchResult
-from paperpilot.progress.events import TaskEventType
-from paperpilot.relevance import (
+from paperguide.application import ResearchTaskStatus
+from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
+from paperguide.orchestration import create_initial_state
+from paperguide.orchestration.nodes import RetrieverNode
+from paperguide.pipeline import SearchResult
+from paperguide.progress.events import TaskEventType
+from paperguide.relevance import (
     MetadataRelevanceGate,
     MultiQueryRetrievalService,
     PreliminaryRelevanceClassification,
@@ -260,7 +260,7 @@ def test_public_api_excludes_private_audit_events() -> None:
 
 
 def test_dashboard_has_no_private_audit_detail() -> None:
-    source_root = Path(__file__).parents[1] / "paperpilot-dashboard" / "src"
+    source_root = Path(__file__).parents[1] / "paperguide-dashboard" / "src"
     source = "\n".join(path.read_text(encoding="utf-8") for path in source_root.rglob("*.ts*") if path.is_file())
     for private_field in ("identity_hash", "metadata_score", "normalized_query_hash", "safe_term_preview"):
         assert private_field not in source

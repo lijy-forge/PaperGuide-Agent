@@ -1,4 +1,4 @@
-"""Tests for the PaperPilot composition root and dependency container."""
+"""Tests for the PaperGuide composition root and dependency container."""
 
 import copy
 import os
@@ -9,28 +9,28 @@ from unittest.mock import patch
 
 from pydantic import ValidationError
 
-from paperpilot.application import (
+from paperguide.application import (
     InMemoryTaskStore,
     ResearchRequest,
     ResearchTaskStatus,
 )
-from paperpilot.bootstrap import (
+from paperguide.bootstrap import (
     ApplicationContainer,
     BootstrapConfig,
     LLMProviderConfig,
     PdfDownloadConfig,
     create_application,
 )
-from paperpilot.domain import PaperSource
-from paperpilot.export import ExportFormat
-from paperpilot.orchestration import NextAction, OrchestratorConfig, ResearchStep
-from paperpilot.reporting import (
+from paperguide.domain import PaperSource
+from paperguide.export import ExportFormat
+from paperguide.orchestration import NextAction, OrchestratorConfig, ResearchStep
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportSection,
     ResearchReport,
 )
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationResult,
     NumericConsistencyResult,
     SupportLevel,
@@ -222,7 +222,7 @@ def make_config(root: Path, *, minimum_score: float = 0.7):
             download_directory=root / "downloads",
             timeout_seconds=4,
             max_size_bytes=1024 * 1024,
-            user_agent="PaperPilot-Test",
+            user_agent="PaperGuide-Test",
         ),
         export_directory=root / "exports",
         orchestrator_config=OrchestratorConfig(

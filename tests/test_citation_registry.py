@@ -1,8 +1,8 @@
 from uuid import uuid4
 
-from paperpilot.analysis import EvidenceLinkingService, StatementKind, StatementSupportStatus
-from paperpilot.demo import FakeReader, FakeVerifier, create_demo_seed
-from paperpilot.reporting import (
+from paperguide.analysis import EvidenceLinkingService, StatementKind, StatementSupportStatus
+from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
+from paperguide.reporting import (
     CitationRegistry,
     CorePaperProfile,
     EvidenceLedgerEntry,
@@ -11,12 +11,12 @@ from paperpilot.reporting import (
     citation_group,
     citation_token,
 )
-from paperpilot.relevance import (
+from paperguide.relevance import (
     EvidenceAwareFinalRelevanceService,
     FinalRelevanceClassification,
     ResearchIntent,
 )
-from paperpilot.verification import apply_verification
+from paperguide.verification import apply_verification
 
 
 def demo_data():

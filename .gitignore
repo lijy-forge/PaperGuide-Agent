@@ -2,11 +2,11 @@
 .env
 .env.local
 
-# PaperPilot local runtime artifacts and default SQLite state
+# PaperGuide local runtime artifacts and default SQLite state
 runtime-data/
-paperpilot-exports/
-paperpilot-downloads/
-paperpilot-runtime.sqlite3
+paperguide-exports/
+paperguide-downloads/
+paperguide-runtime.sqlite3
 .venv
 .envrc
 

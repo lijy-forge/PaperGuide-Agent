@@ -2,7 +2,7 @@
 
 import unittest
 
-from paperpilot.verification import DeterministicEvidenceChecker, EvidenceClaim
+from paperguide.verification import DeterministicEvidenceChecker, EvidenceClaim
 
 from .verification_fixtures import make_document, make_evidence
 

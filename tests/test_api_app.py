@@ -10,7 +10,7 @@ import unittest
 
 from fastapi import FastAPI
 
-from paperpilot.api import create_api_app
+from paperguide.api import create_api_app
 from tests.api_fixtures import APITestRuntime
 
 
@@ -26,14 +26,14 @@ class APIAppTests(unittest.TestCase):
 
     def test_openapi_schema_generates_with_expected_tags_and_paths(self) -> None:
         schema = self.runtime.app.openapi()
-        self.assertEqual(schema["info"]["title"], "PaperPilot API")
+        self.assertEqual(schema["info"]["title"], "PaperGuide API")
         self.assertIn("/api/v1/research", schema["paths"])
         self.assertIn("/api/v1/tasks/{task_id}/artifact", schema["paths"])
         self.assertIn("/health/ready", schema["paths"])
 
     def test_import_has_no_host_graph_or_thread_side_effect(self) -> None:
         before = {thread.ident for thread in threading.enumerate()}
-        module = importlib.import_module("paperpilot.api.app")
+        module = importlib.import_module("paperguide.api.app")
         after = {thread.ident for thread in threading.enumerate()}
         self.assertEqual(before, after)
         self.assertFalse(hasattr(module, "app"))
@@ -45,7 +45,7 @@ class APIAppTests(unittest.TestCase):
         environment["PYTHONPATH"] = repository
         with tempfile.TemporaryDirectory() as directory:
             completed = subprocess.run(
-                [sys.executable, "-c", "import paperpilot.api"],
+                [sys.executable, "-c", "import paperguide.api"],
                 cwd=directory,
                 env=environment,
                 capture_output=True,

@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperpilot.application import ResearchTask, ResearchTaskStatus
-from paperpilot.export import ArtifactMetadata, ExportFormat
+from paperguide.application import ResearchTask, ResearchTaskStatus
+from paperguide.export import ArtifactMetadata, ExportFormat
 from tests.api_fixtures import APITestRuntime
 
 

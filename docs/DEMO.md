@@ -1,12 +1,12 @@
-# PaperPilot Offline Demo
+# PaperGuide Offline Demo
 
 ## What the demo proves
 
-The offline demo demonstrates the complete PaperPilot execution path without network access or Provider credentials:
+The offline demo demonstrates the complete PaperGuide execution path without network access or Provider credentials:
 
 ```mermaid
 flowchart LR
-    CLI["paperpilot demo"] --> App["ApplicationContainer"]
+    CLI["paperguide demo"] --> App["ApplicationContainer"]
     App --> Retriever["Synthetic Retriever"]
     Retriever --> Graph["Existing LangGraph"]
     Graph --> Reader["Deterministic Reader"]
@@ -42,7 +42,7 @@ Every generated report includes a warning that the underlying material is synthe
 
 ```powershell
 poetry install
-poetry run paperpilot demo
+poetry run paperguide demo
 ```
 
 Expected output is safe JSON containing a task ID, terminal status, artifact filename, warnings and `mode: demo`. It does not expose the local absolute artifact path.
@@ -50,7 +50,7 @@ Expected output is safe JSON containing a task ID, terminal status, artifact fil
 Custom invocation:
 
 ```powershell
-poetry run paperpilot demo `
+poetry run paperguide demo `
   --question "YOLO与视觉SLAM融合研究进展" `
   --max-papers 3 `
   --format markdown
@@ -63,22 +63,22 @@ The synthetic corpus remains fixed even if the question changes. This is intenti
 Set the non-secret runtime mode before starting the long-running Host:
 
 ```powershell
-$env:PAPERPILOT_MODE = "demo"
-$env:PAPERPILOT_EXPORT_DIRECTORY = ".\runtime-data\artifacts"
-poetry run paperpilot server start
+$env:PAPERGUIDE_MODE = "demo"
+$env:PAPERGUIDE_EXPORT_DIRECTORY = ".\runtime-data\artifacts"
+poetry run paperguide server start
 ```
 
 In a second terminal:
 
 ```powershell
-$env:PAPERPILOT_EXPORT_DIRECTORY = ".\runtime-data\artifacts"
-poetry run paperpilot-api
+$env:PAPERGUIDE_EXPORT_DIRECTORY = ".\runtime-data\artifacts"
+poetry run paperguide-api
 ```
 
 In a third terminal:
 
 ```powershell
-Set-Location paperpilot-dashboard
+Set-Location paperguide-dashboard
 npm install
 npm run dev
 ```
@@ -90,7 +90,7 @@ Open the Vite URL printed by the Dashboard command. Submit a research task, foll
 Create `.env` from the example and set:
 
 ```env
-PAPERPILOT_MODE=demo
+PAPERGUIDE_MODE=demo
 ```
 
 Then run:
@@ -118,8 +118,8 @@ Use the [manual demo checklist](demo-checklist.md) before recording or presentin
 
 | Symptom | Check |
 | --- | --- |
-| CLI uses a real Provider | Confirm `paperpilot demo`, or set `PAPERPILOT_MODE=demo` for the Host |
-| Dashboard reports Host unavailable | Start `paperpilot server start` with the same export/runtime settings as the API |
-| Artifact is not visible | Confirm API and Host share `PAPERPILOT_EXPORT_DIRECTORY` |
-| Docker data disappears | Confirm the `paperpilot-data` named Volume exists |
+| CLI uses a real Provider | Confirm `paperguide demo`, or set `PAPERGUIDE_MODE=demo` for the Host |
+| Dashboard reports Host unavailable | Start `paperguide server start` with the same export/runtime settings as the API |
+| Artifact is not visible | Confirm API and Host share `PAPERGUIDE_EXPORT_DIRECTORY` |
+| Docker data disappears | Confirm the `paperguide-data` named Volume exists |
 | A report looks like a real citation | Stop the presentation and point out the synthetic-data warning |

@@ -2,7 +2,7 @@
 
 import unittest
 
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceConflictDetector,
     NumericConsistencyResult,
     SupportLevel,

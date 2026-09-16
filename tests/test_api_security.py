@@ -8,9 +8,9 @@ from uuid import UUID
 
 from pydantic import ValidationError
 
-from paperpilot.api import APISettings
-from paperpilot.api.dependencies import create_default_dependencies
-from paperpilot.runtime import RuntimeSettings
+from paperguide.api import APISettings
+from paperguide.api.dependencies import create_default_dependencies
+from paperguide.runtime import RuntimeSettings
 
 from tests.api_fixtures import APITestRuntime
 

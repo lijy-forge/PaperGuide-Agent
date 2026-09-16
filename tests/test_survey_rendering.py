@@ -1,6 +1,6 @@
 import re
 
-from paperpilot.reporting import (
+from paperguide.reporting import (
     FullSurveySynthesisService,
     SurveyHtmlRenderer,
     SurveyMarkdownRenderer,
@@ -44,7 +44,7 @@ def test_markdown_has_comparison_and_timeline_fallback():
 
 
 def test_limited_markdown_has_scope_note_without_full_structure():
-    from paperpilot.relevance import ReportMode
+    from paperguide.relevance import ReportMode
     text = SurveyMarkdownRenderer().render(make_report(ReportMode.EVIDENCE_LIMITED_REVIEW))
     assert "Evidence-limited review" in text
     assert "## 10 Conclusion" in text

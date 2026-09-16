@@ -6,13 +6,13 @@ import unittest
 from langgraph.graph import START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import (
     NextAction,
     create_initial_state,
     create_research_graph,
 )
-from paperpilot.orchestration.graph import (
+from paperguide.orchestration.graph import (
     build_research_graph,
     compile_research_graph,
 )

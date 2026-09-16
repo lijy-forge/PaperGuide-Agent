@@ -3,8 +3,8 @@
 import unittest
 from uuid import uuid4
 
-from paperpilot.application import ResearchTaskStatus
-from paperpilot.export import ExportFormat
+from paperguide.application import ResearchTaskStatus
+from paperguide.export import ExportFormat
 from tests.api_fixtures import APITestRuntime, response_has_no_sensitive_text
 
 

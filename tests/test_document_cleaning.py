@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.document import (
+from paperguide.document import (
     Document,
     DocumentCleaningConfig,
     DocumentTextCleaner,
@@ -60,15 +60,15 @@ class TestDocumentTextCleaner(unittest.TestCase):
     def test_repeated_headers_are_removed_across_pages(self):
         document = make_document(
             [
-                "PaperPilot 2026\nPage one body",
-                "PaperPilot 2026\nPage two body",
-                "PaperPilot 2026\nPage three body",
+                "PaperGuide 2026\nPage one body",
+                "PaperGuide 2026\nPage two body",
+                "PaperGuide 2026\nPage three body",
             ]
         )
 
         cleaned = DocumentTextCleaner().clean(document)
 
-        self.assertTrue(all("PaperPilot 2026" not in page.text for page in cleaned.pages))
+        self.assertTrue(all("PaperGuide 2026" not in page.text for page in cleaned.pages))
         self.assertIn("cleaning_warnings", cleaned.metadata)
         self.assertEqual(cleaned.sections, document.sections)
 

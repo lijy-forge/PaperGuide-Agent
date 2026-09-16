@@ -4,10 +4,10 @@ import pymupdf
 from pypdf import PdfReader
 from io import BytesIO
 
-from paperpilot.reporting import CJKFontResolver, SurveyPdfRenderer, SurveyRenderFormat, SurveyRenderService
+from paperguide.reporting import CJKFontResolver, SurveyPdfRenderer, SurveyRenderFormat, SurveyRenderService
 from tests.test_survey_rendering import make_report
 from tests.test_survey_synthesis import FakeChineseStageLLM, make_fixture
-from paperpilot.reporting import FullSurveySynthesisService, SurveySynthesisWriter
+from paperguide.reporting import FullSurveySynthesisService, SurveySynthesisWriter
 
 
 def test_pdf_is_valid_a4_and_has_metadata():
@@ -41,7 +41,7 @@ def test_pdf_contains_fishbone_and_comparison_data():
 
 
 def test_pdf_limited_mode_and_render_service():
-    from paperpilot.relevance import ReportMode
+    from paperguide.relevance import ReportMode
     report = make_report(ReportMode.EVIDENCE_LIMITED_REVIEW)
     result = SurveyRenderService().render(report, SurveyRenderFormat.PDF)
     assert result.mime_type == "application/pdf" and result.extension == ".pdf"

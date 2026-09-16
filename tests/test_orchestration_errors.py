@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.orchestration import (
+from paperguide.orchestration import (
     PaperStageRecord,
     PaperStageStatus,
     ResearchError,

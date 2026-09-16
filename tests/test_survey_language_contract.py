@@ -5,8 +5,8 @@ from io import BytesIO
 import pymupdf
 from pypdf import PdfReader
 
-from paperpilot.relevance import ReportMode
-from paperpilot.reporting import (
+from paperguide.relevance import ReportMode
+from paperguide.reporting import (
     FullSurveySynthesisService,
     SurveyMarkdownRenderer,
     SurveyPdfRenderer,

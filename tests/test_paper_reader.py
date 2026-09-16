@@ -3,7 +3,7 @@
 import unittest
 from uuid import uuid4
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     AnalysisLLMInvocationError,
     EvidenceMapper,
     EvidenceReference,
@@ -16,7 +16,7 @@ from paperpilot.analysis import (
     PaperReader,
     PaperReaderOutput,
 )
-from paperpilot.document import Document, Page, Section
+from paperguide.document import Document, Page, Section
 
 
 def make_document() -> Document:

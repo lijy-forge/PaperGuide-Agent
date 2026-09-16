@@ -11,21 +11,21 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import UUID, uuid4
 
-from paperpilot.application import (
+from paperguide.application import (
     ResearchRequest,
     ResearchTask,
     ResearchTaskStatus,
 )
-from paperpilot.execution import (
+from paperguide.execution import (
     ExecutionCancellationToken,
     ExecutionContext,
     InMemoryTaskExecutor,
     PersistentTaskStore,
     execution_scope,
 )
-from paperpilot.export import ArtifactMetadata, ExportFormat
-from paperpilot.runtime import MetricsExporter
-from paperpilot.runtime.host import (
+from paperguide.export import ArtifactMetadata, ExportFormat
+from paperguide.runtime import MetricsExporter
+from paperguide.runtime.host import (
     HostStatus,
     SQLiteHostBroker,
     TaskEventType,

@@ -1,4 +1,4 @@
-"""Tests for the thread-pool-backed PaperPilot task execution runtime."""
+"""Tests for the thread-pool-backed PaperGuide task execution runtime."""
 
 import copy
 import hashlib
@@ -8,7 +8,7 @@ import unittest
 from types import SimpleNamespace
 from uuid import uuid4
 
-from paperpilot.application import (
+from paperguide.application import (
     InMemoryTaskStore,
     ResearchRequest,
     ResearchExecutionError,
@@ -16,11 +16,11 @@ from paperpilot.application import (
     ResearchTaskStatus,
     TaskNotFoundError,
 )
-from paperpilot.execution import (
+from paperguide.execution import (
     InMemoryTaskExecutor,
     TaskExecutorProtocol,
 )
-from paperpilot.export import ArtifactMetadata, ExportFormat
+from paperguide.export import ArtifactMetadata, ExportFormat
 
 
 def make_artifact(name: str = "report.md") -> ArtifactMetadata:

@@ -11,9 +11,9 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.application import ResearchTaskStatus
-from paperpilot.export import ExportFormat
-from paperpilot.runtime import (
+from paperguide.application import ResearchTaskStatus
+from paperguide.export import ExportFormat
+from paperguide.runtime import (
     HealthStatus,
     RuntimeConfigurationError,
     RuntimeSettings,
@@ -79,12 +79,12 @@ class RuntimeTests(unittest.TestCase):
 
     def test_environment_variables_are_loaded(self) -> None:
         environment = {
-            "PAPERPILOT_MODEL_NAME": "research-model",
-            "PAPERPILOT_LLM_PROVIDER": "local-provider",
-            "PAPERPILOT_EXPORT_DIRECTORY": "artifacts",
-            "PAPERPILOT_MAX_PAPERS": "12",
-            "PAPERPILOT_LOG_LEVEL": "debug",
-            "PAPERPILOT_ROUTE_CONFLICTS_TO_HUMAN_REVIEW": "true",
+            "PAPERGUIDE_MODEL_NAME": "research-model",
+            "PAPERGUIDE_LLM_PROVIDER": "local-provider",
+            "PAPERGUIDE_EXPORT_DIRECTORY": "artifacts",
+            "PAPERGUIDE_MAX_PAPERS": "12",
+            "PAPERGUIDE_LOG_LEVEL": "debug",
+            "PAPERGUIDE_ROUTE_CONFLICTS_TO_HUMAN_REVIEW": "true",
             "UNRELATED_VALUE": "ignored",
         }
         original = dict(environment)
@@ -203,7 +203,7 @@ class RuntimeTests(unittest.TestCase):
 
     def test_secret_environment_value_is_never_exposed(self) -> None:
         secret = "do-not-leak-this-value"
-        environment = {"PAPERPILOT_API_KEY": secret}
+        environment = {"PAPERGUIDE_API_KEY": secret}
 
         with self.assertRaises(RuntimeConfigurationError) as captured:
             RuntimeSettings.from_env(environment)
