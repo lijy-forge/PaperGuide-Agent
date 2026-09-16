@@ -2,10 +2,10 @@ import re
 
 import pytest
 
-from paperpilot.analysis import EvidenceLinkingService
-from paperpilot.demo import FakeReader, FakeVerifier, create_demo_seed
-from paperpilot.relevance import ReportMode
-from paperpilot.reporting import (
+from paperguide.analysis import EvidenceLinkingService
+from paperguide.demo import FakeReader, FakeVerifier, create_demo_seed
+from paperguide.relevance import ReportMode
+from paperguide.reporting import (
     ClaimCertainty,
     CitationSafeSurveyWriter,
     LiteratureMethodFacts,
@@ -18,7 +18,7 @@ from paperpilot.reporting import (
     SurveyReportContextBuilder,
     SurveyReportVerifier,
 )
-from paperpilot.verification import apply_verification
+from paperguide.verification import apply_verification
 
 
 def make_data():

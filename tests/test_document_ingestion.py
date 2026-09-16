@@ -1,4 +1,4 @@
-"""Unit tests for the deterministic PaperPilot document-ingestion pipeline."""
+"""Unit tests for the deterministic PaperGuide document-ingestion pipeline."""
 
 import tempfile
 import unittest
@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.document import (
+from paperguide.document import (
     Document,
     DocumentIngestionPipeline,
     DocumentIngestionResult,
@@ -16,7 +16,7 @@ from paperpilot.document import (
     Page,
     PaperIngestionItem,
 )
-from paperpilot.domain import Author, FullTextStatus, PaperCandidate, PaperSource
+from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource
 
 
 def make_paper(

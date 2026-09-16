@@ -1,7 +1,7 @@
-from paperpilot.demo.fake_reader import FakeReader
-from paperpilot.demo.fake_verifier import FakeVerifier
-from paperpilot.demo.seed import create_demo_seed
-from paperpilot.relevance import (
+from paperguide.demo.fake_reader import FakeReader
+from paperguide.demo.fake_verifier import FakeVerifier
+from paperguide.demo.seed import create_demo_seed
+from paperguide.relevance import (
     AssessmentStatus,
     EvidenceAwareFinalRelevanceService,
     FinalCoreSelectionPolicy,
@@ -11,7 +11,7 @@ from paperpilot.relevance import (
     ResearchIntent,
     TimeRange,
 )
-from paperpilot.verification import apply_verification
+from paperguide.verification import apply_verification
 
 
 def make_result(index=0):

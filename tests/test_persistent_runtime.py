@@ -11,16 +11,16 @@ from pathlib import Path
 from types import SimpleNamespace
 from uuid import uuid4
 
-from paperpilot.application import (
+from paperguide.application import (
     ResearchRequest,
     ResearchTask,
     ResearchTaskStatus,
     TaskStoreProtocol,
 )
-from paperpilot.execution import PersistentTaskStore
-from paperpilot.export import ArtifactMetadata, ExportFormat
-from paperpilot.runtime import RuntimeSettings, run_cli
-from paperpilot.runtime.host import (
+from paperguide.execution import PersistentTaskStore
+from paperguide.export import ArtifactMetadata, ExportFormat
+from paperguide.runtime import RuntimeSettings, run_cli
+from paperguide.runtime.host import (
     PersistentTaskHostClient,
     SQLiteHostBroker,
     TaskHost,
@@ -282,7 +282,7 @@ class PersistentRuntimeTests(unittest.TestCase):
         self.assertEqual(output.getvalue(), "")
         self.assertEqual(
             payload["error"],
-            "task host is unavailable; run 'paperpilot server start'",
+            "task host is unavailable; run 'paperguide server start'",
         )
 
     def test_server_start_cli_uses_injected_host(self) -> None:

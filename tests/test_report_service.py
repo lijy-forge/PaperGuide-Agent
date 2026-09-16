@@ -3,9 +3,9 @@
 import copy
 import unittest
 
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import create_initial_state
-from paperpilot.reporting import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import create_initial_state
+from paperguide.reporting import (
     EvidenceGroundedReportService,
     ReportContext,
     ReportContextBuildError,
@@ -14,7 +14,7 @@ from paperpilot.reporting import (
     ReportWritingError,
     ResearchReport,
 )
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationResult,
     VerifiedPaperAnalysisResult,
 )

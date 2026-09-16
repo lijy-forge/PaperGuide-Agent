@@ -2,7 +2,7 @@
 
 import unittest
 
-from paperpilot.relevance import (
+from paperguide.relevance import (
     QueryVariant,
     ResearchIntent,
     RetrievalBudget,

@@ -3,15 +3,15 @@
 import unittest
 from uuid import uuid4
 
-from paperpilot.analysis.exceptions import (
+from paperguide.analysis.exceptions import (
     AnalysisLLMResponseError,
     AnalysisSchemaValidationError,
 )
-from paperpilot.application import ResearchTaskStatus
-from paperpilot.progress.events import TaskEventType
-from paperpilot.reporting.exceptions import ReportSchemaValidationError
-from paperpilot.reporting.survey_telemetry import SurveyTelemetry
-from paperpilot.runtime.host import SQLiteHostBroker
+from paperguide.application import ResearchTaskStatus
+from paperguide.progress.events import TaskEventType
+from paperguide.reporting.exceptions import ReportSchemaValidationError
+from paperguide.reporting.survey_telemetry import SurveyTelemetry
+from paperguide.runtime.host import SQLiteHostBroker
 
 
 class _StatusError(RuntimeError):

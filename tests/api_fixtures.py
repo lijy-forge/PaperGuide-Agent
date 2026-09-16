@@ -7,13 +7,13 @@ from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 
-from paperpilot.api import APISettings, create_api_app
-from paperpilot.api.schemas import HealthCheckResponse, HealthResponse
-from paperpilot.application import ResearchTask, ResearchTaskStatus
-from paperpilot.execution import PersistentTaskStore
-from paperpilot.export import ArtifactMetadata, ExportFormat
-from paperpilot.runtime import MetricsExporter
-from paperpilot.runtime.host import (
+from paperguide.api import APISettings, create_api_app
+from paperguide.api.schemas import HealthCheckResponse, HealthResponse
+from paperguide.application import ResearchTask, ResearchTaskStatus
+from paperguide.execution import PersistentTaskStore
+from paperguide.export import ArtifactMetadata, ExportFormat
+from paperguide.runtime import MetricsExporter
+from paperguide.runtime.host import (
     HostStatus,
     PersistentTaskHostClient,
     SQLiteHostBroker,

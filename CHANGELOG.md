@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to PaperPilot AI are documented in this file. The project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventions.
+All notable changes to PaperGuide AI are documented in this file. The project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) conventions.
 
 ## [1.0.0] - Unreleased
 
@@ -28,14 +28,14 @@ All notable changes to PaperPilot AI are documented in this file. The project fo
 
 ### Security
 
-- Provider credentials remain runtime environment variables and are excluded from PaperPilot settings.
+- Provider credentials remain runtime environment variables and are excluded from PaperGuide settings.
 - Public API responses omit research questions, internal paths and coordination metadata.
 - Artifact paths are constrained to the configured export root and include SHA-256 metadata.
 - Markdown and HTML report previews apply explicit content-safety boundaries.
 
 ### Release validation
 
-- PaperPilot backend: 532 tests passed on 2026-08-06.
+- PaperGuide backend: 532 tests passed on 2026-08-06.
 - Dashboard: typecheck passed; 199 tests passed; production build passed.
 - Offline Demo: completed without Provider credentials and generated a persisted Markdown artifact.
 - Docker static deployment tests: passed.
@@ -44,4 +44,4 @@ All notable changes to PaperPilot AI are documented in this file. The project fo
 
 - Docker Compose runtime validation still requires a machine with Docker available.
 - Version metadata is not yet aligned: Python package `0.14.7`, FastAPI metadata `10.17`, and Dashboard package `0.1.0`.
-- The repository working tree contains extensive uncommitted PaperPilot changes that require an intentional release commit review.
+- The repository working tree contains extensive uncommitted PaperGuide changes that require an intentional release commit review.

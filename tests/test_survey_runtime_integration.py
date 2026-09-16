@@ -6,21 +6,21 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from paperpilot.analysis import EvidenceLinkingService
-from paperpilot.application import (
+from paperguide.analysis import EvidenceLinkingService
+from paperguide.application import (
     InMemoryTaskStore,
     ResearchApplicationService,
     ResearchExecutionError,
     ResearchRequest,
 )
-from paperpilot.demo import (
+from paperguide.demo import (
     DemoDocumentIngestionPipeline,
     FakeReader,
     FakeVerifier,
     create_demo_seed,
 )
-from paperpilot.export import ExportFormat, ExportService
-from paperpilot.orchestration import (
+from paperguide.export import ExportFormat, ExportService
+from paperguide.orchestration import (
     NextAction,
     OrchestratorConfig,
     ResearchError,
@@ -28,7 +28,7 @@ from paperpilot.orchestration import (
     create_initial_state,
     create_research_graph,
 )
-from paperpilot.orchestration.nodes import (
+from paperguide.orchestration.nodes import (
     IngestionNode,
     PlannerNode,
     QualityGateNode,
@@ -36,10 +36,10 @@ from paperpilot.orchestration.nodes import (
     RetrieverNode,
     VerifierNode,
 )
-from paperpilot.domain import ResearchConfig
-from paperpilot.pipeline import SearchResult
-from paperpilot.relevance import EvidenceAwareFinalRelevanceService
-from paperpilot.relevance import (
+from paperguide.domain import ResearchConfig
+from paperguide.pipeline import SearchResult
+from paperguide.relevance import EvidenceAwareFinalRelevanceService
+from paperguide.relevance import (
     AssessmentStatus,
     EvidenceSufficiencyAssessment,
     FinalRelevanceAssessment,
@@ -50,7 +50,7 @@ from paperpilot.relevance import (
     RetrievalBudget,
     RetrievalPlan,
 )
-from paperpilot.reporting import (
+from paperguide.reporting import (
     ProductionSurveyReportService,
     SurveyAnalysisDataBuilder,
     SurveyEvidenceDataBuilder,
@@ -58,9 +58,9 @@ from paperpilot.reporting import (
     SurveyReportContextBuilder,
     SurveySynthesisWriter,
 )
-from paperpilot.reporting.synthesis import FullSurveySynthesisService, SynthesisStage
-from paperpilot.reporting import ReportSchemaValidationError, ReportGenerationError
-from paperpilot.verification import VerificationInputError, apply_verification
+from paperguide.reporting.synthesis import FullSurveySynthesisService, SynthesisStage
+from paperguide.reporting import ReportSchemaValidationError, ReportGenerationError
+from paperguide.verification import VerificationInputError, apply_verification
 from tests.test_survey_synthesis import FakeChineseStageLLM
 
 
@@ -71,7 +71,7 @@ class _StageLLM:
         self.calls = 0
 
     def generate_structured(self, *, user_prompt, **kwargs):
-        from paperpilot.reporting import SurveyParagraphDraft, SurveyStageDraft
+        from paperguide.reporting import SurveyParagraphDraft, SurveyStageDraft
 
         self.calls += 1
         stage = next(item for item in SynthesisStage if f"stage {item.value}" in user_prompt)
@@ -346,7 +346,7 @@ def test_production_survey_uses_planned_chinese_locale_for_limited_pdf():
     assert report.query_language == "zh"
     assert "SLAM 研究综述" in report.title
     assert report.title.endswith("证据评估")
-    from paperpilot.reporting import SurveyPdfRenderer
+    from paperguide.reporting import SurveyPdfRenderer
     import pymupdf
 
     document = pymupdf.open(stream=SurveyPdfRenderer().render(report), filetype="pdf")

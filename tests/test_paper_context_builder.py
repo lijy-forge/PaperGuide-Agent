@@ -5,12 +5,12 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     PaperContextBuilder,
     PaperContextConfig,
     PaperContextError,
 )
-from paperpilot.document import Document, Page, Section
+from paperguide.document import Document, Page, Section
 
 
 def make_document(*, with_sections: bool = True, long_method: bool = False) -> Document:

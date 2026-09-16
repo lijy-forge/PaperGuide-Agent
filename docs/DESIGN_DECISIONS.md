@@ -1,4 +1,4 @@
-# PaperPilot Design Decisions
+# PaperGuide Design Decisions
 
 This document records high-impact architecture decisions. Each ADR describes the context, selected choice and accepted tradeoff rather than treating a library name as an architectural justification.
 

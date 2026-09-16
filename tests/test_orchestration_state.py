@@ -4,15 +4,15 @@ import json
 import unittest
 from uuid import UUID
 
-from paperpilot.analysis import PaperAnalysisResult
-from paperpilot.domain import (
+from paperguide.analysis import PaperAnalysisResult
+from paperguide.domain import (
     Author,
     FullTextStatus,
     PaperCandidate,
     PaperSource,
     ResearchConfig,
 )
-from paperpilot.orchestration import (
+from paperguide.orchestration import (
     NextAction,
     ResearchStep,
     StateValidationError,

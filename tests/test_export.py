@@ -6,8 +6,8 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperpilot.domain import SourceLocator
-from paperpilot.export import (
+from paperguide.domain import SourceLocator
+from paperguide.export import (
     ExportFormat,
     ExportResult,
     ExportValidationError,
@@ -17,7 +17,7 @@ from paperpilot.export import (
     PDFExporter,
     PyMuPDFRenderer,
 )
-from paperpilot.reporting import (
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportSection,

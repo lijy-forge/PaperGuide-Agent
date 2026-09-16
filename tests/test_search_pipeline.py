@@ -1,16 +1,16 @@
-"""Unit tests for the multi-retriever PaperPilot search pipeline."""
+"""Unit tests for the multi-retriever PaperGuide search pipeline."""
 
 import unittest
 
-from paperpilot.adapters import RetrieverProtocol
-from paperpilot.domain import (
+from paperguide.adapters import RetrieverProtocol
+from paperguide.domain import (
     Author,
     FullTextStatus,
     PaperCandidate,
     PaperSource,
     ResearchConfig,
 )
-from paperpilot.pipeline import PaperSearchPipeline, SearchResult
+from paperguide.pipeline import PaperSearchPipeline, SearchResult
 
 
 def make_paper(

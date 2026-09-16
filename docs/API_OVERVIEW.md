@@ -1,4 +1,4 @@
-# PaperPilot API Overview
+# PaperGuide API Overview
 
 ## Scope
 

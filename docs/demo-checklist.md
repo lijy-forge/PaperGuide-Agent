@@ -1,4 +1,4 @@
-# PaperPilot real demo checklist
+# PaperGuide real demo checklist
 
 This checklist distinguishes manual real-runtime evidence from automated Fake tests. As of 2026-08-05, the repository environment had no configured LLM credential and its validation interpreter lacked PyMuPDF, so the real items below remain unchecked.
 
@@ -33,7 +33,7 @@ This checklist distinguishes manual real-runtime evidence from automated Fake te
 Run manually only after Scenario A passes:
 
 ```powershell
-poetry run python -m paperpilot.smoke `
+poetry run python -m paperguide.smoke `
   --question "分析 YOLO 与 SLAM 融合在语义建图中的研究方法和实施路线" `
   --source arxiv --source semantic_scholar `
   --max-papers 3 --format markdown

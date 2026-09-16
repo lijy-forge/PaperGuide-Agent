@@ -5,22 +5,22 @@ import unittest
 from pathlib import Path
 from uuid import uuid4
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     AnalysisLLMInvocationError,
     AnalysisLLMResponseError,
     AnalysisSchemaValidationError,
 )
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import create_initial_state
-from paperpilot.orchestration.nodes import PlannerNode
-from paperpilot.progress.events import TaskEventType
-from paperpilot.progress.publisher import ProgressPublisher
-from paperpilot.relevance import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import create_initial_state
+from paperguide.orchestration.nodes import PlannerNode
+from paperguide.progress.events import TaskEventType
+from paperguide.progress.publisher import ProgressPublisher
+from paperguide.relevance import (
     QueryVariant,
     ResearchIntent,
     RetrievalPlanService,
 )
-from paperpilot.runtime.host import SQLiteHostBroker
+from paperguide.runtime.host import SQLiteHostBroker
 
 
 class _Planner:

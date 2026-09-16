@@ -82,7 +82,7 @@ class APIResearchTests(unittest.TestCase):
 
     def test_question_is_not_written_to_access_log(self) -> None:
         question = "private-question-never-log"
-        with self.assertLogs("paperpilot.api", level="INFO") as logs:
+        with self.assertLogs("paperguide.api", level="INFO") as logs:
             response = self.runtime.client.post(
                 "/api/v1/research",
                 json={"question": question},

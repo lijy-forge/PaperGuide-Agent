@@ -6,8 +6,8 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.domain import EvidenceType
-from paperpilot.reporting import (
+from paperguide.domain import EvidenceType
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportContextBuilder,
@@ -19,7 +19,7 @@ from paperpilot.reporting import (
     ResearchReport,
     StructuredReportWriter,
 )
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationResult,
     NumericConsistencyResult,
     SupportLevel,

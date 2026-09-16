@@ -4,12 +4,12 @@ import threading
 import time
 import unittest
 
-from paperpilot.document import (
+from paperguide.document import (
     DocumentIngestionResult,
     IngestionStatus,
     PaperIngestionItem,
 )
-from paperpilot.domain import (
+from paperguide.domain import (
     Author,
     FullTextStatus,
     EvidenceType,
@@ -17,14 +17,14 @@ from paperpilot.domain import (
     PaperSource,
     ResearchConfig,
 )
-from paperpilot.orchestration import (
+from paperguide.orchestration import (
     NextAction,
     OrchestratorConfig,
     ResearchStep,
     create_initial_state,
     state_to_json,
 )
-from paperpilot.orchestration.nodes import (
+from paperguide.orchestration.nodes import (
     IngestionNode,
     PlannerNode,
     QualityGateNode,
@@ -32,8 +32,8 @@ from paperpilot.orchestration.nodes import (
     RetrieverNode,
     VerifierNode,
 )
-from paperpilot.pipeline import SearchResult
-from paperpilot.verification import (
+from paperguide.pipeline import SearchResult
+from paperguide.verification import (
     ConflictRecord,
     EvidenceVerificationResult,
     NumericConsistencyResult,

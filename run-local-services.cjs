@@ -1,9 +1,9 @@
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 
-const root = 'E:\\PaperPilotAI';
+const root = 'E:\\PaperGuideAI';
 const python = `${root}\\.venv\\Scripts\\python.exe`;
-const cli = `${root}\\.venv\\Scripts\\paperpilot.exe`;
+const cli = `${root}\\.venv\\Scripts\\paperguide.exe`;
 const node = 'F:\\nodejs22\\node.exe';
 
 function loadEnvFile(filePath) {
@@ -33,16 +33,16 @@ loadEnvFile(`${root}\\.env.local`);
 loadEnvFile(`${root}\\.env`);
 
 const productionEnv = {
-  PAPERPILOT_MODE: 'production',
-  PAPERPILOT_LLM_PROVIDER: process.env.PAPERPILOT_LLM_PROVIDER || 'openai',
-  PAPERPILOT_MODEL_NAME: process.env.PAPERPILOT_MODEL_NAME || 'gpt-5.4',
+  PAPERGUIDE_MODE: 'production',
+  PAPERGUIDE_LLM_PROVIDER: process.env.PAPERGUIDE_LLM_PROVIDER || 'openai',
+  PAPERGUIDE_MODEL_NAME: process.env.PAPERGUIDE_MODEL_NAME || 'gpt-5.4',
 };
 
 const requiredCredential = {
   deepseek: 'DEEPSEEK_API_KEY',
   openai: 'OPENAI_API_KEY',
   anthropic: 'ANTHROPIC_API_KEY',
-}[productionEnv.PAPERPILOT_LLM_PROVIDER.toLowerCase()];
+}[productionEnv.PAPERGUIDE_LLM_PROVIDER.toLowerCase()];
 
 if (requiredCredential && !process.env[requiredCredential]) {
   console.error(
@@ -54,7 +54,7 @@ if (requiredCredential && !process.env[requiredCredential]) {
 function launch(command, args, cwd, env = {}) {
   const label = args.some((arg) => arg.endsWith('vite.js'))
     ? 'vite'
-    : args.includes('paperpilot.api.__main__')
+    : args.includes('paperguide.api.__main__')
       ? 'api'
       : 'host';
   const out = fs.openSync(`${root}\\${label}.log`, 'a');
@@ -70,7 +70,7 @@ function launch(command, args, cwd, env = {}) {
   console.log(`${command} pid=${child.pid}`);
 }
 
-launch(python, ['-m', 'paperpilot.api.__main__'], root, productionEnv);
+launch(python, ['-m', 'paperguide.api.__main__'], root, productionEnv);
 launch(cli, ['server', 'start'], root, productionEnv);
 launch(node, [
   `${root}\\frontend-runtime\\node_modules\\vite\\bin\\vite.js`,

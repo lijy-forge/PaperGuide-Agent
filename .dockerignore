@@ -9,9 +9,9 @@ output/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-paperpilot-dashboard/node_modules/
-paperpilot-dashboard/dist/
+paperguide-dashboard/node_modules/
+paperguide-dashboard/dist/
 runtime-data/
-paperpilot-exports/
-paperpilot-runtime.sqlite3*
+paperguide-exports/
+paperguide-runtime.sqlite3*
 *.log

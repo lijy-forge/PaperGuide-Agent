@@ -1,4 +1,4 @@
-"""Unit tests for the dependency-injected PaperPilot application service."""
+"""Unit tests for the dependency-injected PaperGuide application service."""
 
 import copy
 import hashlib
@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.application import (
+from paperguide.application import (
     InMemoryTaskStore,
     ResearchApplicationService,
     ResearchExecutionError,
@@ -17,14 +17,14 @@ from paperpilot.application import (
     ResearchTaskStatus,
     TaskNotFoundError,
 )
-from paperpilot.domain import SourceLocator
-from paperpilot.export import (
+from paperguide.domain import SourceLocator
+from paperguide.export import (
     ArtifactMetadata,
     ExportFormat,
     ExportResult,
 )
-from paperpilot.orchestration import NextAction, ResearchError, ResearchStep
-from paperpilot.reporting import (
+from paperguide.orchestration import NextAction, ResearchError, ResearchStep
+from paperguide.reporting import (
     ReportCitation,
     ReportClaim,
     ReportSection,

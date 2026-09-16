@@ -1,11 +1,11 @@
-"""Unit tests for PaperPilot document-layer Pydantic models."""
+"""Unit tests for PaperGuide document-layer Pydantic models."""
 
 import unittest
 from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.document import Document, Page, Section
+from paperguide.document import Document, Page, Section
 
 
 class TestDocumentModels(unittest.TestCase):

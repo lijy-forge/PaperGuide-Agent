@@ -5,11 +5,11 @@ description = "GPT Researcher is an autonomous agent designed for comprehensive 
 authors = ["Assaf Elovic <assaf.elovic@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{ include = "gpt_researcher" }, { include = "paperpilot" }]
+packages = [{ include = "gpt_researcher" }, { include = "paperguide" }]
 
 [tool.poetry.scripts]
-paperpilot = "paperpilot.runtime.cli:main"
-paperpilot-api = "paperpilot.api.__main__:main"
+paperguide = "paperguide.runtime.cli:main"
+paperguide-api = "paperguide.api.__main__:main"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
@@ -218,7 +218,7 @@ dependencies = [
 ]
 
 [project.scripts]
-paperpilot = "paperpilot.runtime.cli:main"
+paperguide = "paperguide.runtime.cli:main"
 
 [project.optional-dependencies]
 requirements-txt = [

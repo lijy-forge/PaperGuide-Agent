@@ -7,11 +7,11 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from paperpilot.api.schemas import HealthResponse
-from paperpilot.api.exceptions import APIError
-from paperpilot.api.routes.internal import provider_preflight
-from paperpilot.runtime import RuntimeSettings
-from paperpilot.runtime.host import (
+from paperguide.api.schemas import HealthResponse
+from paperguide.api.exceptions import APIError
+from paperguide.api.routes.internal import provider_preflight
+from paperguide.runtime import RuntimeSettings
+from paperguide.runtime.host import (
     HostProviderPreflight,
     HostStatus,
     ProviderFailureCategory,
@@ -201,7 +201,7 @@ class ProviderPreflightAPITests(unittest.TestCase):
             with self.assertRaises(APIError) as raised:
                 provider_preflight(
                     request,
-                    runtime.app.state.paperpilot_dependencies,
+                    runtime.app.state.paperguide_dependencies,
                 )
             self.assertEqual(raised.exception.status_code, 404)
             self.assertNotIn("/api/v1/internal", str(runtime.app.openapi()))

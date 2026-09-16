@@ -1,0 +1,1 @@
+"""PaperGuide AI domain package."""

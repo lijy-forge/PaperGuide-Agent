@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     EvidenceReference,
     ExperimentAnalysis,
     ExperimentMetricAnalysis,
@@ -13,7 +13,7 @@ from paperpilot.analysis import (
     PaperAnalysisResult,
     PaperReaderOutput,
 )
-from paperpilot.domain import (
+from paperguide.domain import (
     Evidence,
     EvidenceType,
     ExperimentSummary,

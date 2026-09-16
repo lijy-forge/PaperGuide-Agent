@@ -1,8 +1,8 @@
-# PaperPilot Deployment
+# PaperGuide Deployment
 
 ## Supported deployment profile
 
-PaperPilot v1 targets a trusted single-machine environment. Docker Compose runs three processes while preserving a single Active Host execution model.
+PaperGuide v1 targets a trusted single-machine environment. Docker Compose runs three processes while preserving a single Active Host execution model.
 
 The API and Host images install the Debian `fonts-noto-cjk` system package.
 The Survey PDF renderer uses PyMuPDF's built-in CJK face for Chinese runs and
@@ -16,7 +16,7 @@ flowchart LR
     Host["Task Host"] --> DB
     Host --> Artifacts["Artifact directory"]
     API --> Artifacts
-    DB --- Volume["paperpilot-data"]
+    DB --- Volume["paperguide-data"]
     Artifacts --- Volume
 ```
 
@@ -32,10 +32,10 @@ Access the Dashboard at [http://localhost](http://localhost). API port 8000 is b
 For an offline demonstration, set this in `.env` before startup:
 
 ```env
-PAPERPILOT_MODE=demo
+PAPERGUIDE_MODE=demo
 ```
 
-For production research, leave `PAPERPILOT_MODE=production`, select the Provider and inject its standard credential variable at runtime.
+For production research, leave `PAPERGUIDE_MODE=production`, select the Provider and inject its standard credential variable at runtime.
 
 ## Service responsibilities
 
@@ -43,21 +43,21 @@ For production research, leave `PAPERPILOT_MODE=production`, select the Provider
 | --- | --- | --- |
 | `dashboard` | Nginx serving a Vite build | SPA, `/api/` reverse proxy and history fallback |
 | `api` | Uvicorn/FastAPI | Public validation, safe task/status/event/artifact endpoints |
-| `host` | `paperpilot server start` | Task claims, execution, recovery, Graph and Artifact generation |
+| `host` | `paperguide server start` | Task claims, execution, recovery, Graph and Artifact generation |
 
 The API never constructs the Graph or starts Workers. The Host is the only process that owns execution dependencies.
 
 ## Persistent volume
 
-The named Volume `paperpilot-data` is mounted at `/app/data` by API and Host.
+The named Volume `paperguide-data` is mounted at `/app/data` by API and Host.
 
 ```text
 /app/data/
 ├── runtime.db
-├── paperpilot-runtime.sqlite3 -> runtime.db
+├── paperguide-runtime.sqlite3 -> runtime.db
 ├── artifacts/
 ├── logs/
-└── paperpilot-downloads/
+└── paperguide-downloads/
 ```
 
 Removing containers does not remove the named Volume. Running `docker compose down --volumes` does remove it and should be treated as a destructive operation.
@@ -66,17 +66,17 @@ Removing containers does not remove the named Volume. Running `docker compose do
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `PAPERPILOT_MODE` | `production` | Select production or offline demo composition |
-| `PAPERPILOT_LLM_PROVIDER` | `openai` | Non-secret Provider selector |
-| `PAPERPILOT_MODEL_NAME` | `gpt-5.4` | Structured model name |
-| `PAPERPILOT_EXPORT_DIRECTORY` | `/app/data/artifacts` in containers | Artifact root shared by Host and API |
-| `PAPERPILOT_MAX_PAPERS` | `10` | Default research limit |
-| `PAPERPILOT_LOG_LEVEL` | `INFO` | Standard logging threshold |
-| `PAPERPILOT_API_PORT` | `8000` | Host-side API port |
-| `PAPERPILOT_DASHBOARD_PORT` | `80` | Host-side Dashboard port |
-| `VITE_PAPERPILOT_API_BASE_URL` | `http://localhost` | Public build-time API origin |
+| `PAPERGUIDE_MODE` | `production` | Select production or offline demo composition |
+| `PAPERGUIDE_LLM_PROVIDER` | `openai` | Non-secret Provider selector |
+| `PAPERGUIDE_MODEL_NAME` | `gpt-5.4` | Structured model name |
+| `PAPERGUIDE_EXPORT_DIRECTORY` | `/app/data/artifacts` in containers | Artifact root shared by Host and API |
+| `PAPERGUIDE_MAX_PAPERS` | `10` | Default research limit |
+| `PAPERGUIDE_LOG_LEVEL` | `INFO` | Standard logging threshold |
+| `PAPERGUIDE_API_PORT` | `8000` | Host-side API port |
+| `PAPERGUIDE_DASHBOARD_PORT` | `80` | Host-side Dashboard port |
+| `VITE_PAPERGUIDE_API_BASE_URL` | `http://localhost` | Public build-time API origin |
 
-`RuntimeSettings` intentionally rejects secret-like `PAPERPILOT_*` names. Provider credentials must use the Provider's standard runtime environment variables. Never bake credentials into an image, Vite variable, Compose file or README.
+`RuntimeSettings` intentionally rejects secret-like `PAPERGUIDE_*` names. Provider credentials must use the Provider's standard runtime environment variables. Never bake credentials into an image, Vite variable, Compose file or README.
 
 ## Health checks
 
@@ -91,22 +91,22 @@ Liveness means the process responds. Readiness additionally depends on the Host 
 
 ```powershell
 # Terminal 1: worker host
-poetry run paperpilot server start
+poetry run paperguide server start
 ```
 
 ```powershell
 # Terminal 2: API
-poetry run paperpilot-api
+poetry run paperguide-api
 ```
 
 ```powershell
 # Terminal 3: Dashboard
-Set-Location paperpilot-dashboard
+Set-Location paperguide-dashboard
 npm install
 npm run dev
 ```
 
-All Python processes must use the same `PAPERPILOT_EXPORT_DIRECTORY`; this also determines the shared SQLite Runtime location.
+All Python processes must use the same `PAPERGUIDE_EXPORT_DIRECTORY`; this also determines the shared SQLite Runtime location.
 
 ## Operational checks
 

@@ -1,1 +1,0 @@
-"""PaperPilot AI domain package."""

@@ -2,9 +2,9 @@ from uuid import uuid4
 
 import pytest
 
-from paperpilot.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
-from paperpilot.pipeline import SearchResult
-from paperpilot.relevance import (
+from paperguide.domain import Author, FullTextStatus, PaperCandidate, PaperSource, ResearchConfig
+from paperguide.pipeline import SearchResult
+from paperguide.relevance import (
     CandidateSelectionPolicy,
     MetadataRelevanceGate,
     MetadataRelevancePolicy,

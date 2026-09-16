@@ -2,16 +2,16 @@
 
 from uuid import uuid4
 
-from paperpilot.analysis import PaperAnalysisResult
-from paperpilot.document import Document, Page, Section
-from paperpilot.domain import (
+from paperguide.analysis import PaperAnalysisResult
+from paperguide.document import Document, Page, Section
+from paperguide.domain import (
     Evidence,
     EvidenceType,
     ExperimentSummary,
     MethodSummary,
     SourceLocator,
 )
-from paperpilot.verification import (
+from paperguide.verification import (
     EvidenceVerificationDecision,
     SupportLevel,
     VerificationStatus,

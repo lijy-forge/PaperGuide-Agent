@@ -1,4 +1,4 @@
-"""Unit tests for the PaperPilot arXiv adapter without network access."""
+"""Unit tests for the PaperGuide arXiv adapter without network access."""
 
 import copy
 import socket
@@ -8,14 +8,14 @@ from urllib.parse import parse_qs, urlsplit
 
 from pydantic import ValidationError
 
-from paperpilot.adapters.arxiv import (
+from paperguide.adapters.arxiv import (
     ArxivClient,
     ArxivConfig,
     ArxivInvalidResponseError,
     ArxivMapper,
     ArxivNetworkError,
 )
-from paperpilot.domain import FullTextStatus, PaperSource
+from paperguide.domain import FullTextStatus, PaperSource
 
 
 ARXIV_FEED = b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -125,7 +125,7 @@ class TestArxivAdapter(unittest.TestCase):
         config = ArxivConfig(
             timeout_seconds=7.5,
             default_max_results=4,
-            user_agent="PaperPilot-Test/1.0",
+            user_agent="PaperGuide-Test/1.0",
         )
         client = ArxivClient(config=config, opener=opener)
 
@@ -134,7 +134,7 @@ class TestArxivAdapter(unittest.TestCase):
         query = parse_qs(urlsplit(opener.request.full_url).query)
         self.assertEqual(query["max_results"], ["4"])
         self.assertEqual(query["search_query"], ['all:"YOLO" AND all:"SLAM"'])
-        self.assertEqual(opener.request.get_header("User-agent"), "PaperPilot-Test/1.0")
+        self.assertEqual(opener.request.get_header("User-agent"), "PaperGuide-Test/1.0")
         self.assertEqual(opener.timeout, 7.5)
 
     def test_multiple_queries_respect_official_request_interval(self):

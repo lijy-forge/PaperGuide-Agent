@@ -6,9 +6,9 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 
-from paperpilot.domain import PaperSource, ResearchConfig
-from paperpilot.orchestration import create_initial_state
-from paperpilot.orchestration.checkpoint import (
+from paperguide.domain import PaperSource, ResearchConfig
+from paperguide.orchestration import create_initial_state
+from paperguide.orchestration.checkpoint import (
     CheckpointNotFoundError,
     CheckpointRecord,
     CheckpointStore,

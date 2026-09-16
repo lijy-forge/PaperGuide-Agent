@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from paperpilot.document import DocumentHashError, calculate_sha256
+from paperguide.document import DocumentHashError, calculate_sha256
 
 
 class TrackingReader:

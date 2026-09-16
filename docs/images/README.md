@@ -1,4 +1,4 @@
-# PaperPilot screenshot capture slots
+# PaperGuide screenshot capture slots
 
 This directory reserves the following release artifact names:
 
@@ -10,7 +10,7 @@ The files must be captured from a real local Demo Runtime. Do not substitute gen
 
 ## Capture checklist
 
-1. Start Host with `PAPERPILOT_MODE=demo`, then start API and Dashboard.
+1. Start Host with `PAPERGUIDE_MODE=demo`, then start API and Dashboard.
 2. Use a clean browser profile and a 1440 × 900 viewport.
 3. Ensure no API key, absolute path, full question query parameter or internal runtime identifier is visible.
 4. Capture `dashboard.png` after readiness and metrics have loaded.

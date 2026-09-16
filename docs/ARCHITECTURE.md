@@ -1,8 +1,8 @@
-# PaperPilot Architecture
+# PaperGuide Architecture
 
 ## Purpose
 
-PaperPilot is an evidence-grounded autonomous research platform for technical literature. The architecture separates domain processing from orchestration and runtime concerns so that failures can be isolated, state can be recovered, and final reports remain auditable.
+PaperGuide is an evidence-grounded autonomous research platform for technical literature. The architecture separates domain processing from orchestration and runtime concerns so that failures can be isolated, state can be recovered, and final reports remain auditable.
 
 ## System context
 

@@ -8,13 +8,13 @@ from types import SimpleNamespace
 
 from pydantic import BaseModel, ConfigDict
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     AnalysisLLMInvocationError,
     AnalysisLLMResponseError,
     AnalysisSchemaValidationError,
     StructuredLLMProtocol,
 )
-from paperpilot.integrations import GPTResearcherStructuredLLM
+from paperguide.integrations import GPTResearcherStructuredLLM
 
 
 class SmallResponse(BaseModel):

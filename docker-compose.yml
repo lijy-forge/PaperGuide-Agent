@@ -1,21 +1,21 @@
-name: paperpilot
+name: paperguide
 
 x-python-environment: &python-environment
   PYTHONUNBUFFERED: "1"
   PYTHONDONTWRITEBYTECODE: "1"
-  PAPERPILOT_MODE: ${PAPERPILOT_MODE:-production}
-  PAPERPILOT_LLM_PROVIDER: ${PAPERPILOT_LLM_PROVIDER:-openai}
-  PAPERPILOT_MODEL_NAME: ${PAPERPILOT_MODEL_NAME:-gpt-5.4}
-  PAPERPILOT_EXPORT_DIRECTORY: /app/data/artifacts
-  PAPERPILOT_MAX_PAPERS: ${PAPERPILOT_MAX_PAPERS:-10}
-  PAPERPILOT_LOG_LEVEL: ${PAPERPILOT_LOG_LEVEL:-INFO}
+  PAPERGUIDE_MODE: ${PAPERGUIDE_MODE:-production}
+  PAPERGUIDE_LLM_PROVIDER: ${PAPERGUIDE_LLM_PROVIDER:-openai}
+  PAPERGUIDE_MODEL_NAME: ${PAPERGUIDE_MODEL_NAME:-gpt-5.4}
+  PAPERGUIDE_EXPORT_DIRECTORY: /app/data/artifacts
+  PAPERGUIDE_MAX_PAPERS: ${PAPERGUIDE_MAX_PAPERS:-10}
+  PAPERGUIDE_LOG_LEVEL: ${PAPERGUIDE_LOG_LEVEL:-INFO}
 
 services:
   host:
     build:
       context: .
       dockerfile: docker/host/Dockerfile
-    image: paperpilot-host:local
+    image: paperguide-host:local
     init: true
     restart: unless-stopped
     environment:
@@ -26,13 +26,13 @@ services:
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
       SEMANTIC_SCHOLAR_API_KEY: ${SEMANTIC_SCHOLAR_API_KEY:-}
     volumes:
-      - paperpilot-data:/app/data
+      - paperguide-data:/app/data
     healthcheck:
       test:
         - CMD
         - python
         - -c
-        - "from paperpilot.runtime import RuntimeSettings; from paperpilot.runtime.host import SQLiteHostBroker; settings=RuntimeSettings.from_env(); raise SystemExit(0 if SQLiteHostBroker(settings.task_database_path()).host_available() else 1)"
+        - "from paperguide.runtime import RuntimeSettings; from paperguide.runtime.host import SQLiteHostBroker; settings=RuntimeSettings.from_env(); raise SystemExit(0 if SQLiteHostBroker(settings.task_database_path()).host_available() else 1)"
       interval: 10s
       timeout: 5s
       retries: 6
@@ -45,12 +45,12 @@ services:
     build:
       context: .
       dockerfile: docker/api/Dockerfile
-    image: paperpilot-api:local
+    image: paperguide-api:local
     init: true
     restart: unless-stopped
     command:
       - uvicorn
-      - paperpilot.api.app:create_default_api_app
+      - paperguide.api.app:create_default_api_app
       - --factory
       - --host
       - 0.0.0.0
@@ -59,9 +59,9 @@ services:
     environment:
       <<: *python-environment
     volumes:
-      - paperpilot-data:/app/data
+      - paperguide-data:/app/data
     ports:
-      - "127.0.0.1:${PAPERPILOT_API_PORT:-8000}:8000"
+      - "127.0.0.1:${PAPERGUIDE_API_PORT:-8000}:8000"
     depends_on:
       host:
         condition: service_healthy
@@ -83,11 +83,11 @@ services:
       context: .
       dockerfile: docker/dashboard/Dockerfile
       args:
-        VITE_PAPERPILOT_API_BASE_URL: ${VITE_PAPERPILOT_API_BASE_URL:-http://localhost}
-    image: paperpilot-dashboard:local
+        VITE_PAPERGUIDE_API_BASE_URL: ${VITE_PAPERGUIDE_API_BASE_URL:-http://localhost}
+    image: paperguide-dashboard:local
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${PAPERPILOT_DASHBOARD_PORT:-80}:80"
+      - "127.0.0.1:${PAPERGUIDE_DASHBOARD_PORT:-80}:80"
     depends_on:
       api:
         condition: service_healthy
@@ -101,5 +101,5 @@ services:
     mem_limit: 256m
 
 volumes:
-  paperpilot-data:
-    name: paperpilot-data
+  paperguide-data:
+    name: paperguide-data

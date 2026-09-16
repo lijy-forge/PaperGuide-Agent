@@ -9,19 +9,19 @@ from pathlib import Path
 from uuid import uuid4
 from pydantic import BaseModel, ValidationError
 
-from paperpilot.analysis import (
+from paperguide.analysis import (
     AnalysisLLMResponseError,
     PaperReaderOutput,
 )
-from paperpilot.document import Document
-from paperpilot.orchestration import ResearchStep, create_initial_state
-from paperpilot.orchestration.nodes import ReaderNode
-from paperpilot.progress.diagnostics import (
+from paperguide.document import Document
+from paperguide.orchestration import ResearchStep, create_initial_state
+from paperguide.orchestration.nodes import ReaderNode
+from paperguide.progress.diagnostics import (
     sanitize_reader_exception,
     summarize_reader_diagnostics,
 )
-from paperpilot.progress.events import TaskEventType
-from paperpilot.runtime.host import SQLiteHostBroker
+from paperguide.progress.events import TaskEventType
+from paperguide.runtime.host import SQLiteHostBroker
 
 from .verification_fixtures import make_document
 
@@ -49,7 +49,7 @@ class FakeReader:
 
 
 def make_state(documents):
-    config = __import__("paperpilot.domain", fromlist=["ResearchConfig"]).ResearchConfig(
+    config = __import__("paperguide.domain", fromlist=["ResearchConfig"]).ResearchConfig(
         question="Analyze SLAM",
         max_papers=5,
         sources=[],
@@ -238,7 +238,7 @@ class ReaderTelemetryTests(unittest.TestCase):
             broker.record_diagnostic_event(
                 task_id,
                 TaskEventType.READER_ITEM_FAILED,
-                __import__("paperpilot.application", fromlist=["ResearchTaskStatus"]).ResearchTaskStatus.RUNNING,
+                __import__("paperguide.application", fromlist=["ResearchTaskStatus"]).ResearchTaskStatus.RUNNING,
                 {"failure_category": "SCHEMA_VALIDATION", "safe_title_preview": "A" * 200},
             )
             public = broker.list_events(task_id)

@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import { resolve } from "node:path";
 
 export default defineConfig({
-  root: resolve("E:/PaperPilotAI/paperpilot-dashboard"),
+  root: resolve("E:/PaperGuideAI/paperguide-dashboard"),
   plugins: [react()],
   server: {
     host: "127.0.0.1",

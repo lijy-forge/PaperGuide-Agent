@@ -4,7 +4,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from paperpilot.orchestration import OrchestratorConfig
+from paperguide.orchestration import OrchestratorConfig
 
 
 class TestOrchestratorConfig(unittest.TestCase):

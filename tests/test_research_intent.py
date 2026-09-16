@@ -2,7 +2,7 @@
 
 import unittest
 
-from paperpilot.relevance import ResearchIntent, StructuredLLMResearchIntentPlanner, TimeRange
+from paperguide.relevance import ResearchIntent, StructuredLLMResearchIntentPlanner, TimeRange
 
 
 class ResearchIntentTests(unittest.TestCase):

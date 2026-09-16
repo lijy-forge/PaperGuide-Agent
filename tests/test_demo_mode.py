@@ -1,4 +1,4 @@
-"""Offline end-to-end tests for the PaperPilot demonstration composition."""
+"""Offline end-to-end tests for the PaperGuide demonstration composition."""
 
 import io
 import json
@@ -9,11 +9,11 @@ from pathlib import Path
 from unittest.mock import patch
 from uuid import UUID
 
-from paperpilot.adapters import RetrieverProtocol
-from paperpilot.api.routes.tasks import task_response
-from paperpilot.application import ResearchRequest, ResearchTaskStatus
-from paperpilot.bootstrap import BootstrapConfig, LLMProviderConfig, PdfDownloadConfig
-from paperpilot.demo import (
+from paperguide.adapters import RetrieverProtocol
+from paperguide.api.routes.tasks import task_response
+from paperguide.application import ResearchRequest, ResearchTaskStatus
+from paperguide.bootstrap import BootstrapConfig, LLMProviderConfig, PdfDownloadConfig
+from paperguide.demo import (
     DEMO_QUESTION,
     FakeReader,
     FakeRetriever,
@@ -21,9 +21,9 @@ from paperpilot.demo import (
     create_demo_application,
     create_demo_seed,
 )
-from paperpilot.execution import PersistentTaskStore
-from paperpilot.export import ExportFormat
-from paperpilot.runtime import RuntimeSettings, run_cli
+from paperguide.execution import PersistentTaskStore
+from paperguide.export import ExportFormat
+from paperguide.runtime import RuntimeSettings, run_cli
 
 
 def make_config(root: Path) -> BootstrapConfig:
@@ -31,7 +31,7 @@ def make_config(root: Path) -> BootstrapConfig:
 
     return BootstrapConfig(
         llm_provider=LLMProviderConfig(provider="demo"),
-        model_name="paperpilot-offline-demo",
+        model_name="paperguide-offline-demo",
         pdf_download=PdfDownloadConfig(download_directory=root / "downloads"),
         export_directory=root / "artifacts",
     )
@@ -119,7 +119,7 @@ class DemoModeTests(unittest.TestCase):
 
     def test_runtime_mode_defaults_to_production_and_loads_demo(self) -> None:
         self.assertEqual(RuntimeSettings().mode, "production")
-        settings = RuntimeSettings.from_env({"PAPERPILOT_MODE": "DEMO"})
+        settings = RuntimeSettings.from_env({"PAPERGUIDE_MODE": "DEMO"})
         self.assertEqual(settings.mode, "demo")
 
     def test_demo_cli_runs_complete_workflow(self) -> None:

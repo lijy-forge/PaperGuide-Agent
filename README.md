@@ -1,16 +1,16 @@
-# PaperPilot AI
+# PaperGuide AI
 
 ## Evidence-grounded Autonomous Research Agent Platform
 
 基于 LangGraph 的证据驱动自主研究 Agent 平台。
 
-PaperPilot 面向 AI 工程师和研究人员，将论文检索、PDF 处理、结构化阅读、证据核验、可靠任务执行与报告交付组合成一条可审计的研究流水线。项目基于 GPT Researcher 的搜索、抓取和 LLM 能力进行二次开发，同时将论文领域能力维护在独立的 `paperpilot/` 模块中。
+PaperGuide 面向 AI 工程师和研究人员，将论文检索、PDF 处理、结构化阅读、证据核验、可靠任务执行与报告交付组合成一条可审计的研究流水线。项目基于 GPT Researcher 的搜索、抓取和 LLM 能力进行二次开发，同时将论文领域能力维护在独立的 `paperguide/` 模块中。
 
-> PaperPilot 辅助技术调研，不替代学术同行评审、原始论文阅读或专家判断。
+> PaperGuide 辅助技术调研，不替代学术同行评审、原始论文阅读或专家判断。
 
 ## Overview
 
-输入一个技术研究问题后，PaperPilot 自动完成：
+输入一个技术研究问题后，PaperGuide 自动完成：
 
 - Research Planning：建立研究配置并调度确定性工作流。
 - Paper Retrieval：聚合 arXiv 与 Semantic Scholar 候选论文。
@@ -75,7 +75,7 @@ Demo 数据的用途是离线展示系统架构和交互流程：
 - **Demo 论文不是实际论文来源，不得作为真实学术引用。**
 
 ```powershell
-poetry run paperpilot demo
+poetry run paperguide demo
 ```
 
 完整说明见 [Demo Guide](docs/DEMO.md)。
@@ -93,7 +93,7 @@ Copy-Item .env.example .env
 生产模式需要为所选 Provider 设置标准凭据；Demo 模式只需在 `.env` 中设置：
 
 ```env
-PAPERPILOT_MODE=demo
+PAPERGUIDE_MODE=demo
 ```
 
 启动完整系统：
@@ -102,7 +102,7 @@ PAPERPILOT_MODE=demo
 docker compose up --build
 ```
 
-浏览器访问 [http://localhost](http://localhost)。SQLite Runtime 和 Artifact 保存在命名 Volume `paperpilot-data` 中。
+浏览器访问 [http://localhost](http://localhost)。SQLite Runtime 和 Artifact 保存在命名 Volume `paperguide-data` 中。
 
 ### Local Demo
 
@@ -110,13 +110,13 @@ docker compose up --build
 
 ```powershell
 poetry install
-poetry run paperpilot demo
+poetry run paperguide demo
 ```
 
 自定义问题和输出格式：
 
 ```powershell
-poetry run paperpilot demo `
+poetry run paperguide demo `
   --question "YOLO与视觉SLAM融合研究进展" `
   --max-papers 3 `
   --format markdown
@@ -128,18 +128,18 @@ poetry run paperpilot demo `
 
 ```powershell
 # Terminal 1
-$env:PAPERPILOT_MODE = "demo"
-poetry run paperpilot server start
+$env:PAPERGUIDE_MODE = "demo"
+poetry run paperguide server start
 ```
 
 ```powershell
 # Terminal 2
-poetry run paperpilot-api
+poetry run paperguide-api
 ```
 
 ```powershell
 # Terminal 3
-Set-Location paperpilot-dashboard
+Set-Location paperguide-dashboard
 npm install
 npm run dev
 ```
@@ -189,7 +189,7 @@ FastAPI 暴露任务提交、状态、事件、取消、Artifact、Metrics 和 H
 
 ## Design Decisions
 
-PaperPilot 的关键选择不是简单的技术栈堆叠：
+PaperGuide 的关键选择不是简单的技术栈堆叠：
 
 - SQLite Runtime 面向单机可部署、可检查和低运维成本场景；它不是 Redis/Celery 的等价替代。
 - 单 Active Host 简化本地可靠执行模型，lease 和 fencing token 负责崩溃恢复与陈旧写入防护。
@@ -219,4 +219,4 @@ PaperPilot 的关键选择不是简单的技术栈堆叠：
 
 ## Project Lineage
 
-PaperPilot 是基于 [GPT Researcher](https://github.com/assafelovic/gpt-researcher) 的二次开发项目，保留其底层研究能力，并增加论文领域模型、Evidence Verification、LangGraph 编排、可靠任务 Runtime、API、Dashboard 和安全 Artifact 交付层。上游版权与许可证信息见 [LICENSE](LICENSE)。
+PaperGuide 是基于 [GPT Researcher](https://github.com/assafelovic/gpt-researcher) 的二次开发项目，保留其底层研究能力，并增加论文领域模型、Evidence Verification、LangGraph 编排、可靠任务 Runtime、API、Dashboard 和安全 Artifact 交付层。上游版权与许可证信息见 [LICENSE](LICENSE)。

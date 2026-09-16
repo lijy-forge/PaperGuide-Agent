@@ -7,10 +7,10 @@ from uuid import UUID
 
 import pymupdf
 
-from paperpilot.document import PdfDownloader
-from paperpilot.domain import FullTextStatus, ManualPaperSource, PaperCandidate, PaperSource
-from paperpilot.orchestration.nodes.retriever import RetrieverNode
-from paperpilot.pipeline import SearchResult
+from paperguide.document import PdfDownloader
+from paperguide.domain import FullTextStatus, ManualPaperSource, PaperCandidate, PaperSource
+from paperguide.orchestration.nodes.retriever import RetrieverNode
+from paperguide.pipeline import SearchResult
 from tests.api_fixtures import APITestRuntime
 
 
@@ -86,7 +86,7 @@ class ManualSourceDownloaderTests(unittest.TestCase):
                 authors=[],
                 sources=[PaperSource.GOOGLE_SCHOLAR],
                 landing_page_url="https://scholar.google.com/example",
-                pdf_url=f"paperpilot-upload://{upload_id}",
+                pdf_url=f"paperguide-upload://{upload_id}",
                 full_text_status=FullTextStatus.AVAILABLE,
             )
             downloaded = PdfDownloader(
@@ -122,7 +122,7 @@ class ManualSourceMergeTests(unittest.TestCase):
         )
         merged = RetrieverNode._merge_manual_sources(result, [manual])
         self.assertEqual(len(merged.papers), 1)
-        self.assertEqual(merged.papers[0].pdf_url, f"paperpilot-upload://{manual.upload_id}")
+        self.assertEqual(merged.papers[0].pdf_url, f"paperguide-upload://{manual.upload_id}")
         self.assertEqual(
             merged.papers[0].sources,
             [PaperSource.ARXIV, PaperSource.GOOGLE_SCHOLAR],
