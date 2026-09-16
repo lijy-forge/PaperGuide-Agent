@@ -271,6 +271,11 @@ class DemoProvider:
         method_text = "、".join(methods) or "入选代表方法"
         earliest = years[0] if years else "早期"
         latest = years[-1] if years else "近期"
+        # The filtering era closes at 2007 in this narrative; collapse the range
+        # when the sample starts there so it never reads "从 2007 到 2007 年".
+        filtering_era = (
+            f"{earliest} 年" if str(earliest) == "2007" else f"从 {earliest} 到 2007 年"
+        )
         paragraph_specs = {
             "A": [
                 (
@@ -310,13 +315,19 @@ class DemoProvider:
                 *[
                     (
                         "taxonomy",
-                        f"“{family.get('name')}”包含文献 {family.get('member_citation_numbers')}。共同机制是{family.get('common_mechanism')}；主要优势包括{'、'.join(family.get('advantages') or ['证据有限'])}，主要边界包括{'、'.join(family.get('limitations') or ['证据有限'])}。",
+                        # Citation numbers are rebuilt from evidence keys, so any
+                        # bracketed token written here is stripped before export
+                        # and would leave a dangling sentence.
+                        f"“{family.get('name')}”收录 {len(family.get('member_citation_numbers') or [])} 篇核心文献。共同机制是{str(family.get('common_mechanism') or '').rstrip('。')}；主要优势包括{'、'.join(family.get('advantages') or ['证据有限'])}，主要边界包括{'、'.join(family.get('limitations') or ['证据有限'])}。",
+                        # A family paragraph is supported by its own members, not
+                        # by every paper in the sample.
+                        [key for key in (family.get("source_statement_keys") or []) if key in available_keys],
                     )
                     for family in families
                 ],
                 (
                     "progress",
-                    f"从 {earliest} 到 2007 年，研究重点是以 EKF 和 Rao-Blackwellized 粒子滤波建立递推概率框架，并通过改进提议分布和重采样提升二维栅格建图的可用性。",
+                    f"{filtering_era}，研究重点是以 EKF 和 Rao-Blackwellized 粒子滤波建立递推概率框架，并通过改进提议分布和重采样提升二维栅格建图的可用性。",
                 ),
                 (
                     "progress",
@@ -404,13 +415,15 @@ class DemoProvider:
                 ),
             ],
         }
+        # A spec may pin the keys that actually support it; the rest fall back to
+        # the stage-wide selection.
         paragraphs = [
             {
-                "text": text,
-                "section_type": section_type,
-                "source_statement_keys": statement_keys,
+                "text": spec[1],
+                "section_type": spec[0],
+                "source_statement_keys": (spec[2] if len(spec) > 2 and spec[2] else statement_keys),
             }
-            for section_type, text in paragraph_specs[stage]
+            for spec in paragraph_specs[stage]
         ]
         future_directions = []
         if stage == "D" and statement_keys:
