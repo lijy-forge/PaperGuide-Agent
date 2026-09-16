@@ -230,9 +230,18 @@ class SurveyMarkdownRenderer:
     def _appendix_profiles(self, report: SurveyReport, title: str) -> list[str]:
         language = _language(report)
         strings = lambda key: SurveyPresentationStrings.get(language, key)
+        # A profile carries no family field of its own; the taxonomy records
+        # membership by citation number, so resolve the name from there.
+        families = {
+            number: family.get("name")
+            for family in report.taxonomy_summary.get("families", [])
+            if family.get("name")
+            for number in family.get("member_citation_numbers") or []
+        }
         lines = ["", f"## {title}", ""]
         for item in report.core_paper_profiles:
-            lines.extend([f"### [{item.get('citation_number')}] {_md(item.get('title', ''))}", f"- {strings('year')}: {item.get('year') or strings('year_unknown')}", f"- {strings('method_family')}: {_md(item.get('method_family') or strings('unclassified'))}", f"- {strings('evidence_coverage')}: {item.get('verified_evidence_count', 0)}", ""])
+            family = families.get(item.get("citation_number")) or strings("unclassified")
+            lines.extend([f"### [{item.get('citation_number')}] {_md(item.get('title', ''))}", f"- {strings('year')}: {item.get('year') or strings('year_unknown')}", f"- {strings('method_family')}: {_md(family)}", f"- {strings('evidence_coverage')}: {item.get('verified_evidence_count', 0)}", ""])
         return lines
 
     def _appendix_ledger(self, report: SurveyReport, title: str, language: str) -> list[str]:
