@@ -34,6 +34,7 @@ def make_fixture(mode=ReportMode.FULL_SURVEY):
     context = SurveyReportContextBuilder().build("demo research question", evidence, mode)
     context = context.model_copy(
         update={"warnings": [*context.warnings, "DEMO_PREVIEW_DATA"]}
+    )
     taxonomy = DeterministicTaxonomyBuilder().build(TaxonomyContextBuilder().build(evidence))
     analysis_data = ComparisonDataBuilder().build(evidence, seed.papers, linked, verified, taxonomy)
     return context, evidence, analysis_data

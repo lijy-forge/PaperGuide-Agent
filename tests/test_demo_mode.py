@@ -85,9 +85,13 @@ class DemoModeTests(unittest.TestCase):
             self.assertIsNotNone(result.task.artifact)
             artifact = Path(result.task.artifact.file_path)
             self.assertTrue(artifact.is_file())
-            self.assertIn(
-                "Offline demo uses synthetic papers",
-                artifact.read_text("utf-8"),
+            # The internal warning key is translated before export, so the
+            # artifact carries the reader-facing disclaimer in its own language.
+            exported = artifact.read_text("utf-8")
+            self.assertTrue(
+                "本报告使用版式测试数据" in exported
+                or "layout-test data for preview only" in exported,
+                "demo artifact must carry the synthetic-data disclaimer",
             )
 
     def test_dashboard_status_contract_can_read_persisted_result(self) -> None:

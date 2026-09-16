@@ -61,6 +61,7 @@ from paperguide.reporting import (
 from paperguide.reporting.synthesis import FullSurveySynthesisService, SynthesisStage
 from paperguide.reporting import ReportSchemaValidationError, ReportGenerationError
 from paperguide.verification import VerificationInputError, apply_verification
+from tests.production_fixtures import production_provenance
 from tests.test_survey_synthesis import FakeChineseStageLLM
 
 
@@ -93,17 +94,18 @@ class _LegacyMustNotRun:
 
 def _completed_state(mode: ReportMode):
     seed = create_demo_seed()
+    papers = production_provenance(seed.papers)
     question = "Analyze evidence-grounded visual SLAM research"
     state = create_initial_state(question, ResearchConfig(question=question, max_papers=3, sources=[]))
     linked, verified, analyses = {}, {}, {}
-    for index, paper in enumerate(seed.papers):
+    for index, paper in enumerate(papers):
         analysis = FakeReader().analyze(seed.documents[index])
         result = apply_verification(analysis, FakeVerifier().verify(analysis, seed.documents[index]))
         analyses[str(paper.id)] = analysis
         verified[str(paper.id)] = result
         linked[str(paper.id)] = EvidenceLinkingService().link(analysis, result, paper)
     assessments = {}
-    for paper in seed.papers:
+    for paper in papers:
         assessments[str(paper.id)] = FinalRelevanceAssessment(
             paper_id=paper.id, final_classification=FinalRelevanceClassification.CORE,
             assessment_status=AssessmentStatus.ASSESSED, fulltext_concept_coverage=1,
@@ -112,7 +114,7 @@ def _completed_state(mode: ReportMode):
             overall_score=1, selected_for_report=True,
         )
     state.update({
-        "papers": seed.papers, "documents": {str(item.paper_id): item for item in seed.documents},
+        "papers": papers, "documents": {str(item.paper_id): item for item in seed.documents},
         "analyses": analyses, "verified_results": verified,
         "verification_results": {key: value.verification for key, value in verified.items()},
         "evidence_linked_analysis": linked, "final_relevance": assessments,
@@ -294,7 +296,7 @@ def test_compiled_partial_apply_failure_reaches_evidence_limited_survey():
     seed = create_demo_seed()
     failing_apply = _FailFirstApply()
     graph = _compiled_graph(
-        papers=seed.papers[:2],
+        papers=production_provenance(seed.papers)[:2],
         apply_verification_fn=failing_apply,
         orchestrator_config=OrchestratorConfig(minimum_verified_papers=2),
     )
@@ -409,7 +411,7 @@ def test_compiled_graph_full_survey_uses_survey_handoff():
 
     question = "目标检测与视觉SLAM融合研究进展"
     seed = create_demo_seed()
-    graph = _compiled_graph(papers=seed.papers)
+    graph = _compiled_graph(papers=production_provenance(seed.papers))
     state = _compiled_state(graph, question)
 
     assert state["next_action"] is NextAction.COMPLETE

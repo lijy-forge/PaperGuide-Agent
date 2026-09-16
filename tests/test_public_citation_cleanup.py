@@ -233,5 +233,8 @@ def test_multiple_papers_use_one_grouped_paragraph_citation_across_formats():
     assert "href=\"#reference-1\"" not in html  # Citations are public text, not internal links.
     # Timeline and reference source URLs are intentionally clickable, but they
     # must remain ordinary external HTTPS links rather than internal IDs.
-    assert links
-    assert all(link["kind"] == 2 and link["uri"].startswith("https://") for link in links)
+    addressed = [link for link in links if link.get("uri")]
+    assert addressed
+    assert all(link["kind"] == pymupdf.LINK_URI and link["uri"].startswith("https://") for link in addressed)
+    # Table-of-contents entries navigate by page number, so they carry no address to leak.
+    assert all(not link.get("uri") for link in links if link["kind"] != pymupdf.LINK_URI)
