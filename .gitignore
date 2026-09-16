@@ -37,6 +37,7 @@ my-docs/
 #Ignore mypy cache
 .mypy_cache/
 node_modules
+.npm-cache/
 .idea
 .DS_Store
 .docusaurus
