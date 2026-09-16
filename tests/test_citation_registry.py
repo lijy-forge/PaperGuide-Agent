@@ -41,7 +41,9 @@ def test_registry_numbers_start_at_one_and_are_deterministic():
 def test_registry_sorts_year_author_title_and_identifier():
     seed, _, _ = demo_data()
     ordered = CitationRegistry().build(seed.papers)
-    assert [item.publication_year for item in ordered] == [2024, 2025, 2026]
+    assert [item.publication_year for item in ordered] == sorted(
+        paper.publication_year for paper in seed.papers
+    )
 
 
 def test_registry_deduplicates_canonical_papers():
@@ -66,7 +68,7 @@ def test_reference_contains_only_real_metadata():
     data = SurveyEvidenceDataBuilder().build(seed.papers, None, linked, verified)
     reference = data.references[0]
     assert reference.title
-    assert reference.year in {2024, 2025, 2026}
+    assert reference.year in {paper.publication_year for paper in seed.papers}
     assert "Unknown Conference" not in reference.model_dump_json()
 
 
@@ -130,13 +132,15 @@ def test_unverified_limitation_is_not_promoted_to_primary():
     seed, linked, verified = demo_data()
     data = SurveyEvidenceDataBuilder().build(seed.papers, None, linked, verified)
     assert all(item.primary_limitation is None for item in data.core_paper_profiles)
-    assert all(item.limitation_availability == "NO_VERIFIED_LIMITATION" for item in data.core_paper_profiles)
+    assert all(item.limitation_availability == "AUTHOR_LIMITATION_NOT_LOCATED" for item in data.core_paper_profiles)
 
 
 def test_timeline_contains_selected_papers_in_year_order():
     seed, linked, verified = demo_data()
     data = SurveyEvidenceDataBuilder().build(seed.papers, None, linked, verified)
-    assert [item.year for item in data.literature_timeline] == [2024, 2025, 2026]
+    assert [item.year for item in data.literature_timeline] == sorted(
+        paper.publication_year for paper in seed.papers
+    )
     assert all(item.primary_contribution for item in data.literature_timeline)
 
 

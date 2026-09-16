@@ -943,4 +943,5 @@ class FullSurveySynthesisService:
 
 
 # Names kept explicit for application/bootstrap integrations.
-SurveyReportSynthesisWriter = SurveySynthesisWriter
+SurveyReportSynthesisWriter = SurveySynthesisWriter
+SurveyReportSynthesisAssembler = SurveySynthesisAssembler

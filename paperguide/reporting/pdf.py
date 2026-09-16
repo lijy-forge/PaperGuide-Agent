@@ -118,7 +118,7 @@ class SurveyPdfRenderer:
         new_page()
         body_top = self.layout.top_margin + self.layout.header_area
         major_starts = {"3", "6", "8"}
-        for section in self._pdf_sections(report, chinese=chinese):
+        for section in report.sections:
             if section.number in major_starts and state["y"] > body_top + 20:
                 new_page()
             ensure(34)
@@ -897,6 +897,22 @@ class SurveyPdfRenderer:
     def _header(self, page, report: SurveyReport) -> None:
         running_title = report.title.split("：", 1)[0].split(":", 1)[0]
         self._insert_text(page, (self.layout.left_margin, 28), self._truncate(running_title, 46), fontsize=8, color=(0.25, 0.3, 0.35))
+
+    def _preview_watermark(self, page, *, chinese: bool = False) -> None:
+        """Mark preview pages so synthetic demo output is never read as a real survey."""
+
+        label = (
+            "预览样张——合成数据，不可作为真实引用"
+            if chinese
+            else "PREVIEW - synthetic data, not citable"
+        )
+        self._insert_text(
+            page,
+            (self.layout.left_margin, page.rect.height / 2),
+            label,
+            fontsize=18,
+            color=(0.86, 0.88, 0.91),
+        )
 
     def _footer(self, page, number: int, total: int, *, chinese: bool = False) -> None:
         label = "PaperGuide AI——证据驱动技术综述" if chinese else "PaperGuide AI - Evidence-grounded survey"

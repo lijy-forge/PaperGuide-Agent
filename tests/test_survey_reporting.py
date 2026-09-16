@@ -19,17 +19,19 @@ from paperguide.reporting import (
     SurveyReportVerifier,
 )
 from paperguide.verification import apply_verification
+from tests.production_fixtures import production_provenance
 
 
 def make_data():
     seed = create_demo_seed()
+    papers = production_provenance(seed.papers)
     linked, verified = {}, {}
-    for index, paper in enumerate(seed.papers):
+    for index, paper in enumerate(papers):
         analysis = FakeReader().analyze(seed.documents[index])
         result = apply_verification(analysis, FakeVerifier().verify(analysis, seed.documents[index]))
         linked[str(paper.id)] = EvidenceLinkingService().link(analysis, result, paper)
         verified[str(paper.id)] = result
-    return seed, SurveyEvidenceDataBuilder().build(seed.papers, None, linked, verified)
+    return seed, SurveyEvidenceDataBuilder().build(papers, None, linked, verified)
 
 
 def make_context(mode=ReportMode.FULL_SURVEY, budget=None):
