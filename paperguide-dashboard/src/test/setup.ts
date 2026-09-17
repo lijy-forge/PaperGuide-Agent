@@ -1,5 +1,9 @@
 import { afterEach, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
+
+// findBy* defaults to 1s, which is shorter than the first compile of a lazily
+// routed page in this environment. See the note in vite.config.ts.
+configure({ asyncUtilTimeout: 8000 });
 
 afterEach(() => { cleanup(); localStorage.clear(); vi.clearAllMocks(); });
 
