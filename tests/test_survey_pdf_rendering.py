@@ -96,7 +96,10 @@ def test_mixed_cjk_latin_pdf_embeds_real_font_and_extracts_complete_text():
     document.close()
     normalized = text.replace("\xa0", " ")
     compact = normalized.replace(" ", "")
-    assert "视觉 SLAM 重定位研究综述 2010-2026" in normalized
+    # Word spacing in extracted text follows the embedded face's glyph advances
+    # (PingFang on macOS, Noto Sans CJK on Linux), so completeness is asserted
+    # on the space-stripped form like the checks below.
+    assert "视觉SLAM重定位研究综述2010-2026" in compact
     assert "中文标题与EnglishSLAM" in compact
     assert "[1,p.6]" in compact
 
