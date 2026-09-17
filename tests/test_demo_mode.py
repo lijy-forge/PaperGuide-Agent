@@ -154,6 +154,44 @@ class DemoModeTests(unittest.TestCase):
         self.assertEqual(saved.status, ResearchTaskStatus.COMPLETED)
         self.assertEqual(errors.getvalue(), "")
 
+    def _demo_warnings(self, question: str) -> list[str]:
+        with tempfile.TemporaryDirectory() as directory:
+            settings = RuntimeSettings(
+                mode="production",
+                model_name="unused",
+                llm_provider="unused",
+                export_directory=Path(directory) / "artifacts",
+            )
+            output = io.StringIO()
+            run_cli(
+                ["demo", "--question", question, "--max-papers", "5"],
+                settings_loader=lambda: settings,
+                stdout=output,
+                stderr=io.StringIO(),
+            )
+            return list(json.loads(output.getvalue())["warnings"])
+
+    def test_demo_says_so_when_the_question_is_outside_the_synthetic_corpus(self) -> None:
+        """The corpus is a fixed SLAM set, and the narrative interpolates the
+        question, so an unrelated question must not read as an answer to it."""
+
+        unrelated = self._demo_warnings("分析屈服值预测相关的论文")
+        self.assertTrue(
+            any("与本次提问主题无关" in warning for warning in unrelated),
+            unrelated,
+        )
+
+        # A question the corpus partly covers names only the missing term.
+        partial = self._demo_warnings("YOLO与视觉SLAM融合研究进展")
+        self.assertTrue(any("未覆盖提问中的 YOLO" in warning for warning in partial), partial)
+
+        # A question the corpus covers carries no scope warning at all.
+        covered = self._demo_warnings("视觉SLAM回环检测综述")
+        self.assertFalse(
+            any("演示语料" in warning for warning in covered),
+            covered,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
