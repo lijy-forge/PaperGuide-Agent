@@ -1,0 +1,222 @@
+# 项目问题与改进记录
+
+这份记录整理了 PaperGuide 在一轮集中排查中暴露的问题、定位过程和修复方式，按面试常见提问组织。
+
+每一条都对应仓库里可查的提交，数字均为实测。建议按「现象 → 定位 → 根因 → 修复 → 留下什么防护」这条线来讲，面试官追问的通常是中间两步。
+
+---
+
+## Q1：这个项目你遇到过最棘手的问题是什么？
+
+**整个报告模块无法被 import，而且从第一个提交起就是坏的。**
+
+现象是跑 `pytest` 有 87 个收集错误。逐个分类后发现 53 个只是我本机没装依赖，剩下 34 个指向同一处：
+
+```
+ImportError: cannot import name 'SurveyReportSynthesisAssembler'
+             from 'paperguide.reporting.synthesis'
+```
+
+`reporting/__init__.py` 导入了这个名字，但 `synthesis.py` 里定义的是 `SurveySynthesisAssembler`（没有 `Report`）。文件末尾有一行 `SurveyReportSynthesisWriter = SurveySynthesisWriter` —— 给 Writer 补了别名，**漏了 Assembler**。半截的重命名。
+
+影响面比看起来大：`reporting/` 是最大的模块（5939 行），是「证据驱动报告」这个核心卖点的落点。因为它 import 不了，**依赖它的 33 个测试文件从来没运行过**。
+
+修复只有一行：
+
+```python
+SurveyReportSynthesisAssembler = SurveySynthesisAssembler
+```
+
+**但真正的收获在后面。** 解开 import 后，那 33 个文件第一次真正跑起来，立刻暴露出 13 个此前被掩盖的失败。
+
+> **可能的追问：一行就能修的问题，为什么一直没被发现？**
+> 因为 `paperguide/__init__.py` 不导入 `reporting`，直接 `import paperguide` 是成功的；只有深入到 `application → export → reporting` 这条链才会炸。而唯一会走这条链的是测试，测试又因为同一个错误无法收集 —— 错误把自己的检测手段一起屏蔽了。这也是我后来坚持要让测试在干净环境里跑的原因。
+
+---
+
+## Q2：举一个「测试通过但其实没在测东西」的例子
+
+这轮排查里找到三个，都是同一类问题：测试名声称的事情，断言并没有覆盖。
+
+**其一：声称测确定性，却从不比较两次结果**
+
+```python
+def test_html_is_deterministic_and_responsive():
+    first, second = renderer.render(...), renderer.render(...)
+    assert "#section-1" in first          # second 从头到尾没被用过
+    assert first.replace("<title>", "<title>")   # 把字符串替换成自己，恒真
+```
+
+`second` 渲染了却从未参与断言，最后一行是个恒真的空操作。我实测两次渲染确实逐字节相同，补上 `assert first == second` 之后这个测试才名副其实。
+
+**其二：局部变量类型就是错的，用起来会崩**
+
+```python
+def test_citation_tokens_use_locator_page_only_when_present():
+    locator = seed.documents[0].pages[0]   # Page 对象，但 API 要的是 SourceLocator
+    assert citation_token(3) == "[3]"       # 压根没用 locator
+```
+
+`citation_token(number, locator)` 需要带 `page_start` 的 `SourceLocator`，而这里传的是 `Page`。**如果真的用上，会抛 AttributeError。** 测试名承诺的「有页码时才带页码」这个分支从未被测。重写后覆盖三种情况：有页码 `[3, p.7]`、locator 无页码 `[3]`、无 locator `[3]`。
+
+**其三：`pytest.raises(Exception)` 没有 `match=`**
+
+两处这样的断言，任何异常都能让它通过 —— 包括 `NameError` 这种代码写错导致的异常。实测确认抛的是 `ReportSchemaValidationError("UNKNOWN_REPORT_STATEMENT_KEY")` 后收紧为具体类型 + 消息匹配。
+
+> **可能的追问：怎么系统性地发现这类问题？**
+> 这三个都是引入 ruff 静态检查时，由「未使用变量（F841）」和「断言裸异常（B017）」两条规则带出来的。单看 lint 报告它们只是风格问题，顺着看进去才发现是测试失效。所以我的结论是：**lint 的价值不在于统一风格，而在于它会指向那些「写了但没生效」的代码。**
+
+---
+
+## Q3：讲一个环境差异导致的问题
+
+**同一套测试在 macOS 全绿，在 Linux 挂。**
+
+推到 CI 后失败，而本地 835 个测试全过。逐步定位到两层原因：
+
+**第一层：PDF 渲染器需要嵌入 CJK 字体。** 找不到就抛 `CJKFontResolutionError`。macOS 自带 PingFang 所以一路顺畅，干净的 Ubuntu 没有中文字体。项目自己的 `docker/api/Dockerfile` 其实早就装了 `fonts-noto-cjk` —— 是 CI 配置漏了。
+
+**第二层（更隐蔽）：装上字体后仍然失败。** 报错是：
+
+```
+assert '视觉SLAM重定位研究综述2010-2026' in 'PAPERGUIDEAI/...\n视觉SLAM重定位研究综述201'
+```
+
+标题在提取出的文本里**被换行截断了**。PDF 文本提取的空格和换行位置是根据**内嵌字体的字形步进**反推的，Noto Sans CJK 和 PingFang 的字宽不同，长标题的折行点就不同。
+
+修复是把断言改成对去除全部空白后的形式做匹配 —— 因为这个测试的意图是「文本完整可提取」，不是「排版逐字节一致」。
+
+> **可能的追问：那为什么不干脆在 CI 上跑 Docker？**
+> 可以，而且更彻底。当时的权衡是 CI 里跑 Docker 构建会把单次反馈从 2 分钟拉到 10 分钟以上。折中方案是：CI 装和 Dockerfile 相同的字体包，保证两边字体一致。
+
+---
+
+## Q4：讲一个你修了但发现没修对的问题
+
+**Demo 模式会回答一个它答不了的问题，而我第一版修复对中文完全失效。**
+
+Demo 用固定的合成 SLAM 语料，问题不影响选哪些论文。但更糟的是叙述文案是写死的 SLAM 文字，**只把用户的问题插值进去**。输入「分析屈服值预测相关的论文」会得到：
+
+- 标题：`屈服值预测相关的论文：证据驱动文献综述`
+- 正文：`SLAM 的核心任务是…围绕"分析屈服值预测相关的论文"，本报告组织 14 篇核心条目…`
+- 参考文献：EKF-SLAM、FastSLAM、GMapping…
+
+**看起来像是那个主题的综述，引用全是 SLAM，且没有任何提示。**
+
+我第一版加了「未覆盖主题」警告，用正则提取问题里的词去和语料比对。上线后用中文问题一测 —— **没有任何警告**。原因是那个正则是 `[A-Za-z][A-Za-z0-9-]{2,}`，**只认拉丁词**。它能识别 `YOLO`，但对纯中文提问提取不到任何东西，`uncovered` 恒为空。
+
+第二版改成语言无关：拉丁词 + 中文二元组，并区分两种程度：
+
+| 提问 | 行为 |
+|---|---|
+| 分析屈服值预测相关的论文 | 与本次提问主题无关；本报告内容不回答所提问题 |
+| YOLO与视觉SLAM融合研究进展 | 未覆盖提问中的 YOLO |
+| 视觉SLAM回环检测综述 | 无额外警告 |
+
+> **这条是我最推荐讲的**，因为它包含一个真实的认知偏差：我用自己顺手的英文用例验证了修复，而产品的实际用户说中文。**验证用例和真实用法不一致，等于没验证。** 现在这三种情况都有回归测试锁着。
+
+---
+
+## Q5：你怎么保证「证据驱动」不是一句口号？
+
+分两层：一层是运行时守卫，一层是可度量的评测。
+
+**运行时守卫**（这些是项目本来就有的设计）
+
+- 报告导出前校验每个引用号都能解析到已注册的参考文献
+- 模型自己写进正文的引用号会被**剥离并按证据键重建** —— 防止模型编造引用
+- 生产档案拒绝占位数据：`example.invalid` 的 URL、`demo.NNNN` 的 arXiv ID、含 `Offline Demo` 的会场名，命中任一条就 fail closed
+- 公开产物不得泄漏 UUID / `statement_key` 等内部标识
+
+**这里有个值得讲的细节**：正是「剥离模型写的引用号」这条守卫，和 demo 文案里硬写的 `包含文献 [1]` 撞车了 —— 引用号被剥掉后留下 `包含文献 。` 这样的残句。**守卫是对的，是文案不该自己写引用号。**
+
+**可度量的评测**（这部分是新加的）
+
+项目原本有 `paperguide/smoke/` 做单次运行诊断（11 个阶段、逐阶段状态、验证/拒绝计数），缺的是用例集和跨次比较。我在它之上加了两档：
+
+| 档 | 依赖 | 耗时 | 测什么 |
+|---|---|---|---|
+| demo | 无 Key、无网络、确定性 | 约 150ms/用例 | 四条不变量 + 指标，可进 CI |
+| retrieval | 仅公开 API，**无需 LLM Key** | 分钟级 | 检索召回率 |
+
+**为什么要分两档**：demo 模式下检索召回率恒等于 1 —— 因为 `FakeRetriever` 返回的就是语料本身，**这一档在检索质量上没有任何评估价值**。要测召回必须走真实检索。而真实检索这一步不需要 LLM（arXiv 客户端连 API Key 都不要），所以可以把它单独拆出来低成本地跑。
+
+其中一个指标值得单独说：**`citation_density`（每段引用的去重参考文献数）**。它在 5 篇语料下是 4.52、15 篇下是 8.88 —— **随语料规模线性增长，说明大部分段落引用了几乎全部论文**。这把「引用填充而非真正证据绑定」这个原本靠肉眼看的问题，变成了可追踪、可设阈值的数字。
+
+---
+
+## Q6：这个项目的架构是怎么设计的？怎么保证它不腐化？
+
+`paperguide/` 按领域分层：`domain` 是纯领域模型，往上是 `analysis / verification / relevance / reporting / orchestration / application / runtime`。
+
+**关键在于这个分层是被测试守住的，不是写在文档里的。** 我加了 `tests/test_architecture_constraints.py`，用 AST 分析模块级 import（跳过 `TYPE_CHECKING` 块和函数内延迟导入），断言两件事：
+
+1. `domain` 不 import paperguide 内任何其他模块
+2. 任意两个子包之间不存在循环导入
+
+写完第一次跑就挂了 —— **确实有两个真实的循环**：`prompts ↔ analysis` 和 `progress ↔ runtime`。每个循环只有一条回边，且都只用于函数签名标注，移进 `TYPE_CHECKING` 后解环，运行时行为不变。
+
+> **可能的追问：为什么要跳过 TYPE_CHECKING？**
+> 因为 `TYPE_CHECKING` 块和函数内延迟导入本来就是打破循环的正当手段，项目里两处都在用。约束应该针对真实的运行时依赖方向，否则会把正确的做法判为违规。
+
+---
+
+## Q7：前端你做了什么？
+
+React + TypeScript + Vite + Ant Design，64 个文件约 4000 行，按 `api / components / hooks / pages / types / utils` 分层，`tsc --noEmit` 干净，有 17 个测试文件共 220 个用例。
+
+**遇到的问题：8 个测试失败，而且单独跑都能过。**
+
+现象很迷惑 —— 4 个文件里的 8 个用例，单独运行 100% 通过，合在一起跑就挂，报错是 `Test timed out in 5000ms`。而配置是 `singleFork: true`，测试本来就是串行的，不存在并行争抢。
+
+我先怀疑是轮询 hook 的 `setInterval` 没清理导致定时器累积 —— **核实后发现三个 hook 都正确 `clearInterval` 了，这个猜测不成立**。
+
+真正的机制：页面是 `React.lazy` 懒加载的，共用一个 `<Suspense>`。测试点击链接跳转时新 chunk 还没编译完，组件挂起，**React 18 会给已渲染的子树加上 `display: none`** 并显示 fallback。testing-library 的 role 查询默认忽略隐藏元素，所以断言找不到目标。
+
+关键是量出那个数字：**chunk 解析耗时 4206ms**，而默认 `testTimeout` 是 5 秒、`findBy` 更是只有 1 秒。余量太薄，所以表现为时好时坏。
+
+修复是调整超时配置，**没有改任何产品代码** —— 懒加载路由本身是正确做法，浏览器里走 HTTP 拿 chunk 很快，4.2 秒纯粹是 vitest 按需编译 antd/pdfjs 整条依赖链的开销。
+
+> **可能的追问：直接调大超时是不是在掩盖问题？**
+> 如果 4.2 秒是应用在生产环境的真实耗时，那确实是掩盖。但这里它是测试工具链的编译开销，和用户体验无关。判断依据是：同一个 chunk 在 `npm run dev` 下由 Vite 预构建后加载是毫秒级的。**区分「产品慢」和「测试环境慢」是这个决定的关键。**
+
+---
+
+## Q8：任务执行的可靠性怎么做的？
+
+SQLite + 手写 SQL（没有用 ORM），但不是把它当文件存数据，是按并发队列来设计的：
+
+- `PRAGMA journal_mode = WAL` + `busy_timeout = 10000`，读写不互相阻塞
+- **11 处 `BEGIN IMMEDIATE`**，写事务立即取锁，避免 SQLite 锁升级导致的死锁
+- 版本化迁移：`CURRENT_SCHEMA_VERSION = 6` + `schema_version` 表 + 增量迁移，且拒绝降级
+- 租约 + 围栏令牌：worker 领取任务时持有租约，`RuntimeReconciler` 周期性扫描
+
+**死信队列的触发条件**值得讲清楚，因为它体现了「按 worker 会崩来设计」：
+
+1. 租约 `lease_until` 仍在未来 → worker 活着，不动
+2. 租约过期 且 `attempt_count >= max_attempts`（默认 3）→ 进死信表
+3. 租约过期 但还有重试次数 → 记 `LEASE_EXPIRED` 事件，状态改回 `queued` 重新排队
+
+> **一个我自己发现的缺陷**：控制台上「活跃工作线程」和「运行中任务」两个指标，在 `broker.py` 里是**同一个表达式** `states.get("dispatched", 0)`，两个格子永远相同。语义上「活跃工作线程」应该是 `COUNT(DISTINCT lease_owner)` —— 一个 worker 可能持有多个任务。这个还没修。
+
+---
+
+## 附：这轮排查的量化结果
+
+| 项 | 修复前 | 修复后 |
+|---|---|---|
+| 后端测试 | 442 passed / 87 collection errors | **840 passed** |
+| 前端测试 | 212 passed / 8 failed | **220 passed** |
+| lint | 无配置 | ruff 全绿 |
+| 架构约束 | 无 | domain 纯度 + 无循环导入，测试守护 |
+| 评测 | 仅单次冒烟诊断 | 两档用例化评测 + 报告 |
+
+报告产物本身的缺陷（空引用列表、方法族显示「未分类」、年份区间退化成「从 2007 到 2007 年」、双标点）也一并修了，其中「方法族未分类」的根因是渲染器读取了一个 `CorePaperProfile` 模型里**根本不存在的字段**，所以恒为空。
+
+---
+
+## 讲述建议
+
+1. **优先讲 Q4（中文警告失效）和 Q2（测试没在测东西）** —— 这两个体现的是验证意识，而不只是修 bug 的能力。
+2. **主动说明局限**：demo 模式不能评估检索质量、`citation_density` 偏高说明证据绑定还不够细、活跃工作线程指标还没修。**承认已知问题比被问出来好。**
+3. 数字要能复现。被追问时可以当场跑：`python -m evals.paperguide --tier demo`。
