@@ -1,0 +1,8 @@
+id: covered-slam
+question: 视觉SLAM回环检测综述
+max_papers: 5
+# The corpus covers this topic, so no scope warning is appropriate.
+expect:
+  status: completed
+  warnings_absent: ["演示语料"]
+invariants: [citations_resolve, evidence_is_locatable, no_internal_identifiers, references_have_provenance]
