@@ -1,0 +1,8 @@
+id: partial-yolo
+question: YOLO与视觉SLAM融合研究进展
+max_papers: 5
+# SLAM is in the corpus, YOLO is not; the missing term must be named.
+expect:
+  status: completed
+  warnings_contain: ["未覆盖提问中的 YOLO"]
+invariants: [citations_resolve, evidence_is_locatable, no_internal_identifiers]

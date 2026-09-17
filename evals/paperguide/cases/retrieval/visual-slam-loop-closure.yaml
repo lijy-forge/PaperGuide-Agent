@@ -1,0 +1,9 @@
+id: visual-slam-loop-closure
+question: 视觉SLAM回环检测研究进展
+max_papers: 20
+# Label the papers that must be retrieved for this question. Identifiers are
+# matched as "arxiv:<id>", "doi:<id>" or "s2:<id>", case-insensitive.
+# An empty list skips the case instead of reporting a meaningless recall of 0.
+ground_truth: []
+metrics:
+  recall_at_20_min: 0.7

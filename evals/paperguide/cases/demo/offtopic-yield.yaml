@@ -1,0 +1,9 @@
+id: offtopic-yield
+question: 分析屈服值预测相关的论文
+max_papers: 5
+# Regression guard: the narrative interpolates the question, so an unrelated
+# question once produced a report that read as an answer to it.
+expect:
+  status: completed
+  warnings_contain: ["与本次提问主题无关"]
+invariants: [citations_resolve, no_internal_identifiers]
