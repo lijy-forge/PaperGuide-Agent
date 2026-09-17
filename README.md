@@ -8,6 +8,21 @@ PaperGuide 面向 AI 工程师和研究人员，将论文检索、PDF 处理、�
 
 > PaperGuide 辅助技术调研，不替代学术同行评审、原始论文阅读或专家判断。
 
+## Code Ownership
+
+本仓库是 GPT Researcher 的二次开发，以下划分说明哪些代码属于本项目。
+
+| 目录 | 规模 | 归属 |
+| --- | ---: | --- |
+| `paperguide/` | 26,174 行 Python | 本项目 —— 论文领域模型、证据核验、LangGraph 编排、报告合成、任务 Runtime、API |
+| `paperguide-dashboard/` | 4,072 行 TS/TSX（64 文件） | 本项目 —— React + TypeScript 控制台 |
+| `tests/`（引用 `paperguide` 的部分） | 15,991 行（82 文件） | 本项目 |
+| `docker/`、`docker-compose.yml` | — | 本项目 |
+| `gpt_researcher/` | 14,431 行 | 上游 GPT Researcher —— 检索、抓取、LLM 适配 |
+| `backend/`、`frontend/`、`multi_agents/`、`deep_agents/`、`evals/` | 约 6,900 行 | 上游 —— 本项目未在其中引入依赖 |
+
+代码在本地开发后发布到本仓库，因此早期提交是整体导入而非逐步演进；提交历史不反映开发过程。
+
 ## Overview
 
 输入一个技术研究问题后，PaperGuide 自动完成：
