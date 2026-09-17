@@ -443,17 +443,25 @@ class DemoProvider:
             ],
             ensure_ascii=False,
         ).casefold()
-        uncovered = sorted(
-            {
-                term
-                for term in re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", question)
-                if term.casefold() not in corpus_text
-            }
-        )
+        # Latin words and CJK bigrams, so an all-Chinese question is checked too.
+        latin = re.findall(r"[A-Za-z][A-Za-z0-9-]{2,}", question)
+        han = re.findall(r"[一-鿿]{2,}", question)
+        bigrams = [run[index:index + 2] for run in han for index in range(len(run) - 1)]
+        uncovered = sorted({term for term in latin if term.casefold() not in corpus_text})
+        covered_any = any(term.casefold() in corpus_text for term in latin + bigrams)
+
         stage_warnings = [
             "Offline demo uses synthetic papers and must not be cited as real research."
         ]
-        if uncovered:
+        if (latin or bigrams) and not covered_any:
+            # Nothing in the question appears in the corpus: the narrative below is
+            # about SLAM regardless of what was asked.
+            stage_warnings.append(
+                "演示语料为固定的 SLAM 合成文献集，与本次提问主题无关；本报告内容不回答所提问题。"
+                if chinese
+                else "The synthetic demo corpus is a fixed SLAM set unrelated to this question; this report does not answer it."
+            )
+        elif uncovered:
             stage_warnings.append(
                 f"演示语料为固定的 SLAM 合成文献集，未覆盖提问中的 {'、'.join(uncovered)}；相关结论不在本报告范围内。"
                 if chinese
