@@ -7,13 +7,10 @@ max_papers: 20
 # 然后运行：
 #   python -m evals.paperguide.annotate resolve <本文件> --apply
 ground_truth_titles:
-  - "APPLICATION OF MULTI-AGENT PROGRAMMING FOR MODELING THE VISCOSITY STATE OF MASH IN ALCOHOL PRODUCTION"
   - "Advances in Fluid Viscosity Measurement Technologies"
-  - "Autonomous Multi Agent AI for High Throughput Polymer Informatics"
   - "Characterizing the non Newtonian viscosity of high solids"
   - "Constitutive Modeling of Rheological Behavior of Cement Paste Based on Material Composition"
   - "Discontinuous shear thickening without inertia in dense non Brownian suspensions"
-  - "MultiPUFFIN: Multimodal Domain-Constrained Foundation Molecular Property Prediction Molecules"
   - "Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated Polybutadiene (HTPB) Propellant Slurry"
   - "Rheology and applications of highly filled polymers"
   - "Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced Falling Ball and Slump Test"
@@ -22,6 +19,13 @@ ground_truth_titles:
   - "Yield-stress transition in suspensions of deformable droplets"
   - "integrated experimental numerical analysis of htpb propellant casting optimization and droplet dynamics"
   - "rapid temperature dependent rheological measurements of non newtonian solutions using a machine learning aided"
+
+# 生产环境里 LLM 规划器会把中文问题改写成英文检索词（见 relevance/prompts.py）。
+# 这里直接写出英文查询，让这一档只衡量“检索与排序”，不掺入“规划得好不好”。
+queries:
+  - "yield stress concentrated suspensions rheology"
+  - "composite propellant slurry rheology viscosity"
+  - "yield stress prediction highly filled polymer suspension"
 
 ground_truth: []
 
