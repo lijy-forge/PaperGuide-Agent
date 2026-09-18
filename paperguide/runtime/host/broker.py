@@ -893,6 +893,10 @@ class SQLiteHostBroker:
                     "SELECT state, COUNT(*) FROM task_requests GROUP BY state"
                 ).fetchall()
             )
+            active_workers = connection.execute(
+                "SELECT COUNT(DISTINCT lease_owner) FROM task_requests "
+                "WHERE state = 'dispatched' AND lease_owner IS NOT NULL"
+            ).fetchone()[0]
             event_counts = dict(
                 connection.execute(
                     """
@@ -925,7 +929,10 @@ class SQLiteHostBroker:
             completed=event_counts.get(TaskEventType.TASK_COMPLETED.value, 0),
             failed=event_counts.get(TaskEventType.TASK_FAILED.value, 0),
             cancelled=event_counts.get(TaskEventType.TASK_CANCELLED.value, 0),
-            active_workers=states.get("dispatched", 0),
+            # Distinct lease holders, not dispatched rows: one worker can hold
+            # several tasks, so counting rows made this identical to
+            # running_tasks and the dashboard showed the same number twice.
+            active_workers=active_workers,
             queue_size=states.get("queued", 0),
             running_tasks=states.get("dispatched", 0),
             dead_letter_total=event_counts.get(

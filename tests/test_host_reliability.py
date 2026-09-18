@@ -182,3 +182,39 @@ class HostReliabilityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class WorkerCountMetricTests(unittest.TestCase):
+    """active_workers counts holders, not held tasks.
+
+    Both numbers came from the same expression, so the dashboard showed one
+    value under two labels and could never reveal a worker holding several
+    tasks at once.
+    """
+
+    def test_one_host_holding_two_tasks_counts_as_one_worker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            broker = SQLiteHostBroker(Path(directory) / "runtime.sqlite3")
+            host_id = uuid4()
+            broker.acquire_host(host_id)
+            broker.heartbeat(host_id)
+            for _ in range(2):
+                broker.enqueue(uuid4(), ResearchRequest(question="q", max_papers=1))
+
+            self.assertIsNotNone(broker.claim_next(host_id))
+            self.assertIsNotNone(broker.claim_next(host_id))
+            metrics = broker.get_metrics()
+
+            self.assertEqual(metrics.running_tasks, 2)
+            self.assertEqual(metrics.active_workers, 1)
+
+    def test_nothing_dispatched_means_no_active_worker(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            broker = SQLiteHostBroker(Path(directory) / "runtime.sqlite3")
+            broker.enqueue(uuid4(), ResearchRequest(question="q", max_papers=1))
+
+            metrics = broker.get_metrics()
+
+            self.assertEqual(metrics.queue_size, 1)
+            self.assertEqual(metrics.running_tasks, 0)
+            self.assertEqual(metrics.active_workers, 0)
