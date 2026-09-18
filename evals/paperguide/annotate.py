@@ -172,6 +172,10 @@ def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS
     resolved: list[str] = []
     unresolved: list[str] = []
     throttled: list[str] = []
+    # Which title produced which identifier, and how confidently. Without it
+    # the case file holds two unrelated sorted lists and a label cannot be
+    # checked against the paper it came from without searching again.
+    matches: list[dict] = []
     for index, title in enumerate(titles):
         if index:
             # Spread the requests out; resolving a dozen titles back to back is
@@ -181,6 +185,9 @@ def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS
         if identifier and score >= TITLE_MATCH_THRESHOLD:
             print(f"  ok    {identifier:34} {score:.2f}  {matched[:56]}")
             resolved.append(identifier)
+            matches.append(
+                {"title": str(title), "id": identifier, "matched": matched, "score": round(score, 3)}
+            )
         elif was_throttled:
             # Not the same as "no such paper", so it must not read like one.
             print(f"  LIMIT {'-':34} {'':4}  rate limited, not searched properly")
@@ -207,6 +214,9 @@ def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS
 
     if apply and resolved:
         case["ground_truth"] = sorted(set(case.get("ground_truth") or []) | set(resolved))
+        previous = {item["id"]: item for item in (case.get("resolved_from") or [])}
+        previous.update({item["id"]: item for item in matches})
+        case["resolved_from"] = [previous[key] for key in sorted(previous)]
         path.write_text(yaml.safe_dump(case, allow_unicode=True, sort_keys=False), "utf-8")
         print(f"\nwrote {len(case['ground_truth'])} identifiers into {path}")
     elif resolved:
