@@ -176,11 +176,9 @@ class RetrievalOutageTests(unittest.TestCase):
 
     def _manual(self, title: str) -> ManualPaperSource:
         return ManualPaperSource(
-            # The model only accepts google_scholar or cnki as a manual
-            # source, so an IEEE paper has to be declared as one of those.
-            source=PaperSource.GOOGLE_SCHOLAR,
+            source=PaperSource.USER_UPLOAD,
             title=title,
-            source_url="https://scholar.google.com/scholar?cluster=8016573",
+            source_url="https://ieeexplore.ieee.org/document/8016573",
             upload_id=UUID("12345678-1234-5678-1234-567812345678"),
         )
 
@@ -201,3 +199,30 @@ class RetrievalOutageTests(unittest.TestCase):
 
         self.assertFalse(state["papers"])
         self.assertTrue(state.get("errors"), "an empty task must surface why retrieval produced nothing")
+
+
+class ManualSourceProvenanceTests(unittest.TestCase):
+    """A manual record must not be mistakable for a retrieved one."""
+
+    @staticmethod
+    def _make(source: PaperSource) -> ManualPaperSource:
+        return ManualPaperSource(
+            source=source,
+            title="A Paywalled Paper",
+            source_url="https://ieeexplore.ieee.org/document/8016573",
+            upload_id=UUID("12345678-1234-5678-1234-567812345678"),
+        )
+
+    def test_a_publisher_the_system_never_searches_is_accepted(self) -> None:
+        """Paywalled IEEE and Springer work is the case upload exists for."""
+
+        for source in (PaperSource.USER_UPLOAD, PaperSource.GOOGLE_SCHOLAR, PaperSource.CNKI):
+            self.assertEqual(self._make(source).source, source)
+
+    def test_claiming_an_automatically_searched_source_is_rejected(self) -> None:
+        """Otherwise an uploaded record is indistinguishable from a retrieved
+        one, and provenance is the reason the field exists."""
+
+        for source in (PaperSource.ARXIV, PaperSource.OPENALEX, PaperSource.SEMANTIC_SCHOLAR):
+            with self.assertRaises(ValueError):
+                self._make(source)
