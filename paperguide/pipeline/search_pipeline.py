@@ -6,6 +6,7 @@ from paperguide.adapters import RetrieverProtocol
 from paperguide.domain import PaperCandidate, PaperSource, ResearchConfig
 from paperguide.services import PaperDeduplicator
 
+from .ranking import rank_by_question
 from .result import SearchResult
 
 
@@ -71,7 +72,7 @@ class PaperSearchPipeline:
 
         deduplication = self._deduplicator.deduplicate(candidates)
         warnings.extend(deduplication.warnings)
-        papers = self._sort_by_relevance(deduplication.papers)
+        papers = self._sort_by_relevance(deduplication.papers, config.question)
 
         return SearchResult(
             papers=papers[: config.max_papers],
@@ -83,9 +84,13 @@ class PaperSearchPipeline:
         )
 
     @staticmethod
-    def _sort_by_relevance(papers: list[PaperCandidate]) -> list[PaperCandidate]:
+    def _sort_by_relevance(
+        papers: list[PaperCandidate], question: str = ""
+    ) -> list[PaperCandidate]:
         if not any(paper.relevance_score is not None for paper in papers):
-            return list(papers)
+            # Neither adapter scores its results, so without this the caller
+            # receives the sources' own order, concatenated.
+            return rank_by_question(papers, question)
         return sorted(
             papers,
             key=lambda paper: (
