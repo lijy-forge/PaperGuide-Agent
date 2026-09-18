@@ -131,3 +131,73 @@ class ManualSourceMergeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class RetrievalOutageTests(unittest.TestCase):
+    """Automatic discovery is a convenience, not a prerequisite.
+
+    Every source can be unreachable — rate limited, blocked, offline — and a
+    task that supplies its own papers has to keep going, because the papers
+    worth reading are often paywalled and were never going to arrive from an
+    API in the first place.
+    """
+
+    class _DeadPipeline:
+        """Stands in for a search where no source answered."""
+
+        def search(self, config):
+            return SearchResult(
+                papers=[],
+                source_results={},
+                source_errors={
+                    "arxiv": "HTTP Error 406: Not Acceptable",
+                    "openalex": "Too Many Requests",
+                    "semantic_scholar": "HTTP Error 429:",
+                },
+                warnings=[],
+                total_found=0,
+                total_after_dedup=0,
+            )
+
+    @staticmethod
+    def _state(manual_sources):
+        from paperguide.domain import ResearchConfig
+        from paperguide.orchestration import create_initial_state
+
+        question = "多用户协作任务卸载与资源分配"
+        return create_initial_state(
+            question,
+            ResearchConfig(
+                question=question,
+                max_papers=5,
+                sources=[],
+                manual_sources=manual_sources,
+            ),
+        )
+
+    def _manual(self, title: str) -> ManualPaperSource:
+        return ManualPaperSource(
+            # The model only accepts google_scholar or cnki as a manual
+            # source, so an IEEE paper has to be declared as one of those.
+            source=PaperSource.GOOGLE_SCHOLAR,
+            title=title,
+            source_url="https://scholar.google.com/scholar?cluster=8016573",
+            upload_id=UUID("12345678-1234-5678-1234-567812345678"),
+        )
+
+    def test_uploaded_papers_carry_the_task_when_no_source_answers(self) -> None:
+        node = RetrieverNode(self._DeadPipeline())
+
+        state = node(self._state([self._manual("A Paywalled Offloading Paper")]))
+
+        self.assertEqual([paper.title for paper in state["papers"]], ["A Paywalled Offloading Paper"])
+        # The outage is still recorded rather than hidden by the rescue.
+        self.assertTrue(state["search_result"].source_errors)
+        self.assertFalse(state.get("errors"), "an answered task must not report a retrieval error")
+
+    def test_an_outage_with_nothing_uploaded_is_reported_as_an_error(self) -> None:
+        node = RetrieverNode(self._DeadPipeline())
+
+        state = node(self._state([]))
+
+        self.assertFalse(state["papers"])
+        self.assertTrue(state.get("errors"), "an empty task must surface why retrieval produced nothing")
