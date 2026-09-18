@@ -9,6 +9,14 @@ from .arxiv import (
     ArxivNetworkError,
 )
 from .base import RetrieverProtocol
+from .openalex import (
+    OpenAlexClient,
+    OpenAlexConfig,
+    OpenAlexError,
+    OpenAlexInvalidResponseError,
+    OpenAlexMapper,
+    OpenAlexNetworkError,
+)
 from .semantic_scholar import (
     SemanticScholarClient,
     SemanticScholarConfig,
@@ -25,6 +33,12 @@ __all__ = [
     "ArxivInvalidResponseError",
     "ArxivMapper",
     "ArxivNetworkError",
+    "OpenAlexClient",
+    "OpenAlexConfig",
+    "OpenAlexError",
+    "OpenAlexInvalidResponseError",
+    "OpenAlexMapper",
+    "OpenAlexNetworkError",
     "RetrieverProtocol",
     "SemanticScholarClient",
     "SemanticScholarConfig",

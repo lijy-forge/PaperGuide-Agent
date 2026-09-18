@@ -7,6 +7,8 @@ from typing import Any
 
 from paperguide.adapters import (
     ArxivClient,
+    OpenAlexClient,
+    OpenAlexConfig,
     RetrieverProtocol,
     SemanticScholarClient,
     SemanticScholarConfig,
@@ -293,16 +295,23 @@ def create_application(
 
 
 def _default_retrievers() -> list[RetrieverProtocol]:
-    """Build the two automatic discovery sources used by hybrid mode.
+    """Build the automatic discovery sources used by hybrid mode.
 
-    arXiv and Semantic Scholar are always attempted.  A Semantic Scholar API
-    key is optional and raises its rate limit; source failures remain isolated
-    by the search pipeline so arXiv can still produce a degraded result.
+    The three cover different literature. arXiv has preprints, so a field that
+    publishes in journals is largely invisible through it. OpenAlex indexes the
+    journals themselves and needs no key at all. Semantic Scholar spans both,
+    but its keyless rate limit is low enough to fail often, so it must not be
+    the only source able to reach journal work.
+
+    Source failures stay isolated in the search pipeline, so one unreachable
+    source degrades the result instead of emptying it.
     """
 
     semantic_scholar_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip()
+    contact_email = os.environ.get("PAPERGUIDE_CONTACT_EMAIL", "").strip()
     return [
         ArxivClient(),
+        OpenAlexClient(OpenAlexConfig(mailto=contact_email or None)),
         SemanticScholarClient(
             SemanticScholarConfig(api_key=semantic_scholar_key or None)
         ),
