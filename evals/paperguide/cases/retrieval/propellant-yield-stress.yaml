@@ -32,51 +32,60 @@ ground_truth:
 - doi:10.3933/applrheol-27-45262
 metrics:
   recall_at_20_min: 0.3
-_baseline_note: measured 0.3333 on 2026-09-18 with 9 labels; the threshold guards
-  against regression, it is not a target
+_baseline_note: all 9 title-to-DOI resolutions confirmed by hand on 2026-09-18; the
+  extracted titles are authoritative
 resolved_from:
 - title: Yield stress and maximum packing fraction of concentrated suspensions
   id: doi:10.1007/bf00712315
   matched: Yield stress and maximum packing fraction of concentrated suspensions
   score: 1.0
+  verified: true
 - title: The rheology of concentrated suspensions of arbitrarily shaped particles
   id: doi:10.1016/j.jcis.2010.02.033
   matched: The rheology of concentrated suspensions of arbitrarily-shaped particles
   score: 0.99
+  verified: true
 - title: Rheology and applications of highly filled polymers
   id: doi:10.1016/j.progpolymsci.2016.12.007
   matched: 'Rheology and applications of highly filled polymers: A review of current
     understanding'
   score: 0.74
+  verified: true
 - title: rapid temperature dependent rheological measurements of non newtonian solutions
     using a machine learning aided
   id: doi:10.1021/acs.analchem.1c05208
   matched: Rapid Temperature-Dependent Rheological Measurements of Non-Newtonian Solutions
   score: 0.88
+  verified: true
 - title: integrated experimental numerical analysis of htpb propellant casting optimization
     and droplet dynamics
   id: doi:10.1021/acsomega.5c03072
   matched: Integrated Experimental–Numerical Analysis of HTPB Propellant Casting Optimization
   score: 0.99
+  verified: true
 - title: Discontinuous shear thickening without inertia in dense non Brownian suspensions
   id: doi:10.1103/physrevlett.112.098302
   matched: Discontinuous Shear Thickening without Inertia in Dense Non-Brownian Suspensions
   score: 0.99
+  verified: true
 - title: Yield-stress transition in suspensions of deformable droplets
   id: doi:10.1126/sciadv.adf8106
   matched: Yield-stress transition in suspensions of deformable droplets
   score: 1.0
+  verified: true
 - title: Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated
     Polybutadiene (HTPB) Propellant Slurry
   id: doi:10.3390/polym17121682
   matched: Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated
     Polybutadiene Propellant Slurry
   score: 1.0
+  verified: true
 - title: Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced
     Falling Ball and Slump Test
   id: doi:10.3933/applrheol-27-45262
   matched: Studies on Measurement of Yield Stress of Propellant Suspensions
   score: 0.97
+  verified: true
 unresolved_titles:
 - Advances in Fluid Viscosity Measurement Technologies
 - Characterizing the non Newtonian viscosity of high solids
