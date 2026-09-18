@@ -7,6 +7,9 @@ runtime-data/
 paperguide-exports/
 paperguide-downloads/
 paperguide-runtime.sqlite3
+# WAL mode keeps two sidecar files next to the database.
+paperguide-runtime.sqlite3-wal
+paperguide-runtime.sqlite3-shm
 .venv
 .envrc
 
