@@ -271,9 +271,11 @@ class BootstrapTests(unittest.TestCase):
         self.assertEqual(planner.name, "planner")
         self.assertIsNotNone(retriever.pipeline)
         self.assertIsNotNone(ingestion.pipeline)
-        self.assertIs(reader.reader.llm, llm)
-        self.assertIs(verifier.verifier.llm_verifier.llm, llm)
-        self.assertIs(container.report_service.writer.llm, llm)
+        # Every LLM call is metered, so the injected implementation is reached
+        # through the wrapper rather than being the object itself.
+        self.assertIs(reader.reader.llm._inner, llm)
+        self.assertIs(verifier.verifier.llm_verifier.llm._inner, llm)
+        self.assertIs(container.report_service.writer.llm._inner, llm)
         self.assertEqual(
             quality_gate.config,
             container.config.orchestrator_config,
@@ -288,7 +290,7 @@ class BootstrapTests(unittest.TestCase):
                 graph_factory=factory,
             )
 
-        llm = factory.calls[0][3].reader.llm
+        llm = factory.calls[0][3].reader.llm._inner
         self.assertEqual(llm.llm_provider, "fake")
         self.assertEqual(llm.model_name, "fake-structured-model")
         self.assertEqual(llm.max_tokens, 2048)

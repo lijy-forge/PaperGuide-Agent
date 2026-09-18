@@ -11,6 +11,7 @@ from paperguide.application import (
 from paperguide.export import ExportService
 from paperguide.relevance import RetrievalPlanService
 from paperguide.reporting import EvidenceGroundedReportService, ProductionSurveyReportService
+from paperguide.usage import UsageLedger
 
 from .config import BootstrapConfig
 
@@ -28,3 +29,4 @@ class ApplicationContainer:
     config: BootstrapConfig
     retrieval_plan_service: RetrievalPlanService
     structured_llm: StructuredLLMProtocol
+    usage_ledger: UsageLedger
