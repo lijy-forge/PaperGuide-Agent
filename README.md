@@ -163,33 +163,44 @@ npm run dev
 
 ## Screenshots
 
-真实截图的约定位置如下。仓库不会用生成式图片或 Mock UI 冒充实际运行截图；发布前应按照 [截图采集规范](docs/images/README.md) 从本地 Demo Runtime 采集。
+本仓库不收录界面截图。仓库不会用生成式图片或 Mock UI 冒充实际运行截图，而截图会
+随界面改动很快过期，所以这里说明如何自己跑起来看，而不是放一组可能已经失真的图。
 
-| View | Target file | Status |
-| --- | --- | --- |
-| Dashboard overview | `docs/images/dashboard.png` | Capture from a real local Demo run |
-| Task detail and event timeline | `docs/images/task-detail.png` | Capture from a completed Demo task |
-| Artifact viewer | `docs/images/artifact-viewer.png` | Capture from the verified report preview |
+按 [Local Development](#local-development) 启动 Host、API 与 Dashboard 后访问
+<http://127.0.0.1:5173>，Demo 模式无需任何 API Key。可以看到：
+
+- **工作台**：运行时健康状态与系统指标（提交数、完成数、队列长度、平均执行时间）
+- **任务详情**：生命周期事件时间线、分阶段进度与执行耗时
+- **产物预览**：报告的 Markdown / HTML / PDF 预览与下载
+
+需要留档时，采集规范见 [docs/images/README.md](docs/images/README.md)。
 
 ## Performance validation
 
-The figures below are measured from the accepted local production baselines,
-not from synthetic unit-test timing. Paper-level analysis uses bounded
-concurrency with a maximum of three workers and a shared LLM limiter.
+论文级分析采用有界并发：`OrchestratorConfig.max_paper_concurrency` 默认为 3 且
+上限就是 3（`ge=1, le=3`），配置更大的值会被直接拒绝。摄取、阅读、证据核验三个
+节点共用同一个上限，并通过 `LLMCallLimiter`（`BoundedSemaphore`）共享 LLM 调用配额。
 
-| Metric | Serial baseline | Concurrent baseline | Result |
-| --- | ---: | ---: | ---: |
-| End-to-end median | 20m 11s | 10m 04s | 2.01x faster |
-| Paper reader median | — | — | 2.15x faster |
-| Evidence verification median | — | — | 3.13x faster |
-| PDF ingestion median | — | — | 0.82x (not accelerated) |
+**上限不是随便定的**：再往上加会撞到 LLM 提供方的限流，同时并发下载过多 PDF 也
+会被对方封禁。也就是说，吞吐的天花板由外部服务决定，而不是由本地编排决定。
 
-The PDF stage was deliberately not treated as a concurrency win. Source
-availability, download latency, and PDF structure remain material production
-variables. Detailed measurements and accepted-run criteria are recorded in
-`runtime-data/evaluation/baseline-v1-r.json`,
-`runtime-data/evaluation/baseline-v2.json`, and
-`runtime-data/evaluation/performance-comparison.md`.
+本仓库**不提供**端到端耗时的基准数字。真实耗时取决于 LLM 提供方、论文数量、PDF
+体积与网络状况，跨环境不可比；给出一个无法复现的倍数没有意义。
+
+需要自己测量时，分阶段耗时已经记录在运行时里，不必额外埋点：每个任务的生命周期
+事件带 `duration_ms`，写入 SQLite 的 `task_events` 表，可通过
+`GET /api/v1/tasks/{task_id}/events` 读取。并发度目前只能在代码中通过
+`BootstrapConfig.orchestrator_config.max_paper_concurrency` 设置（尚无对应的环境
+变量），对比串行与并发时改这一处即可。
+
+单次运行的差异很大，比较时应多次取中位数。
+
+检索质量另有一套可复现的评测，见 `evals/paperguide/`：
+
+```bash
+python -m evals.paperguide --tier demo        # 无需 Key、不联网、结果确定
+python -m evals.paperguide --tier retrieval   # 真实检索源，测召回率
+```
 
 ## API Overview
 
