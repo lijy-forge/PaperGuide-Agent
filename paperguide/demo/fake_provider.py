@@ -415,13 +415,15 @@ class DemoProvider:
                 ),
             ],
         }
-        # A spec may pin the keys that actually support it; the rest fall back to
-        # the stage-wide selection.
+        # Only a spec that pins its own keys claims evidence. The rest of this
+        # narrative is fixed SLAM prose, not something derived from a paper, so
+        # handing it the stage-wide key list would attribute boilerplate to
+        # every paper in the sample.
         paragraphs = [
             {
                 "text": spec[1],
                 "section_type": spec[0],
-                "source_statement_keys": (spec[2] if len(spec) > 2 and spec[2] else statement_keys),
+                "source_statement_keys": (spec[2] if len(spec) > 2 else []),
             }
             for spec in paragraph_specs[stage]
         ]

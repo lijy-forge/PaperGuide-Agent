@@ -324,6 +324,8 @@ class SurveySynthesisWriter:
             f"Return only SurveyStageDraft JSON for internal stage {stage.value}. Write {sections[stage]}. "
             "The draft title is only an internal stage label, never the final report title. "
             "Set each paragraph's section_type to one of the supplied section_types. "
+            "Set each paragraph's source_statement_keys to the keys that support that paragraph only, "
+            "not every key supplied for the stage; a paragraph citing the whole sample is wrong. "
             "Every factual claim must cite supplied source_statement_keys. Do not create papers, numbers, "
             "families, datasets, metrics, limitations, trends, or citations. A singleton family must be "
             "described as a single study; missing values remain missing. Never repeat any JSON field name, "
@@ -450,7 +452,15 @@ class SurveySynthesisAssembler:
                     paragraph_keys = list(dict.fromkeys(paragraph.source_statement_keys))
                     if any(key not in allowed for key in paragraph_keys):
                         raise ReportSchemaValidationError("UNKNOWN_REPORT_STATEMENT_KEY")
-                    effective_keys = paragraph_keys or claim_keys
+                    # A paragraph that names no evidence used to inherit every
+                    # key of its stage, which cites the whole sample behind text
+                    # nothing was known to support. Attributing a paragraph to
+                    # papers that may not support it is a stronger failure than
+                    # leaving it unattributed, so it is left uncited and the
+                    # gap is reported.
+                    if not paragraph_keys:
+                        assembly_warnings.append("PARAGRAPH_WITHOUT_EVIDENCE_UNCITED")
+                    effective_keys = paragraph_keys
                     refs = public_citation_refs(effective_keys, evidence_data.evidence_ledger)
                     paragraphs.append(SurveyParagraph(text=clean_text, claim_keys=effective_keys, citation_refs=refs))
                     seen_public_paragraphs.add(normalized_text)
@@ -699,6 +709,11 @@ class SurveySynthesisAssembler:
                 if chinese
                 else "Verified literature coverage is limited; conclusions apply only to the assessed evidence."
             ),
+            "PARAGRAPH_WITHOUT_EVIDENCE_UNCITED": (
+                "部分段落未绑定可追溯证据，已不标注引用，不代表其内容获得全部文献支持。"
+                if chinese
+                else "Some paragraphs named no traceable evidence and are left uncited; they are not supported by the whole sample."
+            ),
             "GENERATED_CITATION_TOKEN_REMOVED": (
                 "模型生成文本中的手写引用号已移除，并由系统依据证据键重新生成。"
                 if chinese
@@ -942,4 +957,4 @@ class FullSurveySynthesisService:
 
 # Names kept explicit for application/bootstrap integrations.
 SurveyReportSynthesisWriter = SurveySynthesisWriter
-SurveyReportSynthesisAssembler = SurveySynthesisAssembler
+SurveyReportSynthesisAssembler = SurveySynthesisAssembler
