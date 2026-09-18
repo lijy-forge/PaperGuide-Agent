@@ -161,17 +161,36 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
     papers = []
     total_found = 0
     total_after_dedup = 0
+    source_errors: dict[str, str] = {}
     for query in queries:
         result = search.search(
             ResearchConfig(
                 question=query,
                 max_papers=limit,
-                sources=[PaperSource.ARXIV, PaperSource.SEMANTIC_SCHOLAR],
+                sources=[
+                    PaperSource.ARXIV,
+                    PaperSource.OPENALEX,
+                    PaperSource.SEMANTIC_SCHOLAR,
+                ],
             )
         )
         papers.extend(result.papers)
         total_found += result.total_found
         total_after_dedup += result.total_after_dedup
+        source_errors.update(result.source_errors)
+
+    if not papers and source_errors:
+        # Every source refused, so nothing was measured. Reporting that as
+        # recall 0 would record a source outage as a retrieval result, and a
+        # baseline saved from it would make every later comparison wrong.
+        return CaseResult(
+            case_id=case["id"],
+            tier="retrieval",
+            passed=True,
+            duration_ms=round((time.monotonic() - started) * 1000, 1),
+            skipped=f"no source answered: {source_errors}",
+        )
+
     result = SimpleNamespace(
         papers=papers, total_found=total_found, total_after_dedup=total_after_dedup
     )

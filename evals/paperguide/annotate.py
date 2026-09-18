@@ -20,18 +20,28 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from difflib import SequenceMatcher
 from pathlib import Path
 
 import yaml
 
 TITLE_MATCH_THRESHOLD = 0.72
+PAUSE_BETWEEN_TITLES_SECONDS = 2.0
 
 
 def _retrievers():
+    """Sources in the order worth trying for a known title.
+
+    OpenAlex first: it indexes the journals, needs no key, and has the most
+    forgiving rate limit, so a title is usually resolved before the stricter
+    sources are touched at all.
+    """
+
     from paperguide.bootstrap.factory import _default_retrievers
 
-    return _default_retrievers()
+    ordered = _default_retrievers()
+    return sorted(ordered, key=lambda item: type(item).__name__ != "OpenAlexClient")
 
 
 def _identifier(paper) -> str | None:
@@ -102,28 +112,48 @@ def _distinctive_terms(title: str, keep: int = 5) -> str:
     return " ".join(words[:keep])
 
 
-def _lookup(title: str, retrievers) -> tuple[str | None, str, float]:
-    """Return (identifier, matched title, similarity) for the best match."""
+def _is_rate_limited(error: Exception) -> bool:
+    """Whether a source refused because we asked too often."""
+
+    text = str(error).casefold()
+    return any(marker in text for marker in ("429", "too many requests", "406"))
+
+
+def _lookup(title: str, retrievers) -> tuple[str | None, str, float, bool]:
+    """Return (identifier, matched title, similarity, was_rate_limited).
+
+    Sources are tried in order and the search stops at the first confident
+    match, rather than asking every source for every title. Resolving a dozen
+    titles otherwise means a burst of requests large enough to trip the rate
+    limiter on all of them at once, and a throttled lookup is indistinguishable
+    from a paper that does not exist.
+    """
 
     best: tuple[str | None, str, float] = (None, "", 0.0)
-    queries = [title, _distinctive_terms(title)]
-    for query in dict.fromkeys(queries):
+    throttled = False
+    for query in dict.fromkeys([title, _distinctive_terms(title)]):
         for retriever in retrievers:
             try:
                 candidates = retriever.search(query, 5)
             except Exception as error:  # noqa: BLE001 - report and try the next source
-                print(f"    source failed: {type(error).__name__}: {error}", file=sys.stderr)
+                if _is_rate_limited(error):
+                    throttled = True
+                else:
+                    print(
+                        f"    {type(retriever).__name__} failed: {error}",
+                        file=sys.stderr,
+                    )
                 continue
             for paper in candidates:
                 score = _similarity(title, paper.title)
                 if score > best[2]:
                     best = (_identifier(paper), paper.title, score)
-        if best[2] >= TITLE_MATCH_THRESHOLD:
-            break
-    return best
+            if best[2] >= TITLE_MATCH_THRESHOLD:
+                return (*best, throttled)
+    return (*best, throttled)
 
 
-def resolve(path: Path, apply: bool) -> int:
+def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS) -> int:
     """Turn ``ground_truth_titles`` into verified identifiers."""
 
     case = yaml.safe_load(path.read_text("utf-8"))
@@ -135,20 +165,36 @@ def resolve(path: Path, apply: bool) -> int:
     retrievers = _retrievers()
     resolved: list[str] = []
     unresolved: list[str] = []
-    for title in titles:
-        identifier, matched, score = _lookup(str(title), retrievers)
+    throttled: list[str] = []
+    for index, title in enumerate(titles):
+        if index:
+            # Spread the requests out; resolving a dozen titles back to back is
+            # what trips every source's rate limiter at once.
+            time.sleep(pause)
+        identifier, matched, score, was_throttled = _lookup(str(title), retrievers)
         if identifier and score >= TITLE_MATCH_THRESHOLD:
-            print(f"  ok   {identifier:34} {score:.2f}  {matched[:58]}")
+            print(f"  ok    {identifier:34} {score:.2f}  {matched[:56]}")
             resolved.append(identifier)
+        elif was_throttled:
+            # Not the same as "no such paper", so it must not read like one.
+            print(f"  LIMIT {'-':34} {'':4}  rate limited, not searched properly")
+            throttled.append(str(title))
         else:
-            print(f"  MISS {'-':34} {score:.2f}  best was: {matched[:58] or '(nothing)'}")
+            print(f"  MISS  {'-':34} {score:.2f}  best was: {matched[:56] or '(nothing)'}")
             unresolved.append(str(title))
 
     print(f"\nresolved {len(resolved)}/{len(titles)}")
+    if throttled:
+        print(
+            f"{len(throttled)} were rate limited rather than missing — "
+            f"re-run later, or with --pause larger than {pause}s:"
+        )
+        for title in throttled:
+            print(f"  - {title[:76]}")
     if unresolved:
-        print("unresolved titles stay in the file; check spelling or label them by hand:")
+        print("not found; check the title, or label these by hand:")
         for title in unresolved:
-            print(f"  - {title}")
+            print(f"  - {title[:76]}")
 
     if apply and resolved:
         case["ground_truth"] = sorted(set(case.get("ground_truth") or []) | set(resolved))
@@ -203,6 +249,7 @@ def main(argv: list[str] | None = None) -> int:
     resolve_parser = sub.add_parser("resolve", help="titles -> verified identifiers")
     resolve_parser.add_argument("case", type=Path)
     resolve_parser.add_argument("--apply", action="store_true", help="write them into the case")
+    resolve_parser.add_argument("--pause", type=float, default=PAUSE_BETWEEN_TITLES_SECONDS, help="seconds between titles; raise it if sources rate limit")
 
     verify_parser = sub.add_parser("verify", help="check existing identifiers resolve")
     verify_parser.add_argument("case", type=Path)
@@ -211,7 +258,7 @@ def main(argv: list[str] | None = None) -> int:
     if arguments.command == "pool":
         return pool(arguments.query, arguments.limit)
     if arguments.command == "resolve":
-        return resolve(arguments.case, arguments.apply)
+        return resolve(arguments.case, arguments.apply, arguments.pause)
     return verify(arguments.case)
 
 
