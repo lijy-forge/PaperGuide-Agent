@@ -83,8 +83,7 @@ def pool(query: str, limit: int) -> int:
 
 
 STOPWORDS = frozenset(
-    "a an and are as at be by for from in into is of on or the to towards with"
-    " using via über".split()
+    ["a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "into", "is", "of", "on", "or", "the", "to", "towards", "with", "using", "via", "über"]
 )
 
 
