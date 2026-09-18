@@ -1,7 +1,7 @@
 """Synchronous LangGraph assembly for the PaperGuide research workflow."""
 
 from collections.abc import Callable
-from typing import cast
+from typing import Any, cast
 
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
@@ -122,8 +122,15 @@ def compile_research_graph(
     reader_node: ResearchNode,
     verifier_node: ResearchNode,
     quality_gate_node: ResearchNode,
+    checkpointer: Any | None = None,
 ) -> CompiledStateGraph:
-    """Build and compile a synchronous graph without persistence or memory."""
+    """Build and compile the synchronous graph.
+
+    Without a checkpointer the graph keeps no memory between runs, so a run
+    that dies partway is repeated from the beginning — minutes of LLM calls
+    and downloads paid for twice. Supplying one lets ResumableGraph continue
+    from the node that failed.
+    """
 
     graph = build_research_graph(
         planner_node,
@@ -133,4 +140,4 @@ def compile_research_graph(
         verifier_node,
         quality_gate_node,
     )
-    return graph.compile(checkpointer=None)
+    return graph.compile(checkpointer=checkpointer)
