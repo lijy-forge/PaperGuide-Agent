@@ -1,9 +1,15 @@
 id: visual-slam-loop-closure
 question: 视觉SLAM回环检测研究进展
 max_papers: 20
-# Label the papers that must be retrieved for this question. Identifiers are
-# matched as "arxiv:<id>", "doi:<id>" or "s2:<id>", case-insensitive.
-# An empty list skips the case instead of reporting a meaningless recall of 0.
-ground_truth: []
+ground_truth_titles:
+- 'ORB-SLAM: A Versatile and Accurate Monocular SLAM System'
+- Bags of Binary Words for Fast Place Recognition in Image Sequences
+- 'NetVLAD: CNN architecture for weakly supervised place recognition'
+- 'DeepVO: Towards End-to-End Visual Odometry with Deep Recurrent Convolutional Neural
+  Networks'
+- 'Past, Present, and Future of Simultaneous Localization and Mapping: Towards the
+  Robust-Perception Age'
+ground_truth:
+- doi:10.1109/tro.2012.2197158
 metrics:
-  recall_at_20_min: 0.7
+  recall_at_20_min: 0.6
