@@ -6,10 +6,11 @@ change. It cannot say anything about retrieval quality: the fake retriever
 returns the corpus itself, so recall is 1 by construction.
 
 ``retrieval`` calls the real arXiv and Semantic Scholar adapters and stops
-there. It is the tier that can measure recall. It deliberately plans with the
-deterministic planner rather than the LLM one, so a recall number reflects the
-retrievers rather than today's sampling from a model. arXiv needs no key;
-SEMANTIC_SCHOLAR_API_KEY only raises the rate limit.
+there. It is the tier that can measure recall. A case supplies the search
+queries directly, because retrieval and query planning fail for different
+reasons and one number covering both cannot say which of them moved; how well
+the planner turns a question into those queries needs its own case. arXiv
+needs no key; SEMANTIC_SCHOLAR_API_KEY only raises the rate limit.
 """
 
 from __future__ import annotations
@@ -18,6 +19,7 @@ import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 from paperguide.domain import PaperSource, ResearchConfig
@@ -146,13 +148,33 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
 
     started = time.monotonic()
     limit = int(case.get("max_papers", 20))
-    config = ResearchConfig(
-        question=case["question"],
-        max_papers=limit,
-        sources=[PaperSource.ARXIV, PaperSource.SEMANTIC_SCHOLAR],
-    )
+    # In production an LLM planner rewrites the question into English search
+    # terms before retrieval — prompts.py requires it — and the deterministic
+    # planner does not, it passes the sentence through unchanged. Searching a
+    # Chinese question verbatim therefore measures a path the product never
+    # takes. A case states its search queries so this tier measures retrieval
+    # and ranking; how well the planner produces those queries is a separate
+    # question, and mixing the two into one number hides which of them moved.
+    queries = [str(item) for item in (case.get("queries") or [])] or [case["question"]]
     search = PaperSearchPipeline(_default_retrievers())
-    result = search.search(config)
+
+    papers = []
+    total_found = 0
+    total_after_dedup = 0
+    for query in queries:
+        result = search.search(
+            ResearchConfig(
+                question=query,
+                max_papers=limit,
+                sources=[PaperSource.ARXIV, PaperSource.SEMANTIC_SCHOLAR],
+            )
+        )
+        papers.extend(result.papers)
+        total_found += result.total_found
+        total_after_dedup += result.total_after_dedup
+    result = SimpleNamespace(
+        papers=papers, total_found=total_found, total_after_dedup=total_after_dedup
+    )
 
     retrieved: set[str] = set()
     for paper in result.papers:
