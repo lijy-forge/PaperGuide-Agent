@@ -1,0 +1,29 @@
+id: propellant-yield-stress
+question: 复合推进剂浆料屈服应力预测研究进展
+max_papers: 20
+
+# 这些标题来自你 Downloads 里的真实论文（自动提取，可能有个别不准）。
+# 请你过一遍：删掉不相关的、补上你认为必须被检到但这里没有的。
+# 然后运行：
+#   python -m evals.paperguide.annotate resolve <本文件> --apply
+ground_truth_titles:
+  - "APPLICATION OF MULTI-AGENT PROGRAMMING FOR MODELING THE VISCOSITY STATE OF MASH IN ALCOHOL PRODUCTION"
+  - "Advances in Fluid Viscosity Measurement Technologies"
+  - "Autonomous Multi Agent AI for High Throughput Polymer Informatics"
+  - "Characterizing the non Newtonian viscosity of high solids"
+  - "Constitutive Modeling of Rheological Behavior of Cement Paste Based on Material Composition"
+  - "Discontinuous shear thickening without inertia in dense non Brownian suspensions"
+  - "MultiPUFFIN: Multimodal Domain-Constrained Foundation Molecular Property Prediction Molecules"
+  - "Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated Polybutadiene (HTPB) Propellant Slurry"
+  - "Rheology and applications of highly filled polymers"
+  - "Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced Falling Ball and Slump Test"
+  - "The rheology of concentrated suspensions of arbitrarily shaped particles"
+  - "Yield stress and maximum packing fraction of concentrated suspensions"
+  - "Yield-stress transition in suspensions of deformable droplets"
+  - "integrated experimental numerical analysis of htpb propellant casting optimization and droplet dynamics"
+  - "rapid temperature dependent rheological measurements of non newtonian solutions using a machine learning aided"
+
+ground_truth: []
+
+metrics:
+  recall_at_20_min: 0.5
