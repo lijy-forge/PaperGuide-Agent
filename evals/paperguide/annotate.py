@@ -131,6 +131,7 @@ def _lookup(title: str, retrievers) -> tuple[str | None, str, float, bool]:
 
     best: tuple[str | None, str, float] = (None, "", 0.0)
     throttled = False
+    answered = False
     for query in dict.fromkeys([title, _distinctive_terms(title)]):
         for retriever in retrievers:
             try:
@@ -144,13 +145,18 @@ def _lookup(title: str, retrievers) -> tuple[str | None, str, float, bool]:
                         file=sys.stderr,
                     )
                 continue
+            answered = True
             for paper in candidates:
                 score = _similarity(title, paper.title)
                 if score > best[2]:
                     best = (_identifier(paper), paper.title, score)
             if best[2] >= TITLE_MATCH_THRESHOLD:
-                return (*best, throttled)
-    return (*best, throttled)
+                return (*best, False)
+    # One throttled source does not mean the title went unsearched: the search
+    # stops at the first source that answers, and a later source being rate
+    # limited says nothing about the answer already obtained. Reporting that as
+    # throttled would hide a genuine miss behind an apparent outage.
+    return (*best, throttled and not answered)
 
 
 def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS) -> int:
@@ -180,7 +186,10 @@ def resolve(path: Path, apply: bool, pause: float = PAUSE_BETWEEN_TITLES_SECONDS
             print(f"  LIMIT {'-':34} {'':4}  rate limited, not searched properly")
             throttled.append(str(title))
         else:
-            print(f"  MISS  {'-':34} {score:.2f}  best was: {matched[:56] or '(nothing)'}")
+            # A near miss is usually the stored title being abbreviated rather
+            # than the paper being absent, so it is worth showing separately.
+            label = "NEAR" if score >= TITLE_MATCH_THRESHOLD - 0.1 else "MISS"
+            print(f"  {label}  {'-':34} {score:.2f}  best was: {matched[:56] or '(nothing)'}")
             unresolved.append(str(title))
 
     print(f"\nresolved {len(resolved)}/{len(titles)}")

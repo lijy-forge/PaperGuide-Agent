@@ -65,7 +65,11 @@ def to_markdown(results: list[CaseResult], baseline: dict | None = None) -> str:
                 delta = _metric_delta(value, (previous.get(result.case_id) or {}).get(name))
                 lines.append(f"| `{result.case_id}` | {name} | {value}{delta} |")
 
-    problems = [result for result in results if result.failures or result.skipped]
+    problems = [
+        result
+        for result in results
+        if result.failures or result.notes or result.skipped
+    ]
     if problems:
         lines += ["", "## Details", ""]
         for result in problems:
@@ -73,6 +77,7 @@ def to_markdown(results: list[CaseResult], baseline: dict | None = None) -> str:
             if result.skipped:
                 lines.append(f"- skipped: {result.skipped}")
             lines.extend(f"- {failure}" for failure in result.failures)
+            lines.extend(f"- {note}" for note in result.notes)
             lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"

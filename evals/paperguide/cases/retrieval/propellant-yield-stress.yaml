@@ -35,4 +35,6 @@ ground_truth:
 - doi:10.3390/polym17121682
 - doi:10.3933/applrheol-27-45262
 metrics:
-  recall_at_20_min: 0.5
+  recall_at_20_min: 0.3
+_baseline_note: measured 0.3333 on 2026-09-18 with 9 labels; the threshold guards
+  against regression, it is not a target

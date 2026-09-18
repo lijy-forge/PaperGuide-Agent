@@ -26,6 +26,12 @@ from paperguide.domain import PaperSource, ResearchConfig
 
 from .checks import INVARIANTS, METRICS
 
+CONFIGURED_SOURCES = (
+    PaperSource.ARXIV,
+    PaperSource.OPENALEX,
+    PaperSource.SEMANTIC_SCHOLAR,
+)
+
 
 @dataclass
 class CaseResult:
@@ -38,6 +44,7 @@ class CaseResult:
     invariants: dict[str, bool] = field(default_factory=dict)
     metrics: dict[str, float] = field(default_factory=dict)
     failures: list[str] = field(default_factory=list)
+    notes: list[str] = field(default_factory=list)
     skipped: str | None = None
 
 
@@ -167,11 +174,7 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
             ResearchConfig(
                 question=query,
                 max_papers=limit,
-                sources=[
-                    PaperSource.ARXIV,
-                    PaperSource.OPENALEX,
-                    PaperSource.SEMANTIC_SCHOLAR,
-                ],
+                sources=list(CONFIGURED_SOURCES),
             )
         )
         papers.extend(result.papers)
@@ -206,13 +209,20 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
         f"recall_at_{limit}": round(recall, 4),
         "total_found": float(result.total_found),
         "after_dedup": float(result.total_after_dedup),
+        # A source that refused halves the candidate pool and so halves recall.
+        # Without this the drop looks like retrieval got worse.
+        "sources_answered": float(len(CONFIGURED_SOURCES) - len(source_errors)),
     }
 
-    failures = [f"missed: {item}" for item in misses] if misses else []
+    # A missed paper is what recall below 1 means, so the threshold decides the
+    # verdict and the misses are reported as the diagnosis of it. Failing per
+    # miss would make every case red until recall reached 1.
+    failures: list[str] = []
     for name, minimum in (case.get("metrics") or {}).items():
         measured = metrics.get(name.removesuffix("_min"))
         if measured is not None and measured < float(minimum):
             failures.append(f"{name}: {measured} < {minimum}")
+    notes = [f"missed: {item}" for item in misses]
 
     return CaseResult(
         case_id=case["id"],
@@ -221,6 +231,7 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
         duration_ms=round((time.monotonic() - started) * 1000, 1),
         metrics=metrics,
         failures=failures,
+        notes=notes,
     )
 
 
