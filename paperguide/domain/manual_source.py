@@ -1,5 +1,6 @@
 """User-supplied literature metadata and controlled PDF upload reference."""
 
+from typing import ClassVar
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -8,7 +9,16 @@ from .enums import PaperSource
 
 
 class ManualPaperSource(BaseModel):
-    """A Google Scholar or CNKI record supplemented with an uploaded PDF."""
+    """A paper the user obtained themselves, supplied with an uploaded PDF.
+
+    ``source`` records where they got it. It may not name a source the system
+    searches automatically: a record claiming to come from arXiv, OpenAlex or
+    Semantic Scholar would be indistinguishable from one the pipeline actually
+    retrieved, and provenance is the point of recording it at all. Anything
+    else is allowed — a paywalled IEEE or Springer paper is exactly the case
+    manual upload exists for, and ``user_upload`` covers a publisher the
+    enumeration does not name.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -21,11 +31,18 @@ class ManualPaperSource(BaseModel):
     abstract: str | None = Field(default=None, max_length=20_000)
     doi: str | None = Field(default=None, max_length=512)
 
+    AUTOMATIC_SOURCES: ClassVar[frozenset[PaperSource]] = frozenset(
+        {PaperSource.ARXIV, PaperSource.OPENALEX, PaperSource.SEMANTIC_SCHOLAR}
+    )
+
     @field_validator("source")
     @classmethod
     def validate_source(cls, value: PaperSource) -> PaperSource:
-        if value not in {PaperSource.GOOGLE_SCHOLAR, PaperSource.CNKI}:
-            raise ValueError("manual source must be google_scholar or cnki")
+        if value in ManualPaperSource.AUTOMATIC_SOURCES:
+            names = ", ".join(sorted(item.value for item in ManualPaperSource.AUTOMATIC_SOURCES))
+            raise ValueError(
+                f"manual source must not claim an automatically searched source ({names})"
+            )
         return value
 
     @field_validator("title", "source_url")
