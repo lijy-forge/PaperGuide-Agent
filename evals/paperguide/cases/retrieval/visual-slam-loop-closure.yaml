@@ -9,7 +9,7 @@ ground_truth_titles:
   Networks'
 - 'Past, Present, and Future of Simultaneous Localization and Mapping: Towards the
   Robust-Perception Age'
-ground_truth:
-- doi:10.1109/tro.2012.2197158
+ground_truth: []
 metrics:
   recall_at_20_min: 0.6
+_baseline_note: one label cannot support a recall number; parked until it has 8-10
