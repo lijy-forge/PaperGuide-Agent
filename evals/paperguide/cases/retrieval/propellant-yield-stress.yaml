@@ -1,33 +1,38 @@
 id: propellant-yield-stress
 question: 复合推进剂浆料屈服应力预测研究进展
 max_papers: 20
-
-# 这些标题来自你 Downloads 里的真实论文（自动提取，可能有个别不准）。
-# 请你过一遍：删掉不相关的、补上你认为必须被检到但这里没有的。
-# 然后运行：
-#   python -m evals.paperguide.annotate resolve <本文件> --apply
 ground_truth_titles:
-  - "Advances in Fluid Viscosity Measurement Technologies"
-  - "Characterizing the non Newtonian viscosity of high solids"
-  - "Constitutive Modeling of Rheological Behavior of Cement Paste Based on Material Composition"
-  - "Discontinuous shear thickening without inertia in dense non Brownian suspensions"
-  - "Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated Polybutadiene (HTPB) Propellant Slurry"
-  - "Rheology and applications of highly filled polymers"
-  - "Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced Falling Ball and Slump Test"
-  - "The rheology of concentrated suspensions of arbitrarily shaped particles"
-  - "Yield stress and maximum packing fraction of concentrated suspensions"
-  - "Yield-stress transition in suspensions of deformable droplets"
-  - "integrated experimental numerical analysis of htpb propellant casting optimization and droplet dynamics"
-  - "rapid temperature dependent rheological measurements of non newtonian solutions using a machine learning aided"
-
-# 生产环境里 LLM 规划器会把中文问题改写成英文检索词（见 relevance/prompts.py）。
-# 这里直接写出英文查询，让这一档只衡量“检索与排序”，不掺入“规划得好不好”。
+- Advances in Fluid Viscosity Measurement Technologies
+- Characterizing the non Newtonian viscosity of high solids
+- Constitutive Modeling of Rheological Behavior of Cement Paste Based on Material
+  Composition
+- Discontinuous shear thickening without inertia in dense non Brownian suspensions
+- Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated Polybutadiene
+  (HTPB) Propellant Slurry
+- Rheology and applications of highly filled polymers
+- Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced Falling
+  Ball and Slump Test
+- The rheology of concentrated suspensions of arbitrarily shaped particles
+- Yield stress and maximum packing fraction of concentrated suspensions
+- Yield-stress transition in suspensions of deformable droplets
+- integrated experimental numerical analysis of htpb propellant casting optimization
+  and droplet dynamics
+- rapid temperature dependent rheological measurements of non newtonian solutions
+  using a machine learning aided
 queries:
-  - "yield stress concentrated suspensions rheology"
-  - "composite propellant slurry rheology viscosity"
-  - "yield stress prediction highly filled polymer suspension"
-
-ground_truth: []
-
+- yield stress propellant suspension measurement
+- HTPB composite propellant slurry rheology
+- yield stress maximum packing fraction concentrated suspension
+- highly filled polymer suspension rheology review
+ground_truth:
+- doi:10.1007/bf00712315
+- doi:10.1016/j.jcis.2010.02.033
+- doi:10.1016/j.progpolymsci.2016.12.007
+- doi:10.1021/acs.analchem.1c05208
+- doi:10.1021/acsomega.5c03072
+- doi:10.1103/physrevlett.112.098302
+- doi:10.1126/sciadv.adf8106
+- doi:10.3390/polym17121682
+- doi:10.3933/applrheol-27-45262
 metrics:
   recall_at_20_min: 0.5
