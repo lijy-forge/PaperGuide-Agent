@@ -58,6 +58,10 @@ class ArxivClient:
     _ARXIV_NAMESPACE = "http://arxiv.org/schemas/atom"
     _CJK_RE = re.compile(r"[\u3400-\u9fff]")
     _LATIN_KEYWORD_RE = re.compile(r"[A-Za-z][A-Za-z0-9.+#-]*")
+    _CONJUNCTIVE_TERM_LIMIT = 2
+    _STOPWORDS = frozenset(
+        ["a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "in", "into", "is", "it", "of", "on", "or", "that", "the", "to", "with", "using", "via", "this", "these", "those", "we", "our", "their", "its", "research", "study", "paper", "approach", "method", "based", "analysis", "review", "progress"]
+    )
 
     def __init__(
         self,
@@ -112,7 +116,11 @@ class ArxivClient:
         # user query turns it into an exact-phrase search and makes common
         # queries such as "YOLO SLAM" incorrectly return no results.
         terms = self._query_terms(query)
-        search_query = " AND ".join(f'all:"{term}"' for term in terms)
+        # Requiring every term means a longer question returns nothing at all:
+        # a six-word query asks arXiv for a paper containing all six. Past two
+        # terms the query widens to OR and the caller ranks what comes back.
+        operator = " AND " if len(terms) <= self._CONJUNCTIVE_TERM_LIMIT else " OR "
+        search_query = operator.join(f'all:"{term}"' for term in terms)
         parameters = urlencode(
             {
                 "search_query": search_query,
@@ -142,9 +150,12 @@ class ArxivClient:
         seen: set[str] = set()
         for term in raw_terms:
             folded = term.casefold()
-            if folded not in seen:
-                seen.add(folded)
-                terms.append(term)
+            # Stopwords carry no topic and, when every term is required, they
+            # are what makes a natural-language question match nothing.
+            if folded in cls._STOPWORDS or folded in seen:
+                continue
+            seen.add(folded)
+            terms.append(term)
         return terms or [query]
 
     def _fetch_with_retry(self, request: Request) -> bytes:
