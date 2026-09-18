@@ -1,0 +1,75 @@
+id: mec-collaborative-offloading
+question: 多用户协作任务卸载与资源分配
+max_papers: 20
+queries:
+- multi-user collaborative task offloading resource allocation
+- D2D assisted computation offloading mobile edge computing
+- joint task offloading and resource allocation MEC
+ground_truth_titles:
+- Collaborative Task Offloading for Overloaded Mobile Edge Computing in Small-Cell
+  Networks
+- Reverse Auction-Based Computation Offloading and Resource Allocation in Mobile Cloud-Edge
+  Computing
+- Joint Optimization of Computing Offloading and Service Caching in Edge Computing-Based
+  Smart Grid
+- A Cyclic Game for Service-Oriented Resource Allocation in Edge Computing
+- A Nash Bargaining Cooperative Game Policy in Mobile Edge Computing
+- Partial Offloading for Latency Minimization in Mobile-Edge Computing
+- Joint Offloading and Resource Allocation With Partial Information for Multi-User
+  Edge Computing
+- D2D-Assisted Multi-User Cooperative Partial Offloading, Transmission Scheduling
+  and Computation Allocating for MEC
+- Task Co-Offloading for D2D-Assisted Mobile Edge Computing in Industrial Internet
+  of Things
+- Incentive-Driven Task Offloading and Collaborative Computing in Device-Assisted
+  MEC Networks
+- Incentive-Based Distributed Resource Allocation for Task Offloading and Collaborative
+  Computing in MEC-Enabled Networks
+- 'MEC Network Slicing: Stackelberg-Game-Based Slice Pricing and Resource Allocation
+  With QoS Guarantee'
+- A Repeated Auction Model for Load-Aware Dynamic Resource Allocation in Multi-Access
+  Edge Computing
+- Signaling-Based Incentive Mechanism for D2D Computation Offloading
+- Incentive-Driven Task Allocation for Collaborative Edge Computing in Industrial
+  Internet of Things
+- Profit-Maximized Collaborative Computation Offloading and Resource Allocation in
+  Distributed Cloud and Edge Computing Systems
+- Privacy-Protected Joint Service Placement and Task Offloading for Knowledge-Defined
+  Cloud-Edge Networking
+- Quality of Experience and Reliability-Aware Task Offloading and Scheduling for Multi-User
+  Mobile-Edge Computing Systems
+- Hybrid Deep Reinforcement Learning-Based Task Offloading for D2D-Assisted Cloud-Edge-Device
+  Collaborative Networks
+- Multi-Agent DRL for Joint Completion Delay and Energy Consumption With Queuing Theory
+  in MEC-Based IIoT
+- 'SAC-PP: Jointly Optimizing Privacy Protection and Computation Offloading for Mobile
+  Edge Computing'
+- Explainable Multiagent Deep Reinforcement Learning for Joint Task Offloading and
+  Resource Allocation in Distance and Channel-Aware NOMA Vehicular Edge Networks
+ground_truth:
+- doi:10.1002/ett.70105
+- doi:10.1016/j.jpdc.2023.02.008
+- doi:10.1109/gcwkshps56602.2022.10008674
+- doi:10.1109/glocom.2017.8254550
+- doi:10.1109/icoin48656.2020.9016452
+- doi:10.1109/jiot.2021.3085143
+- doi:10.1109/jiot.2021.3107945
+- doi:10.1109/jiot.2022.3233026
+- doi:10.1109/jiot.2024.3508693
+- doi:10.1109/jiot.2025.3617349
+- doi:10.1109/tase.2020.3000946
+- doi:10.1109/tcc.2022.3163750
+- doi:10.1109/tii.2022.3158974
+- doi:10.1109/tmc.2022.3189050
+- doi:10.1109/tmc.2023.3338602
+- doi:10.1109/tmc.2024.3425723
+- doi:10.1109/tnsm.2024.3409277
+- doi:10.1109/tnsm.2024.3447753
+- doi:10.1109/tsc.2020.2966196
+- doi:10.1109/tsc.2025.3552338
+- doi:10.1109/tsc.2026.3676545
+- doi:10.1109/twc.2021.3062616
+metrics:
+  recall_at_20_min: 0.0
+_baseline_note: titles naming collaboration, multi-user or joint allocation; plain
+  offloading and surveys excluded. threshold set after the first measurement

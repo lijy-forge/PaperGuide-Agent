@@ -1,0 +1,51 @@
+id: visual-slam-dynamic-semantic
+question: 动态环境下的视觉SLAM与语义建图研究进展
+max_papers: 20
+queries:
+- visual SLAM dynamic environment semantic
+- semantic SLAM dynamic object removal
+- RGB-D visual SLAM dynamic scene robustness
+ground_truth_titles:
+- A Robust and Efficient Visual-Inertial SLAM Using Hybrid Point-Line Features
+- 'RS-SLAM: A Robust Semantic SLAM in Dynamic Environments Based on RGB-D Sensor'
+- 'DOG-SLAM: Enhancing Dynamic Visual SLAM Precision Through GMM-Based Dynamic Object
+  Removal and ORB-Boost'
+- 'HPGS-SLAM: Hybrid Point-Guided Dense Visual SLAM With Online Mapping via Gaussian
+  Splatting'
+- 'SDT-SLAM: A Short-Term Dynamic Tracking SLAM Algorithm for Dynamic Scenes Based
+  on RGB-D Sensors'
+- 'WaterSplat-SLAM: Photorealistic Monocular SLAM in Underwater Environment'
+- 'RGBDS-SLAM: A RGB-D Semantic Dense SLAM Based on 3D Multi Level Pyramid Gaussian
+  Splatting'
+- 'RDMO-SLAM: Real-Time Visual SLAM for Dynamic Environments Using Semantic Label
+  Prediction With Optical Flow'
+- Depth Completion With Multiple Balanced Bases and Confidence for Dense Monocular
+  SLAM
+- 'ObVi-SLAM: Long-Term Object-Visual SLAM'
+- 'DMN-SLAM: Multi-MLPs Neural Implicit Representation SLAM for Dynamic Environments'
+- 'PIPO-SLAM: Lightweight Visual-Inertial SLAM With Preintegration Merging Theory
+  and Pose-Only Descriptions of Multiple View Geometry'
+- 'IMGS-SLAM: Monocular Gaussian Splatting SLAM for Indoor Reconstruction'
+- 'DFusion-SLAM: A Lightweight Semantic Fusion Framework for Robust Visual SLAM in
+  Dynamic Environments'
+- 'DynaQuadric: Dynamic Quadric SLAM for Quadric Initialization, Mapping, and Tracking'
+ground_truth:
+- doi:10.1109/access.2021.3100426
+- doi:10.1109/access.2025.3540585
+- doi:10.1109/jiot.2025.3625598
+- doi:10.1109/jsen.2021.3099511
+- doi:10.1109/jsen.2026.3653030
+- doi:10.1109/lra.2024.3363534
+- doi:10.1109/lra.2025.3553049
+- doi:10.1109/lra.2025.3643284
+- doi:10.1109/lra.2025.3648610
+- doi:10.1109/lra.2026.3668465
+- doi:10.1109/lra.2026.3709995
+- doi:10.1109/tim.2025.3547101
+- doi:10.1109/tits.2024.3418949
+- doi:10.1109/tro.2024.3366815
+- doi:10.1109/tvcg.2024.3431926
+metrics:
+  recall_at_20_min: 0.0
+_baseline_note: labels taken from a 50-entry IEEE Xplore export; threshold set after
+  the first measurement
