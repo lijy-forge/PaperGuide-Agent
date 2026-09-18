@@ -1,7 +1,10 @@
-# 推进剂用例复核清单
+# 推进剂用例复核清单（已完成）
 
 **文件**：`evals/paperguide/cases/retrieval/propellant-yield-stress.yaml`
 **问题**：复合推进剂浆料屈服应力预测研究进展
+
+> **复核结论**：9 条标题到 DOI 的解析全部人工确认无误，提取的标题为准。
+> 含相似度 0.74 和 0.88 的两条在内，均确认指向同一篇论文。此文档保留供追溯。
 
 ## 这次要核的和前两个不一样
 
@@ -31,7 +34,7 @@
   解析到的论文（API 返回）: Rheology and applications of highly filled polymers: A review of current understanding
   doi:10.1016/j.progpolymsci.2016.12.007
 4 | 相似度 0.88  ⚠ 相似度偏低
-  我的标题（从 PDF 提取）: rapid temperature dependent rheological measurements of non newtonian solutions using a machine learning aided
+  我的标题（从 PDF 提取）: Rapid Temperature-Dependent Rheological Measurements of Non-Newtonian Solutions Using a Machine-Learning Aided Microfluidic Rheometer
   解析到的论文（API 返回）: Rapid Temperature-Dependent Rheological Measurements of Non-Newtonian Solutions
   doi:10.1021/acs.analchem.1c05208
 5 | 相似度 0.99
@@ -51,7 +54,7 @@
   解析到的论文（API 返回）: Research on Time-Dimension Expansion of HBP Model Based on Hydroxyl-Terminated Polybutadiene Propellant Slurry
   doi:10.3390/polym17121682
 9 | 相似度 0.97
-  我的标题（从 PDF 提取）: Studies on Measurement of Yield Stress of Propellant Suspensions Using Forced Falling Ball and Slump Test
+  我的标题（从 PDF 提取）: Studies on Measurement of Yield Stress of Propellant Suspensions using Falling Ball and Slump Test
   解析到的论文（API 返回）: Studies on Measurement of Yield Stress of Propellant Suspensions
   doi:10.3933/applrheol-27-45262
 
