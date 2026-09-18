@@ -292,3 +292,20 @@ def test_provider_authored_citation_tokens_are_rebuilt_from_evidence_keys():
     assert report.claims[0].citation_tokens
     assert all("999" not in token for token in report.claims[0].citation_tokens)
     assert any("rebuilt from evidence keys" in warning for warning in report.warnings)
+
+
+def test_a_paragraph_without_evidence_is_left_uncited_not_attributed_to_everything():
+    """Inheriting the stage's keys cited the whole sample behind text nothing
+    was known to support, which is a stronger failure than no citation."""
+
+    context, evidence, analysis_data = make_fixture()
+    service = FullSurveySynthesisService(SurveySynthesisWriter(FakeStageLLM()))
+
+    report = service.generate(context, evidence, analysis_data)
+
+    paragraphs = [p for section in report.sections for p in section.paragraphs]
+    assert paragraphs
+    uncited = [p for p in paragraphs if not p.claim_keys]
+    assert all(not p.citation_refs for p in uncited), "uncited text must carry no refs"
+    if uncited:
+        assert any("未绑定可追溯证据" in w or "named no traceable evidence" in w for w in report.warnings)
