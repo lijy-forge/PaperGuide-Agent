@@ -1,0 +1,48 @@
+id: physics-informed-rheology-ml
+question: 如何把物理机理（本构方程、守恒律、或物理导出的描述符）嵌入机器学习模型来预测流变性质？
+max_papers: 20
+queries:
+- physics-informed neural network rheology constitutive model
+- physics-enforced machine learning viscosity prediction
+- hybrid mechanistic data-driven viscosity model
+- molecular descriptor machine learning viscosity QSPR
+inclusion: 模型中显式包含本构方程、守恒律或物理导出的描述符，物理知识以可辨认的形式参与建模过程本身。
+exclusion: 纯黑箱回归（物理只体现在特征挑选的经验判断上）；传感器硬件与实验表征；综述。
+ground_truth_titles:
+- nn-PINNs 复杂流体（2022）
+- physics-enforced NN 聚合物熔体（2025）
+- PINN 水泥浆流变（2025）
+- RheologyNet 触变（2023）
+- 贝叶斯反演 N–S 学 Carreau 参数（2025）
+- MD 描述符 + QSPR（2024）
+- UNIFAC + 可解释 ML（2023）
+- 机理-数据混合（离子液体）（2024）
+- ML + 非平衡分子动力学（2025）
+ground_truth:
+- doi:10.1016/j.cemconres.2023.107157
+- doi:10.1016/j.gee.2024.01.007
+- doi:10.1016/j.molliq.2023.122095
+- doi:10.1017/jfm.2025.92
+- doi:10.1021/acs.jctc.5c00293
+- doi:10.1038/s41524-025-01532-6
+- doi:10.1039/d1sm01298c
+- doi:10.1186/s13321-024-00820-5
+- doi:10.3390/fluids10070184
+subgroups:
+  equation:
+  - doi:10.1016/j.cemconres.2023.107157
+  - doi:10.1017/jfm.2025.92
+  - doi:10.1038/s41524-025-01532-6
+  - doi:10.1039/d1sm01298c
+  - doi:10.3390/fluids10070184
+  feature:
+  - doi:10.1016/j.gee.2024.01.007
+  - doi:10.1016/j.molliq.2023.122095
+  - doi:10.1021/acs.jctc.5c00293
+  - doi:10.1186/s13321-024-00820-5
+metrics:
+  recall_at_20_min: 0.0
+_baseline_note: labels defined and checked by the author; every DOI resolved through
+  doi.org content negotiation. The Cambridge record 10.17863/cam.113320 was the dataset
+  deposit, not the paper, and is replaced by the JFM article 10.1017/jfm.2025.92 (vol
+  1011), which is what a retriever returns.
