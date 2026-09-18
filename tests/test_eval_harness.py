@@ -1,7 +1,7 @@
 """The evaluation harness is itself testable: the demo tier must stay offline."""
 
 from evals.paperguide.checks import INVARIANTS, METRICS, citation_density
-from evals.paperguide.runner import run_demo_case, run_retrieval_case
+from evals.paperguide.runner import CaseResult, run_demo_case, run_retrieval_case
 
 
 def test_demo_tier_case_passes_every_invariant_offline():
@@ -55,3 +55,28 @@ def test_citation_density_counts_distinct_references_not_tokens():
     assert citation_density(_Report()) == 3.0
     _Paragraph.citation_refs = ["[4, p.7]"]
     assert citation_density(_Report()) == 1.0
+
+
+
+def test_a_skipped_run_is_refused_as_a_baseline():
+    """A skipped case measured nothing, so it must not become the reference."""
+
+    from evals.paperguide.__main__ import storable
+
+    measured = CaseResult(case_id="a", tier="retrieval", passed=True, duration_ms=1.0)
+    outage = CaseResult(
+        case_id="b", tier="retrieval", passed=True, duration_ms=1.0, skipped="no source answered"
+    )
+
+    assert storable([measured])
+    assert not storable([measured, outage])
+    assert not storable([])
+
+
+def test_the_baseline_path_defaults_to_the_committed_directory():
+    from evals.paperguide.__main__ import BASELINES_DIR, _baseline_path
+
+    assert _baseline_path("demo", None) == BASELINES_DIR / "demo.json"
+    assert _baseline_path("demo", "/tmp/other.json").name == "other.json"
+    # Without a tier there is no single baseline to compare against.
+    assert _baseline_path(None, None) is None
