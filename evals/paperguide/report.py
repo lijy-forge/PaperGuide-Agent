@@ -40,19 +40,23 @@ def to_markdown(results: list[CaseResult], baseline: dict | None = None) -> str:
     passed = sum(1 for result in results if result.passed and not result.skipped)
     skipped = sum(1 for result in results if result.skipped)
     failed = sum(1 for result in results if not result.passed)
+    degraded = sum(1 for result in results if result.degraded)
 
     lines = [
         "# PaperGuide evaluation",
         "",
         f"Generated {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
         "",
-        f"**{passed} passed · {failed} failed · {skipped} skipped**",
+        f"**{passed} passed · {failed} failed · {skipped} skipped**"
+        + (f" · **{degraded} degraded**" if degraded else ""),
         "",
         "| Case | Tier | Result | Duration |",
         "| --- | --- | --- | ---: |",
     ]
     for result in results:
         verdict = "skipped" if result.skipped else ("pass" if result.passed else "FAIL")
+        if result.degraded:
+            verdict += " (degraded)"
         lines.append(
             f"| `{result.case_id}` | {result.tier} | {verdict} | {result.duration_ms:.0f} ms |"
         )
@@ -68,7 +72,7 @@ def to_markdown(results: list[CaseResult], baseline: dict | None = None) -> str:
     problems = [
         result
         for result in results
-        if result.failures or result.notes or result.skipped
+        if result.failures or result.notes or result.skipped or result.degraded
     ]
     if problems:
         lines += ["", "## Details", ""]
@@ -76,6 +80,8 @@ def to_markdown(results: list[CaseResult], baseline: dict | None = None) -> str:
             lines.append(f"### `{result.case_id}`")
             if result.skipped:
                 lines.append(f"- skipped: {result.skipped}")
+            if result.degraded:
+                lines.append(f"- degraded, not fit for a baseline: {result.degraded}")
             lines.extend(f"- {failure}" for failure in result.failures)
             lines.extend(f"- {note}" for note in result.notes)
             lines.append("")

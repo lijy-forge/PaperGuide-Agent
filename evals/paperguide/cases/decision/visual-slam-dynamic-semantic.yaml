@@ -1,0 +1,73 @@
+id: visual-slam-dynamic-semantic
+tier: decision
+question: 动态环境下的视觉SLAM与语义建图研究进展
+intent:
+  required_concepts:
+  - slam
+  - semantic
+  related_concepts:
+  - visual
+  - mapping
+  - rgb d
+  relation_requirements:
+  - dynamic
+  exclusion_concepts: []
+  domain: slam
+positives:
+- 'RS-SLAM: A Robust Semantic SLAM in Dynamic Environments Based on RGB-D Sensor'
+- 'DOG-SLAM: Enhancing Dynamic Visual SLAM Precision Through GMM-Based Dynamic Object Removal and ORB-Boost'
+- 'SDT-SLAM: A Short-Term Dynamic Tracking SLAM Algorithm for Dynamic Scenes Based on RGB-D Sensors'
+- 'RGBDS-SLAM: A RGB-D Semantic Dense SLAM Based on 3D Multi Level Pyramid Gaussian Splatting'
+- 'RDMO-SLAM: Real-Time Visual SLAM for Dynamic Environments Using Semantic Label Prediction With Optical
+  Flow'
+- 'DMN-SLAM: Multi-MLPs Neural Implicit Representation SLAM for Dynamic Environments'
+- 'DFusion-SLAM: A Lightweight Semantic Fusion Framework for Robust Visual SLAM in Dynamic Environments'
+- 'DynaQuadric: Dynamic Quadric SLAM for Quadric Initialization, Mapping, and Tracking'
+- 'TGS-SLAM: Tri-Plane Gaussian Splatting for Semantic SLAM'
+- 'VPS-SLAM: Visual Planar Semantic SLAM for Aerial Robotic Systems'
+- 'Contour-SLAM: A Robust Object-Level SLAM Based on Contour Alignment'
+- 'R4-SLAM: Toward Real-Time, Robust, and Resource-Restricted Visual SLAM in Dynamic Environments'
+- 'SO-SLAM: Semantic Object SLAM With Scale Proportional and Symmetrical Texture Constraints'
+- 'DDN-SLAM: Real Time Dense Dynamic Neural Implicit SLAM'
+- 'SBC-SLAM: Semantic Bioinspired Collaborative SLAM for Large-Scale Environment Perception of Heterogeneous
+  Systems'
+- 'TextSLAM: Visual SLAM With Semantic Planar Text Features'
+- 'RDS-SLAM: Real-Time Dynamic SLAM Using Semantic Segmentation Methods'
+negatives:
+- 'HOOFR SLAM System: An Embedded Vision SLAM Algorithm and Its Hardware-Software Mapping-Based Intelligent
+  Vehicles Applications'
+- Fast and Versatile Feature-Based LiDAR Odometry via Efficient Local Quadratic Surface Approximation
+- 'PttAcc: Pipeline-Based Taylor Expansion Fitting Arctangent Angle Hardware Accelerator Design for Descriptor
+  Duty in ORB-SLAM System'
+- '$D^{2}$SLAM: Decentralized and Distributed Collaborative Visual-Inertial SLAM System for Aerial Swarm'
+- 'RP-SLAM: Real-Time Photorealistic SLAM With Efficient 3D Gaussian Splatting'
+- 'Open-Structure: Structural Benchmark Dataset for SLAM Algorithms'
+- 'Structure-SLAM: Low-Drift Monocular SLAM in Indoor Environments'
+- 'Fast Inertial-Only SLAM: A Fast Pedestrian SLAM Method for Structured Buildings Based on Foot-Mounted
+  IMU'
+- A Multi-AUV Collaborative Mapping System With Bathymetric Cooperative Active SLAM Algorithm
+- 'OV$^{2}$SLAM: A Fully Online and Versatile Visual SLAM for Real-Time Applications'
+- 'EGLT-SLAM: Real-Time Visual-Inertial SLAM Based on Entropy-Guided Line Tracking'
+- 'Finite-Plane Simultaneous Localization and Mapping (FP-SLAM): A New RGB-D SLAM Exploiting Interfeature
+  Relationship'
+- 'COP-SLAM: Closed-Form Online Pose-Chain Optimization for Visual SLAM'
+- DV-SLAM (Dual-Sensor-Based Vector-Field SLAM) and Observability Analysis
+- 'BASL-AD SLAM: A Robust Deep-Learning Feature-Based Visual SLAM System With Adaptive Motion Model'
+- 'Hilti SLAM Challenge 2023: Benchmarking Single + Multi-Session SLAM Across Sensor Constellations in
+  Construction'
+- 'CoVOR-SLAM: Cooperative SLAM Using Visual Odometry and Ranges for Multi-Robot Systems'
+- 'GRAND-SLAM: Local Optimization for Globally Consistent Large-Scale Multi-Agent Gaussian SLAM'
+- 'DeepFactors: Real-Time Probabilistic Dense Monocular SLAM'
+- 'ORB-SLAM: A Versatile and Accurate Monocular SLAM System'
+- 'UV-SLAM: Unconstrained Line-Based SLAM Using Vanishing Points for Structural Mapping'
+- 'LoC-WiFi-SLAM: Low-Complexity of WiFi-Enhanced SLAM'
+- Visual-Inertial Monocular SLAM With Map Reuse
+- 'NeuV-SLAM: Fast Neural Multiresolution Voxel Optimization for RGBD Dense SLAM'
+- 'UWB Radar SLAM: An Anchorless Approach in Vision Denied Indoor Environments'
+- 'Large-Scale SLAM Building Conditionally Independent Local Maps: Application to Monocular Vision'
+metrics:
+  false_rejection_rate_max: 0.0
+  false_core_rate_max: 0.0
+  score_separation_min: 0.22
+_negatives_note: REVIEW.md 原判「排除」35 条，减去复核后被移进正样本的 9 条，余 26 条。不减会把正样本标成负样本，且不会报错。
+_threshold_note: 阈值取自 2026-09-19 实测。确定性评测，上界即实测值。

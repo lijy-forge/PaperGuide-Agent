@@ -11,6 +11,28 @@ queries directly, because retrieval and query planning fail for different
 reasons and one number covering both cannot say which of them moved; how well
 the planner turns a question into those queries needs its own case. arXiv
 needs no key; SEMANTIC_SCHOLAR_API_KEY only raises the rate limit.
+
+``decision`` measures something retrieval cannot: whether the metadata gate
+keeps the right papers and drops the wrong ones. Recall only asks what was
+found, so a system that retrieves well and then admits everything scores
+perfectly on it. The gate is deterministic, so this tier needs no key, no
+network and no LLM, and it gives the same answer every time.
+
+Two things are deliberately held fixed, because a number that moves for two
+reasons cannot say which one moved:
+
+* The case writes the ``intent`` out in full instead of planning it. In
+  production an LLM derives it from the question, so measuring both at once
+  would blame the gate for a bad plan. The intent is written from the question
+  alone — in particular ``exclusion_concepts`` is left empty unless the
+  question itself excludes something, since filling it from the negatives
+  would tune the ruler to the answer.
+* Every candidate is built from its title only, with no year and no abstract.
+  Production feeds the gate abstracts too, so the scores here are lower than
+  production's across the board. That is acceptable because both groups are
+  handicapped identically, which is what makes positives and negatives
+  comparable; it also means an absolute score from this tier says nothing
+  about production.
 """
 
 from __future__ import annotations
@@ -46,6 +68,11 @@ class CaseResult:
     failures: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     skipped: str | None = None
+    # Measured, but under conditions that make the number unfit to compare
+    # against: a source refused, so the candidate pool was smaller than the one
+    # the next run will see. The case still reports its recall, because knowing
+    # what a halved pool yields is useful; it just must not become a baseline.
+    degraded: str | None = None
 
 
 def _check_expectations(case: dict[str, Any], warnings: list[str], status: str) -> list[str]:
@@ -224,6 +251,18 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
             failures.append(f"{name}: {measured} < {minimum}")
     notes = [f"missed: {item}" for item in misses]
 
+    # Some sources answered and some refused. Recall was computed over a pool
+    # that is missing whatever the refusing source would have contributed, so
+    # the figure is real but not comparable: stored as a baseline it would make
+    # the next healthy run look like an improvement that never happened.
+    degraded = None
+    if source_errors:
+        answered = len(CONFIGURED_SOURCES) - len(source_errors)
+        degraded = (
+            f"only {answered}/{len(CONFIGURED_SOURCES)} sources answered: "
+            f"{source_errors}"
+        )
+
     return CaseResult(
         case_id=case["id"],
         tier="retrieval",
@@ -232,7 +271,131 @@ def run_retrieval_case(case: dict[str, Any]) -> CaseResult:
         metrics=metrics,
         failures=failures,
         notes=notes,
+        degraded=degraded,
     )
 
 
-RUNNERS = {"demo": run_demo_case, "retrieval": run_retrieval_case}
+def _decision_candidate(title: str):
+    """Build a title-only candidate, so both groups carry identical metadata."""
+
+    from paperguide.domain import FullTextStatus, PaperCandidate, PaperSource
+
+    return PaperCandidate(
+        title=title,
+        normalized_title=" ".join(title.casefold().split()),
+        authors=[],
+        sources=[PaperSource.ARXIV],
+        full_text_status=FullTextStatus.UNAVAILABLE,
+    )
+
+
+def run_decision_case(case: dict[str, Any]) -> CaseResult:
+    """Measure whether the metadata gate separates labelled papers correctly."""
+
+    from paperguide.relevance.gate import (
+        MetadataRelevanceGate,
+    )
+    from paperguide.relevance.gate import (
+        PreliminaryRelevanceClassification as Verdict,
+    )
+    from paperguide.relevance.models import ResearchIntent
+
+    positives = [str(item) for item in (case.get("positives") or [])]
+    negatives = [str(item) for item in (case.get("negatives") or [])]
+    if not positives or not negatives:
+        return CaseResult(
+            case_id=case["id"],
+            tier="decision",
+            passed=True,
+            duration_ms=0.0,
+            skipped="a decision case needs both positives and negatives",
+        )
+
+    started = time.monotonic()
+    intent = ResearchIntent(
+        research_question=case["question"], **(case.get("intent") or {})
+    )
+    gate = MetadataRelevanceGate()
+
+    def assess(titles: list[str]) -> list[Any]:
+        return [gate.assess(_decision_candidate(title), intent) for title in titles]
+
+    positive_results = assess(positives)
+    negative_results = assess(negatives)
+
+    # Rejection is the only irreversible verdict: a rejected paper never
+    # reaches the evidence stage, so a wrongly rejected one is lost for good.
+    # Admitting a wrong paper as core is the opposite error and costs a full
+    # read. Landing in the middle class is not an error either way — it is the
+    # gate declining to decide on metadata alone, which is what it is for.
+    false_rejections = [
+        title
+        for title, result in zip(positives, positive_results)
+        if result.classification is Verdict.REJECTED
+    ]
+    false_cores = [
+        title
+        for title, result in zip(negatives, negative_results)
+        if result.classification is Verdict.PRELIMINARY_CORE
+    ]
+
+    def mean(results: list[Any]) -> float:
+        return sum(result.overall_score for result in results) / len(results)
+
+    positive_mean = mean(positive_results)
+    negative_mean = mean(negative_results)
+
+    metrics = {
+        "false_rejection_rate": round(len(false_rejections) / len(positives), 4),
+        "false_core_rate": round(len(false_cores) / len(negatives), 4),
+        "core_rate": round(
+            sum(
+                1
+                for result in positive_results
+                if result.classification is Verdict.PRELIMINARY_CORE
+            )
+            / len(positives),
+            4,
+        ),
+        # The two groups carry identical metadata, so any gap between their
+        # mean scores comes from the text. A gap at or below zero means the
+        # gate cannot tell the labelled sets apart at all, which no threshold
+        # on the individual rates would reveal. It is also the metric to read
+        # first: ``false_core_rate`` is 0 here mostly because ``core_rate`` is
+        # low, so on titles alone a zero there says the gate rarely promotes
+        # anything, not that it promotes precisely.
+        "score_separation": round(positive_mean - negative_mean, 4),
+        "positive_mean_score": round(positive_mean, 4),
+        "negative_mean_score": round(negative_mean, 4),
+    }
+
+    failures: list[str] = []
+    for name, bound in (case.get("metrics") or {}).items():
+        if name.endswith("_max"):
+            measured = metrics.get(name.removesuffix("_max"))
+            if measured is not None and measured > float(bound):
+                failures.append(f"{name}: {measured} > {bound}")
+        elif name.endswith("_min"):
+            measured = metrics.get(name.removesuffix("_min"))
+            if measured is not None and measured < float(bound):
+                failures.append(f"{name}: {measured} < {bound}")
+
+    notes = [f"wrongly rejected: {title}" for title in false_rejections]
+    notes += [f"wrongly called core: {title}" for title in false_cores]
+
+    return CaseResult(
+        case_id=case["id"],
+        tier="decision",
+        passed=not failures,
+        duration_ms=round((time.monotonic() - started) * 1000, 1),
+        metrics=metrics,
+        failures=failures,
+        notes=notes,
+    )
+
+
+RUNNERS = {
+    "demo": run_demo_case,
+    "retrieval": run_retrieval_case,
+    "decision": run_decision_case,
+}

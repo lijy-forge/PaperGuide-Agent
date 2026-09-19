@@ -1,0 +1,46 @@
+{
+  "generated_at": "2026-09-19T00:53:36.812441+00:00",
+  "passed": true,
+  "cases": [
+    {
+      "case_id": "mec-collaborative-offloading",
+      "tier": "decision",
+      "passed": true,
+      "duration_ms": 5.1,
+      "invariants": {},
+      "metrics": {
+        "false_rejection_rate": 0.0625,
+        "false_core_rate": 0.0,
+        "core_rate": 0.125,
+        "score_separation": 0.1698,
+        "positive_mean_score": 0.567,
+        "negative_mean_score": 0.3972
+      },
+      "failures": [],
+      "notes": [
+        "wrongly rejected: Incentive-Driven Task Allocation for Collaborative Edge Computing in Industrial Internet of Things"
+      ],
+      "skipped": null,
+      "degraded": null
+    },
+    {
+      "case_id": "visual-slam-dynamic-semantic",
+      "tier": "decision",
+      "passed": true,
+      "duration_ms": 6.0,
+      "invariants": {},
+      "metrics": {
+        "false_rejection_rate": 0.0,
+        "false_core_rate": 0.0,
+        "core_rate": 0.2353,
+        "score_separation": 0.2476,
+        "positive_mean_score": 0.7003,
+        "negative_mean_score": 0.4527
+      },
+      "failures": [],
+      "notes": [],
+      "skipped": null,
+      "degraded": null
+    }
+  ]
+}

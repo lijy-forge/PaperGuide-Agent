@@ -73,6 +73,47 @@ def test_a_skipped_run_is_refused_as_a_baseline():
     assert not storable([])
 
 
+def test_a_partial_outage_is_refused_as_a_baseline():
+    """A case that measured a smaller pool must not become the reference.
+
+    This is the dangerous one: unlike a skip it reports a plausible number, so
+    committing it looks harmless and then makes the next healthy run read as an
+    improvement that never happened.
+    """
+
+    from evals.paperguide.__main__ import storable
+
+    degraded = CaseResult(
+        case_id="c",
+        tier="retrieval",
+        passed=True,
+        duration_ms=1.0,
+        metrics={"recall_at_20": 0.2},
+        degraded="only 2/3 sources answered: {'arxiv': 'HTTP Error 406'}",
+    )
+
+    assert not storable([degraded])
+
+
+def test_the_report_marks_a_degraded_case():
+    """A number produced under an outage has to be visible as one."""
+
+    from evals.paperguide.report import to_markdown
+
+    degraded = CaseResult(
+        case_id="c",
+        tier="retrieval",
+        passed=True,
+        duration_ms=1.0,
+        metrics={"recall_at_20": 0.2},
+        degraded="only 2/3 sources answered",
+    )
+
+    markdown = to_markdown([degraded])
+    assert "degraded" in markdown
+    assert "not fit for a baseline" in markdown
+
+
 def test_the_baseline_path_defaults_to_the_committed_directory():
     from evals.paperguide.__main__ import BASELINES_DIR, _baseline_path
 
@@ -80,3 +121,51 @@ def test_the_baseline_path_defaults_to_the_committed_directory():
     assert _baseline_path("demo", "/tmp/other.json").name == "other.json"
     # Without a tier there is no single baseline to compare against.
     assert _baseline_path(None, None) is None
+
+
+def test_the_decision_tier_separates_labelled_papers():
+    """The gate must score the positives above the negatives.
+
+    Separation is the metric that can fail silently: a gate that rejected or
+    admitted everything would still report a false-core rate of 0.
+    """
+
+    from pathlib import Path
+
+    import yaml
+    from evals.paperguide.runner import run_decision_case
+
+    case = yaml.safe_load(
+        (
+            Path(__file__).parent.parent
+            / "evals/paperguide/cases/decision/visual-slam-dynamic-semantic.yaml"
+        ).read_text("utf-8")
+    )
+    result = run_decision_case(case)
+
+    assert result.passed, result.failures
+    assert result.metrics["score_separation"] > 0
+    assert result.metrics["positive_mean_score"] > result.metrics["negative_mean_score"]
+
+
+def test_a_decision_case_needs_both_groups():
+    """Only one group cannot show whether the gate discriminates."""
+
+    from evals.paperguide.runner import run_decision_case
+
+    result = run_decision_case(
+        {"id": "x", "question": "q", "positives": ["A Paper"], "negatives": []}
+    )
+    assert result.skipped
+
+
+def test_decision_candidates_carry_identical_metadata():
+    """Both groups must be handicapped the same, or the gap measures metadata."""
+
+    from evals.paperguide.runner import _decision_candidate
+
+    first = _decision_candidate("A Title")
+    second = _decision_candidate("Another Title Entirely")
+    assert first.publication_year is second.publication_year is None
+    assert first.abstract is second.abstract is None
+    assert first.venue is second.venue is None

@@ -1,0 +1,70 @@
+id: mec-collaborative-offloading
+tier: decision
+question: 多用户协作任务卸载与资源分配
+intent:
+  required_concepts:
+  - offloading
+  - resource allocation
+  related_concepts:
+  - edge computing
+  - computation
+  - task
+  relation_requirements:
+  - collaborative
+  exclusion_concepts: []
+  domain: edge computing
+positives:
+- Collaborative Task Offloading for Overloaded Mobile Edge Computing in Small-Cell Networks
+- Reverse Auction-Based Computation Offloading and Resource Allocation in Mobile Cloud-Edge Computing
+- Joint Offloading and Resource Allocation With Partial Information for Multi-User Edge Computing
+- D2D-Assisted Multi-User Cooperative Partial Offloading, Transmission Scheduling and Computation Allocating
+  for MEC
+- Task Co-Offloading for D2D-Assisted Mobile Edge Computing in Industrial Internet of Things
+- Incentive-Driven Task Offloading and Collaborative Computing in Device-Assisted MEC Networks
+- Incentive-Based Distributed Resource Allocation for Task Offloading and Collaborative Computing in MEC-Enabled
+  Networks
+- Signaling-Based Incentive Mechanism for D2D Computation Offloading
+- Incentive-Driven Task Allocation for Collaborative Edge Computing in Industrial Internet of Things
+- Profit-Maximized Collaborative Computation Offloading and Resource Allocation in Distributed Cloud and
+  Edge Computing Systems
+- Quality of Experience and Reliability-Aware Task Offloading and Scheduling for Multi-User Mobile-Edge
+  Computing Systems
+- Hybrid Deep Reinforcement Learning-Based Task Offloading for D2D-Assisted Cloud-Edge-Device Collaborative
+  Networks
+- Explainable Multiagent Deep Reinforcement Learning for Joint Task Offloading and Resource Allocation
+  in Distance and Channel-Aware NOMA Vehicular Edge Networks
+- A Truthful Incentive Mechanism for Movement-Aware Task Offloading in Crowdsourced Mobile Edge Computing
+  Systems
+- A Game-Theoretic Approach-Based Task Offloading and Resource Pricing Method for Idle Vehicle Devices
+  Assisted VEC
+- Computation Offloading Method Using Stochastic Games for Software-Defined-Network-Based Multiagent Mobile
+  Edge Computing
+negatives:
+- Task Offloading for Mobile Edge Computing in Software Defined Ultra-Dense Network
+- 'A Survey on Mobile Edge Computing: The Communication Perspective'
+- 'UAV-Aided Computation Offloading in Mobile-Edge Computing Networks: A Stackelberg Game Approach'
+- Risk-Aware Data Offloading in Multi-Server Multi-Access Edge Computing Environment
+- Location Privacy-Aware Task Offloading in Mobile Edge Computing
+- Profit Maximization Incentive Mechanism for Resource Providers in Mobile Edge Computing
+- 'TCDA: Truthful Combinatorial Double Auctions for Mobile Edge Computing in Industrial Internet of Things'
+- 'Personalized Location Privacy-Aware Task Offloading: A Dual-Agent DRL Approach'
+- 'Task Offloading With Differential Privacy in Multi-Access Edge Computing: An A3C-Based Approach'
+- Revisiting Location Privacy in MEC-Enabled Computation Offloading
+- Energy-Privacy Tradeoff for Task Matching in Edge Computing Power Networks
+- A Differential Privacy Based Task Offloading Algorithm for Vehicular Edge Computing
+- An Entropy-Based Privacy-Preserving Federated Deep Reinforcement Learning Framework for Task Offloading
+  in Vehicular Edge Computing Networks
+- Latency and Reliability-Aware Dynamic Task Offloading and Scheduling for Energy-Harvesting Systems in
+  Mobile Edge Computing
+- Privacy-Preserving Offloading Scheme in Multi-Access Mobile Edge Computing Based on MADRL
+- Combining Lyapunov Optimization With Actor--Critic Networks for Privacy-Aware IIoT Computation Offloading
+- 'Physics-informed neural networks for non-Newtonian fluid thermo-mechanical problems: An application
+  to rubber calendering process'
+metrics:
+  false_rejection_rate_max: 0.0625
+  false_core_rate_max: 0.0
+  score_separation_min: 0.15
+_negatives_note: REVIEW.md 原判「排除」20 条，减去复核后被移进正样本的 3 条，余 17 条。不减会把正样本标成负样本，且不会报错。
+_threshold_note: 阈值取自 2026-09-19 实测。这一层完全确定性，所以上界就设在实测值上：任何回退都会立刻变红。false_rejection_rate 0.0625 是当前**已知缺陷**而非目标——`Incentive-Driven
+  Task Allocation...` 总分 0.545（远高于 0.30 准入线）却因字面覆盖率为 0 被一票否决，原因是它写 task allocation 而非 offloading / resource
+  allocation。阈值的职责是挡住恶化，不是宣称正确。

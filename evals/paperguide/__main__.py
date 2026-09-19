@@ -33,10 +33,16 @@ def storable(results: list[CaseResult]) -> bool:
     """Whether a run is fit to become a baseline.
 
     A skipped case measured nothing, so storing the run would make the next
-    comparison read a source outage as a change in quality.
+    comparison read a source outage as a change in quality. A degraded case is
+    the more dangerous version of the same thing: it did produce a number, so
+    nothing looks wrong, but it produced it from a pool one source was missing
+    from. Committing that freezes an outage into the line everything later is
+    measured against.
     """
 
-    return bool(results) and not any(result.skipped for result in results)
+    return bool(results) and not any(
+        result.skipped or result.degraded for result in results
+    )
 
 
 def _store_baseline(tier: str, result_file: Path) -> None:
