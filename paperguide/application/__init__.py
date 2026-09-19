@@ -15,6 +15,11 @@ from .service import (
     ResearchGraphProtocol,
     SurveyReportGeneratorProtocol,
 )
+from .source_probe import (
+    RetrieverAvailabilityProbe,
+    SourceAvailability,
+    SourceProbeProtocol,
+)
 from .store import InMemoryTaskStore, TaskStoreProtocol
 
 __all__ = [
@@ -24,6 +29,9 @@ __all__ = [
     "ReportGeneratorProtocol",
     "SurveyReportGeneratorProtocol",
     "ResearchApplicationService",
+    "RetrieverAvailabilityProbe",
+    "SourceAvailability",
+    "SourceProbeProtocol",
     "ResearchExecutionError",
     "ResearchGraphProtocol",
     "ResearchRequest",

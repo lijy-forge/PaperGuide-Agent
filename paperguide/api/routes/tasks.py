@@ -99,6 +99,7 @@ _PUBLIC_ERROR_CODES = frozenset(
         "REPORT_QUALITY_REJECTED",
         "NO_EVIDENCE_FOR_QUESTION",
         "NO_PAPERS_IN_TIME_RANGE",
+        "NO_SOURCE_AVAILABLE",
     }
 )
 

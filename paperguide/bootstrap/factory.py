@@ -24,6 +24,7 @@ from paperguide.application import (
     InMemoryTaskStore,
     ResearchApplicationService,
     ResearchGraphProtocol,
+    RetrieverAvailabilityProbe,
     TaskStoreProtocol,
 )
 from paperguide.document import (
@@ -290,6 +291,10 @@ def create_application(
         selected_task_store,
         survey_report_generator=survey_report_service,
         progress_publisher=progress_publisher,
+        # Built from the same retrievers the run will use, so the probe asks
+        # the sources that matter. The offline demo's retriever answers it
+        # without a network, which keeps one code path instead of two.
+        source_probe=RetrieverAvailabilityProbe(selected_retrievers),
     )
     return ApplicationContainer(
         application_service=application_service,

@@ -34,6 +34,7 @@ from .models import (
     ResearchTaskStatus,
 )
 from .report_quality import ReportQualityContract
+from .source_probe import SourceProbeProtocol
 from .store import TaskStoreProtocol
 
 
@@ -93,6 +94,7 @@ class ResearchApplicationService:
         progress_publisher: ProgressPublisherProtocol | None = None,
         report_quality_contract: ReportQualityContract | None = None,
         sources: Sequence[PaperSource] | None = None,
+        source_probe: SourceProbeProtocol | None = None,
     ) -> None:
         self.graph = graph
         self.report_generator = report_generator
@@ -101,6 +103,9 @@ class ResearchApplicationService:
         self.survey_report_generator = survey_report_generator
         self.progress_publisher = progress_publisher
         self.report_quality_contract = report_quality_contract or ReportQualityContract()
+        # Optional, because the offline demo and every test double retrieve
+        # without a network and have nothing to probe.
+        self.source_probe = source_probe
         self.sources = tuple(
             sources
             if sources is not None
@@ -137,6 +142,13 @@ class ResearchApplicationService:
         self.task_store.update(task.task_id, status=ResearchTaskStatus.RUNNING)
         if self.progress_publisher is not None:
             self.progress_publisher.bind(initial_state["run_id"], task.task_id)
+
+        # Before the graph, because its first node plans queries with the
+        # model: starting a run that cannot retrieve anything would pay for
+        # that call and then fail with nothing to show for it.
+        unavailable = self._refuse_when_no_source_answers(task)
+        if unavailable is not None:
+            return unavailable
 
         try:
             graph_output = self.graph.invoke(deepcopy(initial_state))
@@ -280,6 +292,22 @@ class ResearchApplicationService:
             publish(state["run_id"], TaskEventType.REPORT_QUALITY_ASSESSED, payload, dedupe_key="report-quality:assessed")
         except Exception:
             return
+
+    def _refuse_when_no_source_answers(self, task: ResearchTask) -> ResearchResult | None:
+        """Fail the task before any model call when every source refuses."""
+
+        if self.source_probe is None:
+            return None
+        availability = self.source_probe.check()
+        if availability.any_available:
+            return None
+        failed = self.task_store.update(
+            task.task_id,
+            status=ResearchTaskStatus.FAILED,
+            artifact=None,
+            error="NO_SOURCE_AVAILABLE",
+        )
+        return ResearchResult(task=failed, report=None)
 
     @staticmethod
     def _rejection_code(quality: object, state: ResearchState) -> str:
