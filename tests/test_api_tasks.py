@@ -81,3 +81,73 @@ class APITaskTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class APITaskListTests(unittest.TestCase):
+    """Listing is the only way to reach a task whose id the client never saw."""
+
+    def setUp(self) -> None:
+        self.runtime = APITestRuntime()
+
+    def tearDown(self) -> None:
+        self.runtime.close()
+
+    def test_lists_tasks_newest_first_with_a_total(self) -> None:
+        for _ in range(3):
+            self.runtime.save_task(ResearchTaskStatus.QUEUED)
+        self.runtime.save_task(ResearchTaskStatus.FAILED, error="boom")
+
+        payload = self.runtime.client.get("/api/v1/tasks?limit=2").json()
+
+        self.assertEqual(payload["total"], 4)
+        self.assertEqual(len(payload["items"]), 2)
+        # The total counts every match, not the page, so a client can tell
+        # "no more pages" from "no tasks at all".
+        self.assertEqual(payload["limit"], 2)
+        self.assertEqual(payload["offset"], 0)
+
+    def test_filters_by_status(self) -> None:
+        self.runtime.save_task(ResearchTaskStatus.QUEUED)
+        failed = self.runtime.save_task(ResearchTaskStatus.FAILED, error="boom")
+
+        payload = self.runtime.client.get("/api/v1/tasks?status=failed").json()
+
+        self.assertEqual(payload["total"], 1)
+        self.assertEqual(payload["items"][0]["task_id"], str(failed.task_id))
+
+    def test_paging_does_not_repeat_or_drop_a_task(self) -> None:
+        for _ in range(5):
+            self.runtime.save_task(ResearchTaskStatus.QUEUED)
+
+        first = self.runtime.client.get("/api/v1/tasks?limit=2&offset=0").json()
+        second = self.runtime.client.get("/api/v1/tasks?limit=2&offset=2").json()
+        third = self.runtime.client.get("/api/v1/tasks?limit=2&offset=4").json()
+
+        seen = [item["task_id"] for page in (first, second, third) for item in page["items"]]
+        self.assertEqual(len(seen), 5)
+        self.assertEqual(len(set(seen)), 5)
+
+    def test_rejects_out_of_range_paging(self) -> None:
+        self.assertEqual(self.runtime.client.get("/api/v1/tasks?limit=0").status_code, 422)
+        self.assertEqual(self.runtime.client.get("/api/v1/tasks?limit=101").status_code, 422)
+        self.assertEqual(self.runtime.client.get("/api/v1/tasks?offset=-1").status_code, 422)
+        self.assertEqual(
+            self.runtime.client.get("/api/v1/tasks?status=bogus").status_code, 422
+        )
+
+    def test_listing_leaks_no_question_or_error_text(self) -> None:
+        self.runtime.save_task(
+            ResearchTaskStatus.FAILED, error="ValueError at /Users/someone/secret.py"
+        )
+        response = self.runtime.client.get("/api/v1/tasks")
+
+        # The values must be named: with none passed the helper compares an
+        # empty set of forbidden strings and passes whatever the response says.
+        self.assertTrue(
+            response_has_no_sensitive_text(
+                response.json(),
+                "Sensitive research question",
+                "ValueError",
+                "/Users/someone/secret.py",
+            )
+        )

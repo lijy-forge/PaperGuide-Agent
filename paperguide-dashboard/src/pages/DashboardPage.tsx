@@ -1,14 +1,20 @@
 import { Alert, Button, Card, Typography } from "antd";
+import { useState } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import { errorMessage } from "../api/client";
 import type { AppOutletContext } from "../components/AppLayout";
+import type { TaskStatus } from "../api/types";
 import { RecentTasks } from "../components/RecentTasks";
 import { RuntimeMetrics } from "../components/RuntimeMetrics";
+import { ServerTaskList } from "../components/ServerTaskList";
 import { useRuntimeMetrics } from "../hooks/useRuntimeMetrics";
 
 export function DashboardPage() {
   const { runtimeHealth } = useOutletContext<AppOutletContext>();
   const metrics = useRuntimeMetrics();
+  // Clicking a counter filters the server-side list below it, so a count is
+  // a way into the tasks behind it rather than a number with no follow-up.
+  const [taskFilter, setTaskFilter] = useState<TaskStatus | "all">("all");
 
   return (
     <div className="page-stack">
@@ -75,8 +81,14 @@ export function DashboardPage() {
             className="section-alert"
           />
         )}
-        <RuntimeMetrics data={metrics.data} loading={metrics.loading && !metrics.data} />
+        <RuntimeMetrics
+          data={metrics.data}
+          loading={metrics.loading && !metrics.data}
+          onSelectStatus={setTaskFilter}
+        />
       </section>
+
+      <ServerTaskList status={taskFilter} onStatusChange={setTaskFilter} />
 
       <RecentTasks />
 

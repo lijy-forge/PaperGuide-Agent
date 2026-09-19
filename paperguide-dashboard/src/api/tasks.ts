@@ -2,12 +2,27 @@ import { apiClient } from "./client";
 import type {
   ArtifactResponse,
   TaskEventResponse,
+  TaskListResponse,
+  TaskStatus,
   TaskStatusResponse
 } from "./types";
 import { safeDownloadFilename } from "../utils/download";
 
 export async function getTask(taskId: string): Promise<TaskStatusResponse> {
   return (await apiClient.get<TaskStatusResponse>(`/api/v1/tasks/${encodeURIComponent(taskId)}`)).data;
+}
+
+/** Server-side history. Unlike the browser-local list this is the same for
+ *  every client, so it matches the runtime counters. */
+export async function listTasks(
+  params: { status?: TaskStatus; limit?: number; offset?: number } = {}
+): Promise<TaskListResponse> {
+  const { status, limit = 20, offset = 0 } = params;
+  return (
+    await apiClient.get<TaskListResponse>("/api/v1/tasks", {
+      params: { status, limit, offset }
+    })
+  ).data;
 }
 
 export async function cancelTask(taskId: string): Promise<TaskStatusResponse> {

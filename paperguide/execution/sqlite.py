@@ -1,5 +1,10 @@
 """SQLite-backed persistent implementation of the application TaskStore protocol."""
 
+# Deferred annotations, because this class defines a method named ``list``:
+# without them an annotation written after it resolves ``list[...]`` to that
+# method instead of the builtin and the module fails to import.
+from __future__ import annotations
+
 import sqlite3
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -216,6 +221,48 @@ class PersistentTaskStore:
                 """
             ).fetchall()
         return [deepcopy(self._parse_task(row[0])) for row in rows]
+
+    def list_page(
+        self,
+        *,
+        limit: int,
+        offset: int = 0,
+        status: str | None = None,
+    ) -> tuple[list[ResearchTask], int]:
+        """Return one page of tasks, newest first, with the total that match.
+
+        Paging happens in SQL rather than by slicing :meth:`list`, which loads
+        every row to return twenty. Status lives inside the JSON payload rather
+        than in a column, so it is read with ``json_extract``; a status column
+        would be faster but needs a migration, and the row counts here do not
+        justify one.
+        """
+
+        if limit < 1:
+            raise ValueError("limit must be at least one")
+        if offset < 0:
+            raise ValueError("offset must not be negative")
+
+        where = ""
+        parameters: list[object] = []
+        if status is not None:
+            where = "WHERE json_extract(payload, '$.status') = ?"
+            parameters.append(status)
+
+        with self._lock, self._connection() as connection:
+            total = connection.execute(
+                f"SELECT COUNT(*) FROM research_tasks {where}",  # noqa: S608 - fixed clause
+                parameters,
+            ).fetchone()[0]
+            rows = connection.execute(
+                f"""
+                SELECT payload FROM research_tasks {where}
+                ORDER BY created_at DESC, task_id DESC
+                LIMIT ? OFFSET ?
+                """,  # noqa: S608 - fixed clause
+                [*parameters, limit, offset],
+            ).fetchall()
+        return [deepcopy(self._parse_task(row[0])) for row in rows], int(total)
 
     def _initialize(self) -> None:
         try:

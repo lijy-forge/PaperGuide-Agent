@@ -69,6 +69,26 @@ class PersistentTaskHostClient:
         self._require_host()
         return self.task_store.get(task_id)
 
+    def list_tasks(
+        self,
+        *,
+        limit: int,
+        offset: int = 0,
+        status: ResearchTaskStatus | None = None,
+    ) -> tuple[list[ResearchTask], int]:
+        """Return one page of tasks, newest first, with the matching total.
+
+        Unlike submission this does not require a live host: reading history is
+        exactly what is wanted when the host is down, and refusing it would
+        hide the tasks whose fate the operator is trying to find out.
+        """
+
+        return self.task_store.list_page(
+            limit=limit,
+            offset=offset,
+            status=status.value if status is not None else None,
+        )
+
     def cancel(self, task_id: UUID) -> ResearchTask:
         self._require_host()
         task = self.task_store.get(task_id)

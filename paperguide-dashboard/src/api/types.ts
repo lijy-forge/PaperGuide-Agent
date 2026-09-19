@@ -119,6 +119,15 @@ export interface TaskStatusResponse {
   error_code: string | null;
 }
 
+/** One page of server-side task history, newest first. */
+export interface TaskListResponse {
+  items: TaskStatusResponse[];
+  /** Everything matching the filter, not just this page. */
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface TaskEventResponse {
   event_id: number;
   event_type: TaskEventType;

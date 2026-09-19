@@ -2,14 +2,44 @@
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from paperguide.application import ResearchTask, ResearchTaskStatus
 
 from ..dependencies import APIDependencies, get_api_dependencies
-from ..schemas import ErrorResponse, TaskStatusResponse
+from ..schemas import ErrorResponse, TaskListResponse, TaskStatusResponse
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
+
+
+@router.get(
+    "",
+    response_model=TaskListResponse,
+    summary="List research tasks, newest first",
+)
+def list_tasks(
+    status: ResearchTaskStatus | None = None,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    dependencies: APIDependencies = Depends(get_api_dependencies),
+) -> TaskListResponse:
+    """Page through task history, optionally filtered to one status.
+
+    Without this the only way to reach a task was to already know its id, so a
+    client could show the counters — two failed, one dead-lettered — and offer
+    no way to open any of them. The dashboard kept its own list in browser
+    storage, which meant history was per-browser and never matched the totals.
+    """
+
+    tasks, total = dependencies.task_host_client.list_tasks(
+        limit=limit, offset=offset, status=status
+    )
+    return TaskListResponse(
+        items=[task_response(task) for task in tasks],
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get(

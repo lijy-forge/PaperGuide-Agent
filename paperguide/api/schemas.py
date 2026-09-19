@@ -114,6 +114,21 @@ class TaskStatusResponse(BaseModel):
     error_code: str | None
 
 
+class TaskListResponse(BaseModel):
+    """One page of sanitized task summaries, newest first.
+
+    ``total`` counts everything matching the filter rather than the page, so a
+    client can tell "no more pages" from "no tasks at all" without asking again.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    items: list[TaskStatusResponse]
+    total: int
+    limit: int
+    offset: int
+
+
 class TaskEventResponse(BaseModel):
     """Content-free public representation of a runtime task event."""
 
