@@ -404,7 +404,9 @@ def test_compiled_graph_limited_abort_is_not_promoted_without_auditable_source()
     assert isinstance(result.report, SurveyReport)
     assert result.report.report_mode is ReportMode.EVIDENCE_LIMITED_REVIEW
     assert result.export_result is None
-    assert result.task.error == "REPORT_QUALITY_REJECTED"
+    # The graph ran with no papers, so the rejection has a cause the reader can
+    # act on and gets its own code rather than the general quality one.
+    assert result.task.error == "NO_EVIDENCE_FOR_QUESTION"
 
 
 def test_compiled_graph_full_survey_uses_survey_handoff():

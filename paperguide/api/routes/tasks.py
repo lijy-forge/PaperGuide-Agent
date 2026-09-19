@@ -91,11 +91,23 @@ def task_response(task: ResearchTask) -> TaskStatusResponse:
     )
 
 
+#: Failure reasons safe to pass through: each names a contract the run broke,
+#: with no exception type, question text or path in it. Anything else collapses
+#: to TASK_FAILED rather than risking an internal message reaching a client.
+_PUBLIC_ERROR_CODES = frozenset(
+    {
+        "REPORT_QUALITY_REJECTED",
+        "NO_EVIDENCE_FOR_QUESTION",
+        "NO_PAPERS_IN_TIME_RANGE",
+    }
+)
+
+
 def _error_code(task: ResearchTask) -> str | None:
     status = task.status
     if status is ResearchTaskStatus.FAILED:
-        if task.error == "REPORT_QUALITY_REJECTED":
-            return "REPORT_QUALITY_REJECTED"
+        if task.error in _PUBLIC_ERROR_CODES:
+            return task.error
         return "TASK_FAILED"
     if status is ResearchTaskStatus.DEAD_LETTER:
         return "TASK_DEAD_LETTER"

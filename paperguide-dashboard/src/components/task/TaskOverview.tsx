@@ -1,15 +1,35 @@
-import { Button, Card, Descriptions, Space, Typography } from "antd";
+import { Alert, Button, Card, Descriptions, Space, Typography } from "antd";
 import type { TaskStatusResponse } from "../../api/types";
 import { formatDate } from "../../utils/date";
 import { formatPublicTaskId } from "../../utils/taskId";
 import { getTaskStatusDescription } from "../../utils/taskStatus";
+import { explainFailure } from "../../utils/taskFailure";
 import { TaskStatusTag } from "./TaskStatusTag";
 
 /** Public, browser-safe overview of a research task. */
 export function TaskOverview({ task, onCopyTaskId }: { task: TaskStatusResponse; onCopyTaskId?: () => void }) {
+  const failure = explainFailure(task.error_code);
   return (
     <Card className="status-card" title="调研任务">
       <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+        {failure && (
+          <Alert
+            type="error"
+            showIcon
+            message={failure.title}
+            description={
+              <Space direction="vertical" size="small">
+                <span>{failure.detail}</span>
+                {!failure.retryWorthwhile && (
+                  <Typography.Text type="secondary">
+                    原样重试会以同样的方式再失败一次。
+                  </Typography.Text>
+                )}
+                <Typography.Text code>{task.error_code}</Typography.Text>
+              </Space>
+            }
+          />
+        )}
         <Space wrap>
           <TaskStatusTag status={task.status} />
           <Typography.Text>{getTaskStatusDescription(task.status)}</Typography.Text>

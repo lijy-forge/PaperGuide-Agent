@@ -165,12 +165,16 @@ class ResearchApplicationService:
             quality = self.report_quality_contract.assess(report)
             self._publish_quality_diagnostic(final_state, quality)
             if not quality.accepted:
+                # A report with no references at all failed for a reason the
+                # reader can act on — nothing survived retrieval and filtering —
+                # whereas the general code says only that some contract was
+                # broken. Reported separately so the interface can say which.
                 rejected = self.task_store.update(
                     task.task_id,
                     status=ResearchTaskStatus.FAILED,
                     report_quality_status=ReportQualityStatus.REJECTED,
                     artifact=None,
-                    error="REPORT_QUALITY_REJECTED",
+                    error=self._rejection_code(quality, final_state),
                 )
                 return ResearchResult(task=rejected, report=report.model_copy(deep=True))
             self._publish(final_state, TaskEventType.ARTIFACT_EXPORT_STARTED, ProgressEventPayload(stage=ProgressStage.ARTIFACT_EXPORT))
@@ -276,6 +280,26 @@ class ResearchApplicationService:
             publish(state["run_id"], TaskEventType.REPORT_QUALITY_ASSESSED, payload, dedupe_key="report-quality:assessed")
         except Exception:
             return
+
+    @staticmethod
+    def _rejection_code(quality: object, state: ResearchState) -> str:
+        """Name why a report was rejected, as specifically as the run allows.
+
+        A rejection with no references at all failed for a reason the reader
+        can act on, and the general code says only that some contract broke.
+        Where retrieval reported that the year scope emptied the results, that
+        is the most specific answer available: the query was fine and the range
+        was not, which is not something a reader guesses from "no evidence".
+        """
+
+        from paperguide.pipeline.search_pipeline import PaperSearchPipeline
+
+        if getattr(quality, "reference_entry_count", 0) != 0:
+            return "REPORT_QUALITY_REJECTED"
+        warnings = state.get("warnings") or []
+        if PaperSearchPipeline.YEAR_SCOPE_EXCLUDED_ALL in warnings:
+            return "NO_PAPERS_IN_TIME_RANGE"
+        return "NO_EVIDENCE_FOR_QUESTION"
 
     def _survey_telemetry(self, state: ResearchState) -> SurveyTelemetry:
         """Create a private best-effort observer without changing survey control flow."""

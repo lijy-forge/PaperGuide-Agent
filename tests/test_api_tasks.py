@@ -151,3 +151,36 @@ class APITaskListTests(unittest.TestCase):
                 "/Users/someone/secret.py",
             )
         )
+
+
+class APIFailureCodeTests(unittest.TestCase):
+    """A failure the caller can act on must be distinguishable from a crash."""
+
+    def setUp(self) -> None:
+        self.runtime = APITestRuntime()
+
+    def tearDown(self) -> None:
+        self.runtime.close()
+
+    def _code_for(self, error: str) -> str | None:
+        task = self.runtime.save_task(ResearchTaskStatus.FAILED, error=error)
+        response = self.runtime.client.get(f"/api/v1/tasks/{task.task_id}")
+        return response.json()["error_code"]
+
+    def test_actionable_rejections_keep_their_own_code(self) -> None:
+        self.assertEqual(
+            self._code_for("NO_PAPERS_IN_TIME_RANGE"), "NO_PAPERS_IN_TIME_RANGE"
+        )
+        self.assertEqual(
+            self._code_for("NO_EVIDENCE_FOR_QUESTION"), "NO_EVIDENCE_FOR_QUESTION"
+        )
+        self.assertEqual(
+            self._code_for("REPORT_QUALITY_REJECTED"), "REPORT_QUALITY_REJECTED"
+        )
+
+    def test_an_internal_message_never_reaches_the_client(self) -> None:
+        # Anything not on the public list collapses, so a stack-trace-shaped
+        # error string cannot escape by being stored in the same field.
+        self.assertEqual(
+            self._code_for("ValueError at /Users/someone/secret.py"), "TASK_FAILED"
+        )

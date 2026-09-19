@@ -17,6 +17,10 @@ class PaperSearchPipeline:
     _CAMEL_CASE_BOUNDARY_RE = re.compile(r"(?<!^)(?=[A-Z])")
     _YEAR_FILTER_OVERFETCH_FACTOR = 5
     _MAX_RETRIEVER_RESULTS = 50
+    #: Sources answered and the year scope then removed every paper. Emitted as
+    #: a code, not a sentence, because the candidate-pool boundary forwards
+    #: only stable codes — free text there could carry a provider's own words.
+    YEAR_SCOPE_EXCLUDED_ALL = "RETRIEVER_YEAR_SCOPE_EXCLUDED_ALL"
 
     def __init__(
         self,
@@ -70,6 +74,11 @@ class PaperSearchPipeline:
                 )
                 warnings.append(f"Retriever {source_name} failed: {message}")
 
+        if sum(source_results.values()) and not candidates:
+            # Without this, "the range excluded everything" and "the sources
+            # found nothing" look identical downstream, and the reader goes
+            # looking for a better query when the query was fine.
+            warnings.append(self.YEAR_SCOPE_EXCLUDED_ALL)
         deduplication = self._deduplicator.deduplicate(candidates)
         warnings.extend(deduplication.warnings)
         papers = self._sort_by_relevance(deduplication.papers, config.question)
