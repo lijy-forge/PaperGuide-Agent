@@ -14,10 +14,12 @@ Resuming is invoking with ``None`` instead of a state: passing a state starts
 the thread over. So a run resumes only when a checkpoint exists and stopped
 partway; anything else is a fresh run.
 
-This is the graph's own record of which node runs next, and is separate from
-``orchestration.checkpoint``, which stores a state snapshot for the recovery
-service to turn into a business decision — resume, retry, degrade, escalate.
-One knows where execution stopped, the other what should happen about it.
+An in-process checkpoint abstraction used to live alongside this, storing a
+state snapshot for a recovery service to turn into a decision. It was deleted
+rather than wired up: it only ever had an in-memory store, so it could not
+survive the process death it existed to recover from, and keeping a second,
+weaker mechanism next to this one only invited the question of which is real.
+Retry and dead-lettering already live in the runtime broker, which persists.
 """
 
 from __future__ import annotations

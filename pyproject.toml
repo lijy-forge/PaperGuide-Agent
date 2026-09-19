@@ -253,7 +253,12 @@ dependencies = [
 ]
 
 [project.scripts]
+# Must match [tool.poetry.scripts] above. Which of the two tables a build
+# honours depends on the poetry-core version, so a command listed in only one
+# of them exists or not depending on how the package was installed — and the
+# README tells the reader to run paperguide-api.
 paperguide = "paperguide.runtime.cli:main"
+paperguide-api = "paperguide.api.__main__:main"
 
 [project.optional-dependencies]
 requirements-txt = [
