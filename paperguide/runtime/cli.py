@@ -19,6 +19,7 @@ from paperguide.bootstrap import (
 from paperguide.execution import PersistentTaskStore, TaskExecutorProtocol
 from paperguide.export import ExportFormat
 
+from .env_file import load_env_file
 from .health import check_runtime_health
 from .host import (
     TaskHost,
@@ -127,6 +128,9 @@ def run_cli(
     error_output = stderr or sys.stderr
     arguments = build_parser().parse_args(list(argv) if argv is not None else None)
     try:
+        # Before the settings are read, or a key written to .env is ignored
+        # with no error and the run behaves as if nothing was configured.
+        load_env_file()
         settings = settings_loader()
         configure_logging(settings.log_level)
         if arguments.command == "health":
