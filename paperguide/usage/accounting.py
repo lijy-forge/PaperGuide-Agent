@@ -14,8 +14,10 @@ zero, so a missing price cannot masquerade as a free run.
 
 from __future__ import annotations
 
+import os
 import threading
 from collections import defaultdict
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from paperguide.analysis import StructuredLLMProtocol
@@ -46,6 +48,46 @@ DEFAULT_PRICES: dict[str, ModelPrice] = {
     "gpt-4.1": ModelPrice(2.00, 8.00),
     "gpt-4.1-mini": ModelPrice(0.40, 1.60),
 }
+
+
+PRICE_VARIABLE = "PAPERGUIDE_MODEL_PRICE_USD_PER_MTOK"
+
+
+def resolve_prices(
+    model: str,
+    environ: Mapping[str, str] | None = None,
+) -> dict[str, ModelPrice]:
+    """Add a deployment-supplied price for ``model`` to the built-in table.
+
+    The table above only covers the models it was written against, so any other
+    one reports its cost as unknown. Rather than carry a price list this repo
+    cannot keep current — a stale number is worse than an absent one, because
+    it looks authoritative — the price for the configured model is supplied as
+    ``input,output`` in USD per million tokens, read from the provider's own
+    pricing page.
+
+    A malformed value raises instead of being ignored: a typo that silently
+    fell back would report every run as costing nothing.
+    """
+
+    source = os.environ if environ is None else environ
+    raw = source.get(PRICE_VARIABLE, "").strip()
+    if not raw:
+        return DEFAULT_PRICES
+
+    parts = [part.strip() for part in raw.split(",")]
+    if len(parts) != 2:
+        raise ValueError(
+            f"{PRICE_VARIABLE} must be 'input,output' in USD per million tokens"
+        )
+    try:
+        input_price, output_price = (float(part) for part in parts)
+    except ValueError as error:
+        raise ValueError(f"{PRICE_VARIABLE} must contain two numbers") from error
+    if input_price < 0 or output_price < 0:
+        raise ValueError(f"{PRICE_VARIABLE} must not contain negative prices")
+
+    return {**DEFAULT_PRICES, model: ModelPrice(input_price, output_price)}
 
 
 @dataclass

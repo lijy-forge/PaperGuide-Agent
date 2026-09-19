@@ -13,6 +13,8 @@ from uuid import uuid4
 
 from paperguide.adapters import (
     ArxivClient,
+    OpenAlexClient,
+    OpenAlexConfig,
     RetrieverProtocol,
     SemanticScholarClient,
     SemanticScholarConfig,
@@ -180,6 +182,17 @@ def create_real_smoke_application(
     retrievers: list[RetrieverProtocol] = []
     if PaperSource.ARXIV in config.sources:
         retrievers.append(ArxivClient())
+    if PaperSource.OPENALEX in config.sources:
+        retrievers.append(
+            OpenAlexClient(
+                # Same convention as the composition root: an unset or blank
+                # variable means no mailto, not an empty one.
+                OpenAlexConfig(
+                    mailto=os.environ.get("PAPERGUIDE_CONTACT_EMAIL", "").strip()
+                    or None
+                )
+            )
+        )
     if PaperSource.SEMANTIC_SCHOLAR in config.sources:
         retrievers.append(
             SemanticScholarClient(

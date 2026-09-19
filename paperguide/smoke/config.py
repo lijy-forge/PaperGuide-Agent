@@ -35,9 +35,20 @@ class SmokeTestConfig(BaseModel):
 
     @model_validator(mode="after")
     def validate_sources(self) -> "SmokeTestConfig":
-        allowed = {PaperSource.ARXIV, PaperSource.SEMANTIC_SCHOLAR}
+        # OpenAlex belongs here for the same reason it was added to the
+        # default retrievers: it needs no key and covers journals. Leaving it
+        # out meant the one switch for a real run could only use the two
+        # sources that rate-limit, so the run failed for reasons that had
+        # nothing to do with the pipeline being tested.
+        allowed = {
+            PaperSource.ARXIV,
+            PaperSource.OPENALEX,
+            PaperSource.SEMANTIC_SCHOLAR,
+        }
         if not self.sources or any(source not in allowed for source in self.sources):
-            raise ValueError("smoke sources must be arXiv or Semantic Scholar")
+            raise ValueError(
+                "smoke sources must be arXiv, OpenAlex or Semantic Scholar"
+            )
         if len(self.sources) != len(set(self.sources)):
             raise ValueError("smoke sources must not contain duplicates")
         return self

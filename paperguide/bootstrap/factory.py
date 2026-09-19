@@ -78,7 +78,7 @@ from paperguide.reporting import (
     TaxonomyService,
 )
 from paperguide.services import PaperDeduplicator
-from paperguide.usage import MeteredStructuredLLM, UsageLedger
+from paperguide.usage import MeteredStructuredLLM, UsageLedger, resolve_prices
 from paperguide.verification import (
     DeterministicEvidenceChecker,
     EvidenceConflictDetector,
@@ -161,7 +161,10 @@ def create_application(
     # Every LLM call in the pipeline goes through this one object, so wrapping
     # it here is what makes a run's consumption visible without touching each
     # call site. The ledger is per-container, therefore per-run.
-    usage_ledger = UsageLedger(config_snapshot.model_name)
+    usage_ledger = UsageLedger(
+        config_snapshot.model_name,
+        resolve_prices(config_snapshot.model_name),
+    )
     llm = MeteredStructuredLLM(llm, usage_ledger)
 
     retrieval_plan_service = RetrievalPlanService(

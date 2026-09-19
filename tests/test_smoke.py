@@ -189,3 +189,21 @@ class SmokeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SmokeSourceAllowlistTests(unittest.TestCase):
+    """The one switch for a real run must reach every keyless source."""
+
+    def test_openalex_is_allowed(self) -> None:
+        config = SmokeTestConfig(sources=[PaperSource.OPENALEX])
+        self.assertEqual(config.sources, [PaperSource.OPENALEX])
+
+    def test_a_source_outside_the_allowlist_is_refused(self) -> None:
+        # The bound is about cost and reproducibility, not taste: a manual
+        # source has no API to smoke-test against.
+        with self.assertRaises(ValueError):
+            SmokeTestConfig(sources=[PaperSource.GOOGLE_SCHOLAR])
+
+    def test_an_empty_source_list_is_refused(self) -> None:
+        with self.assertRaises(ValueError):
+            SmokeTestConfig(sources=[])
