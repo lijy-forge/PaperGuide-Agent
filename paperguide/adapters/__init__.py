@@ -9,6 +9,14 @@ from .arxiv import (
     ArxivNetworkError,
 )
 from .base import RetrieverProtocol
+from .crossref import (
+    CrossrefClient,
+    CrossrefConfig,
+    CrossrefError,
+    CrossrefInvalidResponseError,
+    CrossrefMapper,
+    CrossrefNetworkError,
+)
 from .openalex import (
     OpenAlexClient,
     OpenAlexConfig,
@@ -33,6 +41,12 @@ __all__ = [
     "ArxivInvalidResponseError",
     "ArxivMapper",
     "ArxivNetworkError",
+    "CrossrefClient",
+    "CrossrefConfig",
+    "CrossrefError",
+    "CrossrefInvalidResponseError",
+    "CrossrefMapper",
+    "CrossrefNetworkError",
     "OpenAlexClient",
     "OpenAlexConfig",
     "OpenAlexError",

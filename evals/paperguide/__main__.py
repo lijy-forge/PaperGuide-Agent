@@ -45,6 +45,23 @@ def storable(results: list[CaseResult]) -> bool:
     )
 
 
+def _unstorable_reason(results: list[CaseResult]) -> str:
+    """Say which cases blocked the store, and why."""
+
+    if not results:
+        return "no cases ran"
+    skipped = [result.case_id for result in results if result.skipped]
+    degraded = [result.case_id for result in results if result.degraded and not result.skipped]
+    parts = []
+    if skipped:
+        parts.append(f"{len(skipped)} skipped ({', '.join(skipped)})")
+    if degraded:
+        parts.append(
+            f"{len(degraded)} measured under a source outage ({', '.join(degraded)})"
+        )
+    return "; ".join(parts) or "nothing to store"
+
+
 def _store_baseline(tier: str, result_file: Path) -> None:
     BASELINES_DIR.mkdir(parents=True, exist_ok=True)
     target = BASELINES_DIR / f"{tier}.json"
@@ -110,7 +127,10 @@ def main(argv: list[str] | None = None) -> int:
             print("--update-baseline needs --tier", file=sys.stderr)
             return 2
         if not storable(results):
-            print("not stored: some cases were skipped", file=sys.stderr)
+            # Name the reason: "skipped" and "degraded" call for different
+            # responses, and a run refused for the wrong stated reason sends
+            # the reader looking at the wrong thing.
+            print(f"not stored: {_unstorable_reason(results)}", file=sys.stderr)
             return 1
         _store_baseline(arguments.tier, Path(arguments.out) / "eval-result.json")
 

@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-09-19T00:53:36.812441+00:00",
+  "generated_at": "2026-09-19T07:38:13.966786+00:00",
   "passed": true,
   "cases": [
     {
       "case_id": "mec-collaborative-offloading",
       "tier": "decision",
       "passed": true,
-      "duration_ms": 5.1,
+      "duration_ms": 2.6,
       "invariants": {},
       "metrics": {
         "false_rejection_rate": 0.0625,
@@ -27,7 +27,7 @@
       "case_id": "visual-slam-dynamic-semantic",
       "tier": "decision",
       "passed": true,
-      "duration_ms": 6.0,
+      "duration_ms": 1.8,
       "invariants": {},
       "metrics": {
         "false_rejection_rate": 0.0,

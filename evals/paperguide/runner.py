@@ -50,6 +50,7 @@ from .checks import INVARIANTS, METRICS
 
 CONFIGURED_SOURCES = (
     PaperSource.ARXIV,
+    PaperSource.CROSSREF,
     PaperSource.OPENALEX,
     PaperSource.SEMANTIC_SCHOLAR,
 )

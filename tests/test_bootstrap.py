@@ -307,11 +307,12 @@ class BootstrapTests(unittest.TestCase):
             )
 
         retriever_node = factory.calls[0][1]
-        # OpenAlex needs no credentials and indexes the journals arXiv omits,
-        # so it is configured whether or not a Semantic Scholar key exists.
+        # OpenAlex and Crossref need no credentials and index the journals
+        # arXiv omits, so both are configured whether or not a Semantic
+        # Scholar key exists.
         self.assertEqual(
             [name for name, _ in retriever_node.pipeline._retrievers],
-            ["arxiv", "openalex", "semantic_scholar"],
+            ["arxiv", "openalex", "crossref", "semantic_scholar"],
         )
 
     def test_default_retrievers_enable_authenticated_semantic_scholar(self) -> None:
@@ -326,11 +327,12 @@ class BootstrapTests(unittest.TestCase):
             )
 
         retriever_node = factory.calls[0][1]
-        # OpenAlex needs no credentials and indexes the journals arXiv omits,
-        # so it is configured whether or not a Semantic Scholar key exists.
+        # OpenAlex and Crossref need no credentials and index the journals
+        # arXiv omits, so both are configured whether or not a Semantic
+        # Scholar key exists.
         self.assertEqual(
             [name for name, _ in retriever_node.pipeline._retrievers],
-            ["arxiv", "openalex", "semantic_scholar"],
+            ["arxiv", "openalex", "crossref", "semantic_scholar"],
         )
 
     def test_application_service_runs_a_fake_complete_flow(self) -> None:

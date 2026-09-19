@@ -32,7 +32,12 @@ class ManualPaperSource(BaseModel):
     doi: str | None = Field(default=None, max_length=512)
 
     AUTOMATIC_SOURCES: ClassVar[frozenset[PaperSource]] = frozenset(
-        {PaperSource.ARXIV, PaperSource.OPENALEX, PaperSource.SEMANTIC_SCHOLAR}
+        {
+            PaperSource.ARXIV,
+            PaperSource.CROSSREF,
+            PaperSource.OPENALEX,
+            PaperSource.SEMANTIC_SCHOLAR,
+        }
     )
 
     @field_validator("source")

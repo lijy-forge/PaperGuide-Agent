@@ -9,6 +9,7 @@ class PaperSource(str, Enum):
     ARXIV = "arxiv"
     SEMANTIC_SCHOLAR = "semantic_scholar"
     OPENALEX = "openalex"
+    CROSSREF = "crossref"
     PUBMED_CENTRAL = "pubmed_central"
     WEB = "web"
     GOOGLE_SCHOLAR = "google_scholar"

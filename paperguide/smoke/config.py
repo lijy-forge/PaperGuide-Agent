@@ -42,12 +42,13 @@ class SmokeTestConfig(BaseModel):
         # nothing to do with the pipeline being tested.
         allowed = {
             PaperSource.ARXIV,
+            PaperSource.CROSSREF,
             PaperSource.OPENALEX,
             PaperSource.SEMANTIC_SCHOLAR,
         }
         if not self.sources or any(source not in allowed for source in self.sources):
             raise ValueError(
-                "smoke sources must be arXiv, OpenAlex or Semantic Scholar"
+                "smoke sources must be arXiv, Crossref, OpenAlex or Semantic Scholar"
             )
         if len(self.sources) != len(set(self.sources)):
             raise ValueError("smoke sources must not contain duplicates")

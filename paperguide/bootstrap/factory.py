@@ -7,6 +7,8 @@ from typing import Any
 
 from paperguide.adapters import (
     ArxivClient,
+    CrossrefClient,
+    CrossrefConfig,
     OpenAlexClient,
     OpenAlexConfig,
     RetrieverProtocol,
@@ -313,11 +315,14 @@ def create_application(
 def _default_retrievers() -> list[RetrieverProtocol]:
     """Build the automatic discovery sources used by hybrid mode.
 
-    The three cover different literature. arXiv has preprints, so a field that
+    The four cover different literature. arXiv has preprints, so a field that
     publishes in journals is largely invisible through it. OpenAlex indexes the
-    journals themselves and needs no key at all. Semantic Scholar spans both,
-    but its keyless rate limit is low enough to fail often, so it must not be
-    the only source able to reach journal work.
+    journals themselves and needs no key at all. Crossref is the DOI registry,
+    so it reaches anything with a DOI, and it holds up when the others are
+    refusing — on 2026-09-19 it answered while all three of the others were
+    rate-limited at once. Semantic Scholar spans both, but its keyless rate
+    limit is low enough to fail often, so it must not be the only source able
+    to reach journal work.
 
     Source failures stay isolated in the search pipeline, so one unreachable
     source degrades the result instead of emptying it.
@@ -328,6 +333,7 @@ def _default_retrievers() -> list[RetrieverProtocol]:
     return [
         ArxivClient(),
         OpenAlexClient(OpenAlexConfig(mailto=contact_email or None)),
+        CrossrefClient(CrossrefConfig(mailto=contact_email or None)),
         SemanticScholarClient(
             SemanticScholarConfig(api_key=semantic_scholar_key or None)
         ),

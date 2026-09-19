@@ -13,6 +13,8 @@ from uuid import uuid4
 
 from paperguide.adapters import (
     ArxivClient,
+    CrossrefClient,
+    CrossrefConfig,
     OpenAlexClient,
     OpenAlexConfig,
     RetrieverProtocol,
@@ -182,6 +184,15 @@ def create_real_smoke_application(
     retrievers: list[RetrieverProtocol] = []
     if PaperSource.ARXIV in config.sources:
         retrievers.append(ArxivClient())
+    if PaperSource.CROSSREF in config.sources:
+        retrievers.append(
+            CrossrefClient(
+                CrossrefConfig(
+                    mailto=os.environ.get("PAPERGUIDE_CONTACT_EMAIL", "").strip()
+                    or None
+                )
+            )
+        )
     if PaperSource.OPENALEX in config.sources:
         retrievers.append(
             OpenAlexClient(
