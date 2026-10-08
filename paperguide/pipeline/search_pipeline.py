@@ -1,11 +1,13 @@
 """Synchronous multi-retriever search orchestration for PaperGuide AI."""
 
 import re
+from uuid import UUID
 
 from paperguide.adapters import RetrieverProtocol
 from paperguide.domain import PaperCandidate, PaperSource, ResearchConfig
 from paperguide.services import PaperDeduplicator
 
+from .fusion import fuse, reciprocal_rank_score
 from .ranking import rank_by_question
 from .result import SearchResult
 
@@ -73,11 +75,17 @@ class PaperSearchPipeline:
                 source_results[source_name] = source_results.get(source_name, 0) + len(
                     source_papers
                 )
-                candidates.extend(
-                    paper
-                    for paper in source_papers
-                    if self._matches_year_scope(paper, config)
-                )
+                # The position a paper reached in this source's list is the only
+                # comparable signal across sources, and concatenating the lists
+                # destroys it, so it is recorded here rather than recovered
+                # later.
+                for rank, paper in enumerate(self._source_order(source_papers)):
+                    if not self._matches_year_scope(paper, config):
+                        continue
+                    candidates.append(paper)
+                    rank_scores[paper.id] = rank_scores.get(
+                        paper.id, 0.0
+                    ) + reciprocal_rank_score(rank)
             except Exception as error:
                 message = str(error).strip() or type(error).__name__
                 existing_error = source_errors.get(source_name)
@@ -93,7 +101,14 @@ class PaperSearchPipeline:
             warnings.append(self.YEAR_SCOPE_EXCLUDED_ALL)
         deduplication = self._deduplicator.deduplicate(candidates)
         warnings.extend(deduplication.warnings)
-        papers = self._sort_by_relevance(deduplication.papers, config.question)
+        fused = fuse(
+            rank_scores,
+            (
+                (group.canonical_paper_id, group.merged_paper_ids)
+                for group in deduplication.merged_groups
+            ),
+        )
+        papers = self._sort_by_fusion(deduplication.papers, fused, config.question)
 
         return SearchResult(
             papers=papers[: config.max_papers],
@@ -102,6 +117,56 @@ class PaperSearchPipeline:
             warnings=list(dict.fromkeys(warnings)),
             total_found=len(candidates),
             total_after_dedup=deduplication.deduplicated_count,
+        )
+
+    @staticmethod
+    def _source_order(papers: list[PaperCandidate]) -> list[PaperCandidate]:
+        """This source's own ranking of its results.
+
+        Fusion needs a position per source. A source that reports a relevance
+        score has ranked its results by it, whatever order it listed them in,
+        so that score decides the position; one that reports nothing has
+        already expressed its ranking as the order it returned.
+        """
+
+        if not any(paper.relevance_score is not None for paper in papers):
+            return list(papers)
+        return sorted(
+            papers,
+            key=lambda paper: (
+                paper.relevance_score is None,
+                -(paper.relevance_score or 0.0),
+            ),
+        )
+
+    @classmethod
+    def _sort_by_fusion(
+        cls,
+        papers: list[PaperCandidate],
+        fused: dict[UUID, float],
+        question: str,
+    ) -> list[PaperCandidate]:
+        """Order by agreement across sources, then by the question itself.
+
+        A paper several sources ranked highly comes first, which is what the
+        fused score measures. BM25 against the question breaks ties, because
+        fusion says nothing about a paper only one source returned — and with
+        one source answering, every score is identical and the order would
+        otherwise be whatever the source happened to return.
+        """
+
+        if not fused:
+            return cls._sort_by_relevance(papers, question)
+        by_question = {
+            paper.id: index
+            for index, paper in enumerate(rank_by_question(papers, question))
+        }
+        return sorted(
+            papers,
+            key=lambda paper: (
+                -fused.get(paper.id, 0.0),
+                by_question.get(paper.id, len(papers)),
+            ),
         )
 
     @staticmethod
