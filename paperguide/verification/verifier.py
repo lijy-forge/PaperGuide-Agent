@@ -1,5 +1,6 @@
 """Orchestration, scoring, claim construction, and verified-analysis filtering."""
 
+from collections import Counter
 from collections.abc import Iterable
 from uuid import UUID
 
@@ -27,6 +28,8 @@ from .models import (
     VerifiedEvidence,
     VerifiedPaperAnalysisResult,
 )
+from .diagnostics import EvidenceRecoveryDiagnostic, classify_rejection
+from .relocation import EvidenceRelocator
 
 
 def build_evidence_claims(analysis: PaperAnalysisResult) -> list[EvidenceClaim]:
@@ -124,10 +127,14 @@ class EvidenceVerifier:
         llm_verifier: LLMEvidenceVerifier,
         deterministic_checker: DeterministicEvidenceChecker,
         conflict_detector: EvidenceConflictDetector | None = None,
+        relocator: EvidenceRelocator | None = None,
     ):
         self.llm_verifier = llm_verifier
         self.deterministic_checker = deterministic_checker
         self.conflict_detector = conflict_detector or EvidenceConflictDetector()
+        # Optional, so a deployment that wants a rejection to be final keeps
+        # exactly the previous behaviour.
+        self.relocator = relocator
 
     def verify(
         self, analysis: PaperAnalysisResult, document: Document
@@ -139,12 +146,23 @@ class EvidenceVerifier:
         claims = build_evidence_claims(analysis)
         items: list[VerifiedEvidence] = []
         batch_warnings: list[str] = []
+        # Counted per layer so a later decision about adding machinery here
+        # rests on what is actually being lost, not on what seems plausible.
+        hard_rejected = 0
+        recovered: Counter[str] = Counter()
+        unrecovered: Counter[str] = Counter()
         for claim in claims:
             try:
                 deterministic = self.deterministic_checker.check(claim, document)
             except Exception as error:
                 deterministic = self._deterministic_failure(type(error).__name__)
             if deterministic.hard_reject:
+                hard_rejected += 1
+                claim, deterministic = self._appeal(claim, document, deterministic)
+                if not deterministic.hard_reject:
+                    recovered[self._recovery_method(deterministic)] += 1
+            if deterministic.hard_reject:
+                unrecovered[classify_rejection(claim, document)] += 1
                 decision = self._hard_reject_decision(claim, deterministic.warnings)
             else:
                 try:
@@ -215,6 +233,12 @@ class EvidenceVerifier:
             conflicts=conflicts,
             warnings=self._stable_unique(batch_warnings),
             verification_score=VerificationScorer.score_result(items),
+            recovery=EvidenceRecoveryDiagnostic(
+                hard_rejected=hard_rejected,
+                recovered=sum(recovered.values()),
+                recovery_methods=dict(recovered),
+                unrecovered_reasons=dict(unrecovered),
+            ),
             total_evidence=len(items),
             total_verified=sum(item.status is VerificationStatus.VERIFIED for item in items),
             total_partial=sum(
@@ -224,6 +248,69 @@ class EvidenceVerifier:
             total_conflicted=sum(
                 item.status is VerificationStatus.CONFLICTED for item in items
             ),
+        )
+
+    def _appeal(
+        self,
+        claim: EvidenceClaim,
+        document: Document,
+        failure: DeterministicCheckResult,
+    ) -> tuple[EvidenceClaim, DeterministicCheckResult]:
+        """Give a rejected claim one chance to be somewhere else.
+
+        The relocator only proposes coordinates. The claim, the quote and the
+        paper are copied from the evidence already in hand, so an appeal can
+        move where the checker looks and nothing else, and the same check then
+        decides. A relocation that does not survive that check changes nothing:
+        the original rejection and its warnings stand.
+        """
+
+        if self.relocator is None:
+            return claim, failure
+
+        try:
+            relocation = self.relocator.relocate(claim, document, failure)
+        except Exception as error:  # a failed appeal must not fail the claim
+            return claim, self._with_warning(
+                failure, f"Evidence relocation error: {type(error).__name__}."
+            )
+        if relocation is None:
+            return claim, failure
+
+        locator = claim.evidence.locator.model_copy(
+            update={
+                "page_start": relocation.page_start,
+                "page_end": relocation.page_end,
+                "section_title": relocation.section_title,
+                "char_start": relocation.char_start,
+                "char_end": relocation.char_end,
+            }
+        )
+        candidate = claim.model_copy(
+            update={"evidence": claim.evidence.model_copy(update={"locator": locator})}
+        )
+        rechecked = self.deterministic_checker.check(candidate, document)
+        if rechecked.hard_reject:
+            return claim, failure
+        return candidate, self._with_warning(
+            rechecked, f"EVIDENCE_RELOCATED:{relocation.method}"
+        )
+
+    @staticmethod
+    def _recovery_method(result: DeterministicCheckResult) -> str:
+        """The strategy named in the marker the appeal left behind."""
+
+        for warning in reversed(result.warnings):
+            if warning.startswith("EVIDENCE_RELOCATED:"):
+                return warning.split(":", 1)[1]
+        return "unknown"
+
+    @staticmethod
+    def _with_warning(
+        result: DeterministicCheckResult, warning: str
+    ) -> DeterministicCheckResult:
+        return result.model_copy(
+            update={"warnings": [*result.warnings, warning]}
         )
 
     @staticmethod

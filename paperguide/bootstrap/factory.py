@@ -88,6 +88,7 @@ from paperguide.verification import (
     EvidenceVerifier,
     LLMEvidenceVerifier,
 )
+from paperguide.verification.relocation import FuzzyEvidenceRelocator
 
 from .config import BootstrapConfig
 from .container import ApplicationContainer
@@ -207,6 +208,11 @@ def create_application(
         llm_evidence_verifier,
         deterministic_checker,
         conflict_detector,
+        # A reader that names the wrong page loses evidence the paper does
+        # contain. This looks for the same quote elsewhere in the same paper
+        # and proposes where; the unchanged deterministic check still decides,
+        # so a rejection the search cannot justify stays a rejection.
+        relocator=FuzzyEvidenceRelocator(),
     )
 
     report_context_builder = ReportContextBuilder(

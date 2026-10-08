@@ -225,6 +225,9 @@ class EvidenceVerificationResult(BaseModel):
     conflicts: list[ConflictRecord] = Field(default_factory=list)
     warnings: list[str]
     verification_score: float = Field(ge=0.0, le=1.0)
+    #: Where rejected evidence went. Optional so a caller that builds a result
+    #: without the verifier keeps working; present on every real run.
+    recovery: "EvidenceRecoveryDiagnostic | None" = None
     total_evidence: int = Field(ge=0)
     total_verified: int = Field(ge=0)
     total_partial: int = Field(ge=0)
@@ -309,3 +312,8 @@ class VerifiedPaperAnalysisResult(BaseModel):
         if self.verified_experiment_summary.paper_id != paper_id:
             raise ValueError("verified experiment paper_id must match original analysis")
         return self
+
+
+from .diagnostics import EvidenceRecoveryDiagnostic  # noqa: E402
+
+EvidenceVerificationResult.model_rebuild()
