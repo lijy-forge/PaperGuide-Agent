@@ -1,5 +1,6 @@
 import re
 
+from paperguide.reporting.survey import FutureDirectionKind, SurveyFutureDirection
 from paperguide.reporting import (
     FullSurveySynthesisService,
     SurveyHtmlRenderer,
@@ -34,6 +35,36 @@ def test_markdown_full_structure_and_determinism():
     assert "## Appendix A" in first and "## Appendix B" in first
     assert "statement_key" not in first
     assert "paper_id" not in first
+
+
+def test_future_directions_do_not_repeat_the_section_heading():
+    """The layout already numbers a future-directions section.
+
+    Rendering the directions under a heading of their own printed it twice —
+    once in place and once after the conclusion — and the second copy carried
+    a hardcoded number free to drift from the layout. The fixture must carry
+    a direction, or the duplicate this guards against never appears.
+    """
+    report = make_report().model_copy(
+        update={
+            "future_directions": [
+                SurveyFutureDirection(
+                    text="Evaluate the approach on a shared benchmark.",
+                    kind=FutureDirectionKind.SYNTHESIZED_INFERENCE,
+                )
+            ]
+        }
+    )
+    assert report.future_directions
+
+    text = SurveyMarkdownRenderer().render(report)
+
+    headings = re.findall(r"^## .*Future Directions.*$", text, flags=re.MULTILINE)
+    assert len(headings) == 1, headings
+
+    numbered = [line for line in text.splitlines() if re.match(r"^## \d+ ", line)]
+    numbers = [int(line.split()[1]) for line in numbered]
+    assert numbers == sorted(set(numbers)), numbered
 
 
 def test_markdown_has_comparison_and_timeline_fallback():

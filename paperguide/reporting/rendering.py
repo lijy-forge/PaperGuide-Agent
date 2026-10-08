@@ -142,19 +142,36 @@ class SurveyMarkdownRenderer:
             lines.extend([f"## {strings('warnings')}", ""])
             lines.extend(f"- {_md(warning)}" for warning in dict.fromkeys(report.warnings))
             lines.append("")
+        # The layout already contains a future-directions section, so emitting
+        # these under a heading of their own printed the heading twice — once
+        # in place and once after the conclusion — with the number hardcoded
+        # and free to drift from the layout. Put them inside the section that
+        # already exists, and fall back to a heading only if it does not.
+        future_section = next(
+            (item for item in report.sections if item.title == strings("future")),
+            None,
+        )
         for section in report.sections:
             lines.extend(self._section(section, level=2, language=language))
-        if report.future_directions:
-            lines.extend(["", f"## 9 {strings('future')}", ""])
-            for direction in report.future_directions:
-                refs = " ".join(direction.citation_tokens)
-                lines.append(f"- {_md(direction.text)} {refs}".rstrip())
+            if section is future_section:
+                lines.extend(self._future_directions(report))
+        if report.future_directions and future_section is None:
+            lines.extend(["", f"## {strings('future')}", ""])
+            lines.extend(self._future_directions(report))
         lines.extend(self._comparison(report, strings("comparison"), language))
         lines.extend(self._timeline(report, strings("timeline"), language))
         lines.extend(self._references(report, strings("references")))
         lines.extend(self._appendix_profiles(report, strings("appendix_a")))
         lines.extend(self._appendix_ledger(report, strings("appendix_b"), language))
         return "\n".join(lines).rstrip() + "\n"
+
+    @staticmethod
+    def _future_directions(report: SurveyReport) -> list[str]:
+        lines: list[str] = []
+        for direction in report.future_directions:
+            refs = " ".join(direction.citation_tokens)
+            lines.append(f"- {_md(direction.text)} {refs}".rstrip())
+        return lines
 
     def _section(self, section: SurveySection, level: int, language: str) -> list[str]:
         strings = lambda key: SurveyPresentationStrings.get(language, key)
