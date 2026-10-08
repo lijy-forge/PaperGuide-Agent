@@ -8,6 +8,7 @@ from typing import Any
 from paperguide.domain import PaperCandidate
 
 from .exceptions import PdfParseError
+from .running_text import strip_running_text
 from .models import Document, Page, Section
 
 
@@ -58,6 +59,11 @@ class PdfParser:
         except Exception as error:
             raise PdfParseError(f"Unable to parse PDF {path}: {error}") from error
 
+        # Before sections are detected and before any evidence offset is taken
+        # against this text, so every later stage sees the paper's own words
+        # and nothing the publisher stamped on each page.
+        pages, removed = strip_running_text(pages)
+
         return Document(
             paper_id=paper.id,
             title=paper.title,
@@ -68,6 +74,7 @@ class PdfParser:
                 "page_count": len(pages),
                 "parser": "pymupdf",
                 "pdf_metadata": pdf_metadata,
+                "running_text_removed": len(removed),
             },
         )
 
