@@ -4,6 +4,7 @@ import re
 from collections import Counter
 from uuid import UUID
 
+from .quote_locator import locate_quote
 from paperguide.document import Document, Section
 from paperguide.domain import Evidence, EvidenceType, SourceLocator
 
@@ -44,7 +45,7 @@ class EvidenceMapper:
                 self._reject(key, location, warnings, rejected_keys)
                 continue
             text, section, page_start, page_end = location
-            match = self._find_quote(text, reference.quote)
+            match = locate_quote(text, reference.quote)
             if match is None:
                 self._reject(
                     key,
@@ -57,15 +58,15 @@ class EvidenceMapper:
             item = Evidence(
                 paper_id=document.paper_id,
                 evidence_type=EvidenceType.DIRECT,
-                quote=text[match.start() : match.end()],
+                quote=text[match[0] : match[1]],
                 normalized_fact=reference.claim,
                 locator=SourceLocator(
                     paper_id=document.paper_id,
                     section_title=section.title if section is not None else None,
                     page_start=page_start,
                     page_end=page_end,
-                    char_start=match.start(),
-                    char_end=match.end(),
+                    char_start=match[0],
+                    char_end=match[1],
                 ),
                 confidence=reference.confidence,
             )
@@ -111,7 +112,7 @@ class EvidenceMapper:
             return section.text, section, section.page_start, section.page_end
 
         for candidate in document.pages:
-            if self._find_quote(candidate.text, reference.quote) is not None:
+            if locate_quote(candidate.text, reference.quote) is not None:
                 return (
                     candidate.text,
                     None,

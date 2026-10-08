@@ -1,6 +1,7 @@
 """Dependency-free deterministic checks for evidence locations and literals."""
 
 import re
+import unicodedata
 
 from pydantic import BaseModel, ConfigDict
 
@@ -162,9 +163,7 @@ class DeterministicEvidenceChecker:
             return False
         if char_start < 0 or char_end < char_start or char_end > len(source_text):
             return False
-        return cls._normalize_space(source_text[char_start:char_end]) == cls._normalize_space(
-            quote
-        )
+        return cls._same_passage(source_text[char_start:char_end], quote)
 
     @classmethod
     def _validate_quote(
@@ -188,12 +187,12 @@ class DeterministicEvidenceChecker:
                 warnings.append("Evidence character range is outside source text.")
                 return False
             located = source_text[locator.char_start : locator.char_end]
-            if cls._normalize_space(located) != cls._normalize_space(evidence.quote):
+            if not cls._same_passage(located, evidence.quote):
                 warnings.append("Evidence character range no longer matches its quote.")
                 return False
             return True
 
-        if cls._normalize_space(evidence.quote) not in cls._normalize_space(source_text):
+        if not cls._passage_present(evidence.quote, source_text):
             warnings.append("Evidence quote no longer exists at its source location.")
             return False
         return True
@@ -259,9 +258,46 @@ class DeterministicEvidenceChecker:
             return None
         return "positive" if positive else "negative"
 
-    @staticmethod
-    def _normalize_space(text: str) -> str:
-        return " ".join(text.split())
+    #: A hyphen at a line break is ambiguous: PDF typesetting splits a word
+    #: across lines ("ofﬂoad-\ning"), and a compound keeps its own hyphen
+    #: ("UAV-\nassisted"). Nothing in the text says which, so both readings are
+    #: produced and either may match.
+    _LINE_BREAK_HYPHEN_RE = re.compile(r"-[ \t]*\n[ \t]*")
+
+    @classmethod
+    def _match_variants(cls, text: str) -> set[str]:
+        """Every reading of this text that should count as the same passage.
+
+        A quote is written by a reader that saw clean text, while the source is
+        whatever the PDF parser produced. The two differ in ways that carry no
+        meaning: the parser emits ligatures as single characters (ﬂ), and
+        typesetting breaks words across lines. Comparing the raw strings
+        rejected evidence that is genuinely present and correctly quoted — on a
+        real paper, "UAV-assisted task offloading problem" failed against a
+        source holding "UAV-assisted task ofﬂoad-\\ning problem".
+
+        Only differences that cannot change meaning are collapsed here. Two
+        passages that differ in any other way still do not match.
+        """
+
+        base = unicodedata.normalize("NFKC", text)
+        return {
+            " ".join(cls._LINE_BREAK_HYPHEN_RE.sub(replacement, base).split())
+            for replacement in ("", "-")
+        }
+
+    @classmethod
+    def _same_passage(cls, left: str, right: str) -> bool:
+        return bool(cls._match_variants(left) & cls._match_variants(right))
+
+    @classmethod
+    def _passage_present(cls, needle: str, haystack: str) -> bool:
+        haystacks = cls._match_variants(haystack)
+        return any(
+            candidate in text
+            for candidate in cls._match_variants(needle)
+            for text in haystacks
+        )
 
     @staticmethod
     def _stable_unique(values: list[str]) -> list[str]:

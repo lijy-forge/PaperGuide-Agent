@@ -2,6 +2,7 @@
 
 import unittest
 
+from paperguide.document import Page
 from paperguide.verification import DeterministicEvidenceChecker, EvidenceClaim
 
 from .verification_fixtures import make_document, make_evidence
@@ -24,6 +25,75 @@ class TestDeterministicEvidenceChecker(unittest.TestCase):
         self.assertTrue(result.location_valid)
         self.assertTrue(result.quote_valid)
         self.assertFalse(result.hard_reject)
+
+    def _claim_without_offsets(self, page_text, quote, claim):
+        """Evidence whose quote is not byte-identical to the parsed source.
+
+        The reader supplies a quote; the offsets it recorded do not survive a
+        source that spells the same passage differently, so the checker falls
+        back to searching the text. That fallback is what these tests cover.
+        """
+        document = make_document()
+        document = document.model_copy(
+            update={
+                "pages": [Page(page_number=1, text=page_text), *document.pages[1:]],
+                "sections": [],
+            }
+        )
+        evidence = make_evidence(document)
+        locator = evidence.locator.model_copy(
+            update={"char_start": None, "char_end": None, "section_title": None}
+        )
+        evidence = evidence.model_copy(update={"quote": quote, "locator": locator})
+        return EvidenceClaim(evidence=evidence, claim=claim), document
+
+    def test_typeset_ligature_and_split_word_still_match(self):
+        """A reader quotes clean text; the parser emits what the PDF holds.
+
+        Observed on a real paper: the source carried "task of<ligature>load-\nning"
+        as a single ligature character with the word broken across lines, while
+        the quote read "task offloading". Comparing the raw strings rejected
+        evidence that was present and correctly quoted.
+        """
+        item, document = self._claim_without_offsets(
+            "Method\nThe method reduces task of\ufb02oad-\ning delay.",
+            "reduces task offloading delay",
+            "The method reduces offloading delay",
+        )
+
+        result = self.checker.check(item, document)
+
+        self.assertTrue(result.quote_valid)
+        self.assertFalse(result.hard_reject)
+
+    def test_a_compound_keeps_its_own_hyphen(self):
+        """Joining every line-break hyphen would corrupt real compounds.
+
+        "UAV-\nassisted" is one hyphenated word split by layout, not two
+        syllables, so a quote saying "UAV-assisted" must still match.
+        """
+        item, document = self._claim_without_offsets(
+            "Method\nWe study UAV-\nassisted offloading.",
+            "We study UAV-assisted offloading.",
+            "The paper studies UAV-assisted offloading",
+        )
+
+        result = self.checker.check(item, document)
+
+        self.assertTrue(result.quote_valid)
+
+    def test_unrelated_text_still_fails(self):
+        """Widening the match must not make everything match."""
+        item, document = self._claim_without_offsets(
+            "Method\nThe method reduces task of\ufb02oad-\ning delay.",
+            "quantum annealing outperforms every baseline",
+            "Quantum annealing wins",
+        )
+
+        result = self.checker.check(item, document)
+
+        self.assertFalse(result.quote_valid)
+        self.assertTrue(result.hard_reject)
 
     def test_quote_no_longer_present_is_hard_reject(self):
         document = make_document()
