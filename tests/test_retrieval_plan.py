@@ -32,6 +32,34 @@ class RetrievalPlanTests(unittest.TestCase):
     self.assertNotIn("secret", " ".join(plan.warnings))
 
 
+  def test_expansion_fallback_searches_the_planned_concepts_not_the_question(self) -> None:
+    """A failed expansion must not throw away a successful planner.
+
+    The planner restates the question in the language the indexes hold. When
+    expansion then fails, searching the question as typed finds nothing at all
+    if the researcher did not write in English, and the run spends its whole
+    model budget on an empty report.
+    """
+    class EnglishPlanner:
+        def plan(self, question):
+            return ResearchIntent(
+                research_question=question,
+                required_concepts=["task offloading", "mobile edge computing"],
+                relation_requirements=["devices jointly assist in offloading"],
+                domain="wireless networks",
+            )
+
+    plan = RetrievalPlanService(EnglishPlanner(), FailingExpander()).build(
+        "分析多设备协助任务卸载", max_core_papers=4
+    )
+
+    self.assertIn("QUERY_EXPANSION_FALLBACK", plan.warnings)
+    self.assertEqual(
+        plan.query_variants[0].query, "task offloading mobile edge computing"
+    )
+    self.assertNotIn("分析", plan.query_variants[0].query)
+
+
   def test_budget_maps_max_papers_to_core_budget_and_exposes_metrics(self) -> None:
     intent = ResearchIntent(research_question="q", required_concepts=["q"])
     plan = RetrievalPlanService(

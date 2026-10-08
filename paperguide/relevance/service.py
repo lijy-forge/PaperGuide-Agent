@@ -123,14 +123,7 @@ class RetrievalPlanService:
             if not variants:
                 raise ValueError("query expansion returned no variants")
         except Exception as error:
-            variants = [
-                QueryVariant(
-                    query=normalized,
-                    purpose="fallback",
-                    covered_concepts=list(intent.required_concepts),
-                    covered_relations=list(intent.relation_requirements),
-                )
-            ]
+            variants = [self._fallback_variant(intent, normalized)]
             warnings.append("QUERY_EXPANSION_FALLBACK")
             category, class_name, parsed, validated = classify_planning_failure(
                 error, stage="query_expansion"
@@ -164,14 +157,7 @@ class RetrievalPlanService:
             )
         variants = self._normalize_and_bound(variants, effective_budget.max_query_variants)
         if not variants:
-            variants = [
-                QueryVariant(
-                    query=normalized,
-                    purpose="fallback",
-                    covered_concepts=list(intent.required_concepts),
-                    covered_relations=list(intent.relation_requirements),
-                )
-            ]
+            variants = [self._fallback_variant(intent, normalized)]
             warnings.append("QUERY_EXPANSION_FALLBACK")
             self._emit(
                 diagnostic_callback,
@@ -193,6 +179,26 @@ class RetrievalPlanService:
             query_variants=variants,
             budget=effective_budget,
             warnings=list(dict.fromkeys(warnings)),
+        )
+
+    @staticmethod
+    def _fallback_variant(intent: ResearchIntent, normalized: str) -> QueryVariant:
+        """Build the query to search with when expansion could not be used.
+
+        The planner has already restated the question as concepts in the
+        language the indexes hold, so searching those degrades the run rather
+        than ending it. Searching the question as typed does end it whenever
+        the researcher did not write in English: a Chinese sentence matches no
+        English record, and the run spends its whole model budget producing a
+        report with nothing in it.
+        """
+
+        concepts = [concept for concept in intent.required_concepts if concept.strip()]
+        return QueryVariant(
+            query=" ".join(concepts) if concepts else normalized,
+            purpose="fallback",
+            covered_concepts=list(intent.required_concepts),
+            covered_relations=list(intent.relation_requirements),
         )
 
     @classmethod
