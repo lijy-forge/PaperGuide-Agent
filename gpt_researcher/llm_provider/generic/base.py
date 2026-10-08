@@ -10,6 +10,30 @@ from colorama import Fore, Style, init
 import os
 from enum import Enum
 
+def content_to_text(content: Any) -> str:
+    """Flatten a chat message's content into plain text.
+
+    A model with extended thinking answers with a list of content blocks
+    rather than a string, and the thinking block is not part of the answer.
+    Every caller here wants the text, so keep the text blocks and drop the
+    rest; returning the list unchanged makes downstream JSON parsing fail on
+    a response that in fact holds exactly the JSON that was asked for.
+    """
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict) and block.get("type") == "text":
+                parts.append(block.get("text") or "")
+        return "".join(parts)
+    if content is None:
+        return ""
+    return str(content)
+
+
 _SUPPORTED_PROVIDERS = {
     "openai",
     "anthropic",
@@ -70,8 +94,16 @@ NO_SUPPORT_TEMPERATURE_MODELS = [
     "claude-opus-4-5",
     "claude-opus-4-6",
     "claude-opus-4-7",
+    "claude-opus-4-8",
     "claude-haiku-4-5",
     "claude-haiku-4-5-20251001",
+    # Claude 5 family: same deprecation. Checked against the live API on
+    # 2026-09-19 — every id here answers `temperature` is deprecated for
+    # this model. with a 400, so sending it fails the whole run.
+    "claude-sonnet-5",
+    "claude-opus-5",
+    "claude-fable-5",
+    "claude-fable-5-1",
 ]
 
 SUPPORT_REASONING_EFFORT_MODELS = [
@@ -160,6 +192,13 @@ class GenericLLMProvider:
         elif provider == "anthropic":
             _check_pkg("langchain_anthropic")
             from langchain_anthropic import ChatAnthropic
+
+            # `request_timeout` is the OpenAI spelling. ChatAnthropic has no
+            # such field, so pydantic files it under model_kwargs and langchain
+            # forwards it to messages.create(), which rejects the argument and
+            # fails every call. Translate it to the name this client knows.
+            if "request_timeout" in kwargs:
+                kwargs["timeout"] = kwargs.pop("request_timeout")
 
             llm = ChatAnthropic(**kwargs)
         elif provider == "azure_openai":
@@ -360,7 +399,7 @@ class GenericLLMProvider:
             output = await self.llm.ainvoke(messages, **kwargs)
             self._capture_response_metadata(output)
 
-            res = output.content
+            res = content_to_text(output.content)
 
         else:
             res = await self.stream_response(messages, websocket, **kwargs)
@@ -378,7 +417,7 @@ class GenericLLMProvider:
         # Streaming the response using the chain astream method from langchain
         async for chunk in self.llm.astream(messages, **kwargs):
             self._capture_response_metadata(chunk)
-            content = chunk.content
+            content = content_to_text(chunk.content)
             if not content:
                 continue
             response += content
