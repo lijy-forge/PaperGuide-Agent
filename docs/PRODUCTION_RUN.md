@@ -47,40 +47,47 @@ Haiku 4.5 是 1.00/5.00。
 
 ### 先解决代理
 
-**`unset HTTP_PROXY` 是不够的，而且会让情况更糟。** 环境变量一清空，urllib 就去读
-macOS 的系统代理设置，那里往往配着 https 代理——于是本来直连的 API 请求全部改走代理。
-正确做法是显式声明不走代理：
+**这一节此前写的 `NO_PROXY='*'` 是错的，照做会让运行必然失败。** 它只考虑了检索，
+没考虑模型调用，而这两半需要相反的设置。
 
-```bash
-export NO_PROXY='*' no_proxy='*'
-```
+检索源和 Anthropic API 对代理的要求正好相反（2026-09-19 实测，检索源两轮一致）：
 
-这件事有实测支撑（2026-09-19，两轮一致）：
-
-| 源 | 直连 | 走代理 |
+| 目标 | 直连 | 走代理 |
 | --- | --- | --- |
+| Anthropic API | **403 Request not allowed** | **200** |
+| OpenAlex | **通** | 429 |
 | Crossref | 通 | 通 |
-| OpenAlex | **通** | **429** |
 | arXiv | 406 | 406 |
 | Semantic Scholar | 429 | 429 |
 
-直连能用两个源，走代理只剩一个。代理的出口 IP 是共享的，早已被别人用超，所以
-OpenAlex 直连正常、走代理反而被限流。
+API 那个 403 是地区封锁，不是 Key 的问题——同一个 Key 走代理能正常列出模型。而代理的
+出口 IP 是共享的、早被用超，所以 OpenAlex 直连正常、走代理反被限流。
 
-PDF 下载是另一回事：链接常常是 `http://` 而不是 `https://`，正好落进 `HTTP_PROXY`
-的作用范围，会报 502。`NO_PROXY='*'` 一并解决。
+`NO_PROXY='*'` 把所有流量都排除出代理，于是检索能跑、模型调用全部 403，整轮运行拿不到
+任何结果。正确做法是**代理照开，只把被限流的检索源排除出去**：
+
+```bash
+export HTTP_PROXY=http://127.0.0.1:7897 HTTPS_PROXY=http://127.0.0.1:7897
+export NO_PROXY='api.openalex.org,api.crossref.org,arxiv.org,export.arxiv.org,api.semanticscholar.org'
+```
+
+端口换成你自己的。没有代理、且所在地区能直连 Anthropic 的话，`NO_PROXY='*'` 才是对的。
+
+PDF 下载走代理是可行的：实测 10 篇选中的论文下载成功 3 篇，失败的是出版商 403 和
+doi.org 返回 HTML 落地页，与代理无关。
 
 ## 跑
 
+代理按上一节设好，然后：
+
 ```bash
-export NO_PROXY='*' no_proxy='*'
-PAPERGUIDE_RUN_REAL_E2E=1 python3 -m paperguide.runtime research --question "你的问题"
+PAPERGUIDE_RUN_REAL_E2E=1 python3 -m paperguide.runtime research "你的问题"
 ```
 
 `PAPERGUIDE_RUN_REAL_E2E` 是显式开关：没有它，任何真实网络或模型调用都不会发生。
 这样"不小心花了钱"不可能发生。
 
-## 会遇到的两件事
+## 会遇到的几件事
 
 **下载不到全部论文。** 实测 15 条结果里 11 条有 PDF 链接，试下载 8 条成功 3 条：
 arXiv 和开放获取的 IEEE 能下，ScienceDirect 和部分机构库返回 403。这是版权限制，
@@ -93,10 +100,27 @@ arXiv 和开放获取的 IEEE 能下，ScienceDirect 和部分机构库返回 40
 所以是用 tiktoken 在本地数的。对 OpenAI 的模型误差在几个百分点；换成 Claude 用的是
 另一套分词器，这个数字只能当量级参考，不能当账单。
 
-## 别把这两件事说成一件
+## 目前真实数据跑到哪一步
 
-到 2026-09-19 为止，这个仓库里**没有证据表明完整链路在真实数据上跑通过**：运行时库里
-的任务全是 demo 模式，CI 也没有引用 `PAPERGUIDE_RUN_REAL_E2E`。
+2026-09-19 实测，`claude-sonnet-5` + OpenAlex/Crossref（arXiv 和 Semantic Scholar 当时
+在限流）：
 
-已经实测过的是检索和下载这一段。完整链路的覆盖来自 demo 模式的确定性测试。
-跑通一次真实调研之前，这两句话要分开说。
+| 阶段 | 结果 |
+| --- | --- |
+| 检索 | 5 条查询，50 条候选 |
+| 元数据筛选 | 选出 10 篇 |
+| 下载解析 | 下到 3 篇，全部解析成功 |
+| 分析与核验 | 2 篇，**10 条已核验证据** |
+| 图的质量门 | 通过（`verification quality thresholds were met`） |
+| 生成报告 | **失败，无产物** |
+
+最后一步失败的原因已经定位：报告只引用 `final_classification is CORE` 的论文
+（`citations.py:475` → `survey.py:361`），而那 2 篇是 ADJACENT，于是 10 条证据一条都
+用不上，`evidence_link_keys` 为空。
+
+之后的修改让报告改为引用"有已核验证据"的论文，CORE 只决定排序。这一点目前只有单元测试
+支撑，**还没有在真实数据上重跑过**：那轮调试把 OpenAlex 跑成了持续 429。上表是修改之前
+的结果，重跑之前不能写成"已跑通"。
+
+CI 仍然没有引用 `PAPERGUIDE_RUN_REAL_E2E`，完整链路的自动化覆盖依旧只来自 demo 模式的
+确定性测试。"某一段实测过"和"链路被自动验证"仍然是两句话。
