@@ -108,7 +108,13 @@ class RetrievalBudget(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     max_query_variants: int = Field(default=5, ge=1, le=20)
-    max_candidates_per_query: int = Field(default=10, ge=1, le=100)
+    #: Raised from 10 because each query's cut happens before deduplication,
+    #: and the sources that never carry a PDF fill the first rows: at 10 a real
+    #: pool held 3 fetchable papers out of 45, at 25 it held 12 of 68, and 50
+    #: added almost nothing. Candidates cost retrieval and deterministic
+    #: gating only — what a run spends on the model is bounded by
+    #: max_documents_to_ingest and max_papers_to_read, which are unchanged.
+    max_candidates_per_query: int = Field(default=25, ge=1, le=100)
     max_candidates_after_dedup: int = Field(default=30, ge=1, le=200)
     max_documents_to_ingest: int = Field(default=12, ge=1, le=50)
     max_papers_to_read: int = Field(default=10, ge=1, le=50)

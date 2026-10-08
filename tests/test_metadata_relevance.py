@@ -157,6 +157,114 @@ def test_a_single_shared_word_does_not_cover_a_concept():
     ]
 
 
+def readable_paper(title: str, abstract: str, year: int | None = 2025) -> PaperCandidate:
+    """A candidate whose full text the ingestion stage would actually fetch."""
+
+    return paper(title, abstract, year).model_copy(
+        update={
+            "full_text_status": FullTextStatus.AVAILABLE,
+            "pdf_url": "https://example.org/paper.pdf",
+        }
+    )
+
+
+def test_selection_prefers_the_paper_whose_full_text_can_be_fetched():
+    """Within one tier, a paper that cannot be read yields no evidence.
+
+    Both candidates here are adjacent and the unreadable one scores higher,
+    so relevance alone would pick it and ingestion would then skip it — a
+    slot spent on a paper the report can never cite.
+    """
+    unreadable = paper(
+        "Object detection and visual mapping",
+        "A robotics survey of two independent topics.",
+    )
+    readable = readable_paper(
+        "Object detection", "A robotics study of object detection."
+    )
+    gate = MetadataRelevanceGate()
+    candidates = [unreadable, readable]
+    assessments = gate.assess_many(candidates, intent())
+    by_id = {item.paper_id: item for item in assessments}
+    assert by_id[unreadable.id].overall_score > by_id[readable.id].overall_score
+    assert (
+        by_id[unreadable.id].classification is by_id[readable.id].classification
+    )
+
+    selected, _ = CandidateSelectionPolicy().select(
+        candidates, assessments, {}, max_documents=1
+    )
+
+    assert [item.id for item in selected] == [readable.id]
+
+
+def test_relevance_tier_still_outranks_being_readable():
+    """Availability breaks ties inside a tier; it does not cross tiers."""
+    core = paper(
+        "Object detection with visual mapping",
+        "A robotics method combining object detection with visual mapping.",
+    )
+    readable_adjacent = readable_paper("Object detection", "A robotics benchmark.")
+    gate = MetadataRelevanceGate()
+    candidates = [readable_adjacent, core]
+    assessments = gate.assess_many(candidates, intent())
+
+    selected, _ = CandidateSelectionPolicy().select(
+        candidates, assessments, {}, max_documents=1
+    )
+
+    assert [item.id for item in selected] == [core.id]
+
+
+def test_selection_and_ingestion_agree_on_what_is_fetchable():
+    """The two stages must not drift apart on this rule.
+
+    When they disagree, a run selects exactly the papers ingestion skips and
+    reports no evidence without either stage looking wrong on its own.
+    """
+    from paperguide.document.ingestion import DocumentIngestionPipeline
+    from paperguide.services import can_ingest_full_text
+
+    cases = [
+        readable_paper("Readable", "Has a PDF."),
+        paper("No link", "Status permits ingestion but there is no URL."),
+        paper("Refused", "Source states no full text.").model_copy(
+            update={
+                "full_text_status": FullTextStatus.UNAVAILABLE,
+                "pdf_url": "https://example.org/paper.pdf",
+            }
+        ),
+    ]
+
+    for candidate in cases:
+        ingestion_would_take_it = (
+            DocumentIngestionPipeline._ineligible_reason(candidate) is None
+        )
+        assert can_ingest_full_text(candidate) is ingestion_would_take_it
+
+
+def test_trim_keeps_fetchable_candidates_the_ranking_would_discard():
+    """The cut bounds cost; it must not decide what can be read.
+
+    The metadata gate runs after this and rejects whatever is off-topic, so a
+    fetchable candidate kept here costs a slot. One dropped here costs the run
+    the only paper it could have read: on a real pool the plain cut kept 3 of
+    12 fetchable candidates.
+    """
+    unfetchable = [
+        paper(f"Object detection and visual mapping {index}", "A robotics study.")
+        for index in range(5)
+    ]
+    buried = readable_paper("Unrelated title", "Nothing matching the question.")
+
+    trimmed = MultiQueryRetrievalService._trim(
+        [*unfetchable, buried], 3, "object detection visual mapping"
+    )
+
+    assert buried.id in [item.id for item in trimmed]
+    assert len(trimmed) == 3
+
+
 class FakePipeline:
     def __init__(self, papers):
         self.papers = papers
@@ -259,8 +367,11 @@ def test_all_queries_failure_is_a_warning():
 
 def test_candidate_pool_budget_and_audit_counts():
     papers = [paper(f"Object detection with visual mapping {i}", "A robotics method combining object detection with visual mapping.").model_copy(update={"authors": [Author(full_name=f"Author {i}", normalized_name=f"author {i}", affiliations=[])]}) for i in range(4)]
-    result = MultiQueryRetrievalService(FakePipeline(papers)).search(plan(["q"], max_candidates_after_dedup=2, max_documents_to_ingest=1), config())
-    assert result.audit.candidate_budget_count == 50
+    retrieval_plan = plan(["q"], max_candidates_after_dedup=2, max_documents_to_ingest=1)
+    result = MultiQueryRetrievalService(FakePipeline(papers)).search(retrieval_plan, config())
+    # Asserted against the plan rather than a literal, so changing a budget
+    # default cannot make this fail without the audit actually being wrong.
+    assert result.audit.candidate_budget_count == retrieval_plan.max_candidate_budget
     assert result.audit.selected_for_ingestion_count == 1
 
 

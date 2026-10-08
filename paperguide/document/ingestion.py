@@ -5,8 +5,11 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from uuid import UUID, uuid4
 
-from paperguide.domain import FullTextStatus, PaperCandidate
-from paperguide.services import MetadataNormalizer
+from paperguide.domain import PaperCandidate
+from paperguide.services import (
+    INGESTIBLE_FULL_TEXT_STATUSES,
+    MetadataNormalizer,
+)
 
 from .cleaning import DocumentTextCleaner
 from .downloader import PdfDownloader
@@ -23,9 +26,9 @@ from .parser import PdfParser
 class DocumentIngestionPipeline:
     """Download and parse papers in stable order with per-paper isolation."""
 
-    _ALLOWED_FULL_TEXT_STATUSES = frozenset(
-        {FullTextStatus.AVAILABLE, FullTextStatus.UNKNOWN}
-    )
+    #: Shared with candidate selection, so the stage that picks papers and the
+    #: stage that fetches them cannot disagree about what is fetchable.
+    _ALLOWED_FULL_TEXT_STATUSES = INGESTIBLE_FULL_TEXT_STATUSES
     _URL_RE = re.compile(r"https?://\S+", re.IGNORECASE)
     _WINDOWS_PATH_RE = re.compile(
         r"(?<!\w)[A-Za-z]:[\\/](?:[^\\/\s]+[\\/])*([^\\/\s]+)"

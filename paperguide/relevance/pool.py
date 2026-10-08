@@ -8,8 +8,8 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from paperguide.domain import PaperCandidate, ResearchConfig
-from paperguide.pipeline import PaperSearchPipeline
-from paperguide.services import PaperDeduplicator
+from paperguide.pipeline import PaperSearchPipeline, rank_by_question
+from paperguide.services import PaperDeduplicator, can_ingest_full_text
 
 from .audit import (
     DedupGroupDiagnostic,
@@ -85,9 +85,19 @@ class CandidateSelectionPolicy:
         return selected, records
 
     @staticmethod
-    def _key(paper: PaperCandidate, assessment: MetadataRelevanceAssessment) -> tuple[int, float, int, str]:
+    def _key(paper: PaperCandidate, assessment: MetadataRelevanceAssessment) -> tuple[int, int, float, int, str]:
+        """Rank by relevance tier, then by whether the paper can be read.
+
+        Within one tier a paper whose full text cannot be fetched produces no
+        verified evidence, so it cannot be cited and spending a slot on it
+        returns nothing. Preferring the fetchable one trades a little metadata
+        relevance for the only kind of candidate the report can be built from.
+        Relevance still decides the tier, and still orders papers within it.
+        """
+
         priority = {PreliminaryRelevanceClassification.PRELIMINARY_CORE: 0, PreliminaryRelevanceClassification.POSSIBLE_ADJACENT: 1, PreliminaryRelevanceClassification.REJECTED: 2}[assessment.classification]
-        return priority, -assessment.overall_score, -(paper.publication_year or 0), paper.normalized_title.casefold()
+        unreadable = 0 if can_ingest_full_text(paper) else 1
+        return priority, unreadable, -assessment.overall_score, -(paper.publication_year or 0), paper.normalized_title.casefold()
 
 
 class MultiQueryRetrievalService:
@@ -164,7 +174,11 @@ class MultiQueryRetrievalService:
         dedup = self.deduplicator.deduplicate(raw)
         merged_provenance = self._merge_provenance(dedup, provenance)
         if len(dedup.papers) > plan.budget.max_candidates_after_dedup:
-            dedup_papers = self._trim(dedup.papers, plan.budget.max_candidates_after_dedup)
+            dedup_papers = self._trim(
+                dedup.papers,
+                plan.budget.max_candidates_after_dedup,
+                self._ranking_text(plan),
+            )
             dedup_provenance = {str(paper.id): merged_provenance.get(str(paper.id), []) for paper in dedup_papers}
         else:
             dedup_papers, dedup_provenance = dedup.papers, merged_provenance
@@ -237,8 +251,44 @@ class MultiQueryRetrievalService:
         return result, diagnostic
 
     @staticmethod
-    def _trim(papers: list[PaperCandidate], limit: int) -> list[PaperCandidate]:
-        return sorted(papers, key=lambda paper: (-(paper.relevance_score or 0.0), -(paper.publication_year or 0), paper.normalized_title.casefold()))[:limit]
+    def _trim(
+        papers: list[PaperCandidate], limit: int, ranking_text: str
+    ) -> list[PaperCandidate]:
+        """Keep the candidates that best match the terms actually searched.
+
+        Every adapter reports ``relevance_score=None``, so ranking on it put
+        the same value against every candidate and the cut fell through to
+        publication year — a trim that claims to keep the most relevant
+        candidates while keeping the newest ones. Scoring them here is what
+        makes the claim true.
+
+        Candidates whose full text can be fetched survive the cut regardless
+        of where they rank. This trim is a cost bound, not a quality gate: the
+        metadata gate runs next and rejects whatever is off-topic, so keeping
+        a fetchable candidate costs a slot rather than report quality. Losing
+        one costs the run its only evidence — measured on a real pool, the
+        plain cut kept 3 of 12 fetchable candidates, and the papers it dropped
+        were the only ones that could have been read.
+        """
+
+        ranked = rank_by_question(papers, ranking_text)
+        fetchable = [paper for paper in ranked if can_ingest_full_text(paper)]
+        rest = [paper for paper in ranked if not can_ingest_full_text(paper)]
+        return (fetchable + rest)[:limit]
+
+    @staticmethod
+    def _ranking_text(plan: RetrievalPlan) -> str:
+        """The terms the plan searched with, for scoring what came back.
+
+        BM25 is lexical, so the researcher's own question scores every English
+        paper zero whenever that question is not in English — which is the
+        case this trim most needs to get right. The executed queries and the
+        intent's concepts carry the same meaning in the indexes' language.
+        """
+
+        parts = [variant.query for variant in plan.query_variants]
+        parts.extend(plan.intent.required_concepts)
+        return " ".join(parts)
 
     @staticmethod
     def _merge_provenance(dedup, provenance: dict[str, list[str]]) -> dict[str, list[str]]:

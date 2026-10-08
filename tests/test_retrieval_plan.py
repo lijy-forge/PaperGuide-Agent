@@ -40,9 +40,14 @@ class RetrievalPlanTests(unittest.TestCase):
     ).build("q", max_core_papers=7, budget=RetrievalBudget(max_core_papers=1))
     self.assertEqual(plan.budget.max_core_papers, 7)
     self.assertEqual(plan.planned_query_count, 1)
-    self.assertEqual(plan.max_candidate_budget, 50)
-    self.assertEqual(plan.max_document_budget, 12)
-    self.assertEqual(plan.max_reader_budget, 10)
+    # Derived from the budget rather than restated, so raising a default
+    # cannot fail this without the mapping itself being wrong.
+    self.assertEqual(
+        plan.max_candidate_budget,
+        plan.budget.max_query_variants * plan.budget.max_candidates_per_query,
+    )
+    self.assertEqual(plan.max_document_budget, plan.budget.max_documents_to_ingest)
+    self.assertEqual(plan.max_reader_budget, plan.budget.max_papers_to_read)
 
 
   def test_request_language_is_deterministically_persisted_on_intent(self) -> None:
