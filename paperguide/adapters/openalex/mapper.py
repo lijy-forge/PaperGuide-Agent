@@ -22,10 +22,16 @@ class OpenAlexMapper:
         if not title:
             raise ValueError("OpenAlex work has no title")
 
-        open_access = work.get("open_access") or {}
         best_location = work.get("best_oa_location") or {}
+        # Only the location's own pdf_url is a PDF. `open_access.oa_url` is the
+        # best open address, which for most records is the DOI resolver or a
+        # publisher landing page: of 50 sampled works, 30 carried a real
+        # pdf_url and every one of the 7 that would have fallen back pointed at
+        # a page rather than a file. Recording one as a PDF made the paper look
+        # fetchable, so it took an ingestion slot from a paper that was, and
+        # only the download revealed the difference.
         pdf_url = MetadataNormalizer.normalize_url(
-            cls._text(best_location.get("pdf_url")) or cls._text(open_access.get("oa_url"))
+            cls._text(best_location.get("pdf_url"))
         )
         primary = (work.get("primary_location") or {}).get("source") or {}
 

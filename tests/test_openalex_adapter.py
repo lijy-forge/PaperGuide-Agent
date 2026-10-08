@@ -90,6 +90,25 @@ def test_an_open_access_record_carries_its_pdf():
     assert paper.full_text_status is FullTextStatus.AVAILABLE
 
 
+def test_an_open_address_without_a_pdf_is_not_reported_as_full_text():
+    """`oa_url` is an address to read at, not a file to fetch.
+
+    For most records it is the DOI resolver, which answers with a page. Taking
+    it as the PDF made the paper look fetchable, so it took an ingestion slot
+    from a paper that was, and only the download found out.
+    """
+    work = {
+        **WORK,
+        "best_oa_location": {"pdf_url": None},
+        "open_access": {"is_oa": True, "oa_url": "https://doi.org/10.1000/example"},
+    }
+
+    paper = OpenAlexMapper.map_work(work)
+
+    assert paper.pdf_url is None
+    assert paper.full_text_status is FullTextStatus.UNAVAILABLE
+
+
 def test_the_inverted_abstract_is_rebuilt_in_word_order():
     """OpenAlex publishes word positions rather than abstract text."""
 
