@@ -335,6 +335,30 @@ class BootstrapTests(unittest.TestCase):
             ["arxiv", "openalex", "crossref", "semantic_scholar"],
         )
 
+    def test_run_searches_every_retriever_that_was_built(self) -> None:
+        """Building a retriever is not enough; the run must name its source.
+
+        A run searches the sources in its config, so a retriever missing from
+        that list is constructed, probed, and then never queried. Left to its
+        default the service names arXiv and Semantic Scholar alone, which are
+        exactly the two that answer least often.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            factory = CapturingGraphFactory()
+            container = create_application(
+                make_config(Path(directory)),
+                structured_llm=FakeStructuredLLM(),
+                graph_factory=factory,
+            )
+
+        retriever_node = factory.calls[0][1]
+        built = [name for name, _ in retriever_node.pipeline._retrievers]
+
+        self.assertEqual(
+            [source.value for source in container.application_service.sources],
+            built,
+        )
+
     def test_application_service_runs_a_fake_complete_flow(self) -> None:
         question = "Analyze evidence-grounded visual SLAM research"
         analysis, document, verification, verified = make_verified_result()

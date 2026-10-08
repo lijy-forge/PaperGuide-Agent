@@ -293,6 +293,11 @@ def create_application(
         selected_task_store,
         survey_report_generator=survey_report_service,
         progress_publisher=progress_publisher,
+        # The run searches the sources named here, so they are taken from the
+        # retrievers that were actually built. Left to its default, the service
+        # names arXiv and Semantic Scholar alone, and a retriever added to the
+        # list above is constructed, probed, and then never queried.
+        sources=search_pipeline.sources,
         # Built from the same retrievers the run will use, so the probe asks
         # the sources that matter. The offline demo's retriever answers it
         # without a network, which keeps one code path instead of two.

@@ -33,11 +33,23 @@ class PaperSearchPipeline:
         ]
         self._deduplicator = deduplicator or PaperDeduplicator()
 
+    @property
+    def sources(self) -> tuple[PaperSource, ...]:
+        """The sources this pipeline can actually search, in retriever order.
+
+        A run searches the intersection of this and the config's source list,
+        so a caller that builds the config from anything else can ask for a
+        source no retriever serves — and silently search nothing.
+        """
+
+        return tuple(PaperSource(name) for name, _ in self._retrievers)
+
     def search(self, config: ResearchConfig) -> SearchResult:
         """Search configured sources and return a bounded, deduplicated result."""
 
         configured_sources = {source.value for source in config.sources}
         candidates: list[PaperCandidate] = []
+        rank_scores: dict[UUID, float] = {}
         source_results: dict[str, int] = {}
         source_errors: dict[str, str] = {}
         warnings: list[str] = []
