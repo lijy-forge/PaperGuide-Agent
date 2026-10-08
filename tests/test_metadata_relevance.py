@@ -110,6 +110,53 @@ def test_selection_prefers_core_then_adjacent_and_excludes_rejected():
     assert any(record.classification is PreliminaryRelevanceClassification.REJECTED for record in records)
 
 
+def test_concept_is_matched_by_its_words_not_the_planner_s_phrasing():
+    """A paper that says the same thing in its own words must still count.
+
+    The planner writes concepts as compound phrases. Requiring the phrase
+    verbatim asks the literature to adopt the planner's wording: measured
+    against real candidates, no paper covered all of its concepts as written,
+    so nothing reached core and no evidence reached the report.
+    """
+    rephrased = paper(
+        "Detection for mapping",
+        "A robotics study of object-level detection and mapping of visual scenes.",
+    )
+
+    assessment = MetadataRelevanceGate().assess(rephrased, intent())
+
+    assert assessment.required_concept_coverage == 1
+    assert assessment.missing_concepts == []
+
+
+def test_unrelated_concepts_are_still_not_matched():
+    """Widening the match must not let an unrelated paper through."""
+    unrelated = paper(
+        "Protein folding kinetics",
+        "A biochemistry study of folding rates in globular proteins.",
+    )
+
+    assessment = MetadataRelevanceGate().assess(unrelated, intent())
+
+    assert assessment.required_concept_coverage == 0
+    assert (
+        assessment.classification is PreliminaryRelevanceClassification.REJECTED
+    )
+
+
+def test_a_single_shared_word_does_not_cover_a_concept():
+    """Every content word must be present, or one common word admits anything."""
+    partial = paper(
+        "Object tracking", "A robotics study that mentions objects only."
+    )
+
+    assessment = MetadataRelevanceGate().assess(partial, intent())
+
+    assert "object detection" in [
+        item.casefold() for item in assessment.missing_concepts
+    ]
+
+
 class FakePipeline:
     def __init__(self, papers):
         self.papers = papers

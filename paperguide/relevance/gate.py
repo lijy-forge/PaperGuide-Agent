@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from paperguide.domain import PaperCandidate
 
+from .matching import concept_in_text
 from .models import ResearchIntent
 
 
@@ -68,8 +69,8 @@ class MetadataRelevanceGate:
         text = self._normalize(" ".join(filter(None, [paper.title, paper.abstract])))
         title = self._normalize(paper.title)
         required = [self._normalize(term) for term in intent.required_concepts]
-        matched = [original for original, normalized in zip(intent.required_concepts, required) if self._contains(text, normalized)]
-        missing = [original for original, normalized in zip(intent.required_concepts, required) if not self._contains(text, normalized)]
+        matched = [original for original, normalized in zip(intent.required_concepts, required) if concept_in_text(text, normalized)]
+        missing = [original for original, normalized in zip(intent.required_concepts, required) if not concept_in_text(text, normalized)]
         coverage = len(matched) / len(required) if required else 0.0
 
         relations = [self._normalize(term) for term in intent.relation_requirements]
@@ -124,7 +125,7 @@ class MetadataRelevanceGate:
             return True
         if not relation_tokens:
             return False
-        return all(token in text for token in relation_tokens) and all(cls._contains(text, concept) for concept in concepts)
+        return all(token in text for token in relation_tokens) and all(concept_in_text(text, concept) for concept in concepts)
 
     @staticmethod
     def _time_score(year: int | None, intent: ResearchIntent) -> float:

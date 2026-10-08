@@ -15,6 +15,7 @@ from paperguide.domain import PaperCandidate
 from paperguide.verification import VerificationStatus, VerifiedPaperAnalysisResult
 
 from .gate import PreliminaryRelevanceClassification
+from .matching import concept_in_text
 from .models import ResearchIntent
 
 
@@ -140,14 +141,14 @@ class EvidenceAwareFinalRelevanceService:
         verified_items = [item for item in verified.verification.verified_evidence if item.status in {VerificationStatus.VERIFIED, VerificationStatus.PARTIALLY_SUPPORTED}]
         text = self._normalize(" ".join([paper.title, paper.abstract or "", analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions, *analysis.experiment_summary.findings, *(item.claim for item in verified_items), *(item.evidence.quote for item in verified_items)]))
         concepts = [self._normalize(value) for value in intent.required_concepts]
-        matched = [original for original, value in zip(intent.required_concepts, concepts) if value in text]
-        missing = [original for original, value in zip(intent.required_concepts, concepts) if value not in text]
+        matched = [original for original, value in zip(intent.required_concepts, concepts) if concept_in_text(text, value)]
+        missing = [original for original, value in zip(intent.required_concepts, concepts) if not concept_in_text(text, value)]
         concept_coverage = len(matched) / len(concepts) if concepts else 0
         relations = [self._normalize(value) for value in intent.relation_requirements]
         matched_relations = [original for original, relation in zip(intent.relation_requirements, relations) if self._relation_in_evidence(relation, concepts, verified_items)]
         relation_strength = len(matched_relations) / len(relations) if relations else 1.0
         focus_text = self._normalize(" ".join([paper.title, paper.abstract or "", analysis.research_problem, analysis.method_summary.problem, analysis.method_summary.summary, *analysis.contributions]))
-        focus_match = (sum(value in focus_text for value in concepts) / len(concepts)) if concepts else 0.0
+        focus_match = (sum(concept_in_text(focus_text, value) for value in concepts) / len(concepts)) if concepts else 0.0
         evidence_coverage = min(1.0, len(verified_items) / max(1, len(analysis.evidence)))
         evidence_quality = self._evidence_quality(verified_items)
         conflict_penalty = min(1.0, len(verified.verification.conflicts) / max(1, len(verified.verification.verified_evidence)))
@@ -196,7 +197,7 @@ class EvidenceAwareFinalRelevanceService:
         relation_tokens = [token for token in cls._WORD_RE.findall(relation) if token not in cls._STOP and token not in {part for concept in concepts for part in concept.split()}]
         for item in items:
             text = cls._normalize(f"{item.claim} {item.evidence.quote}")
-            if relation in text or (relation_tokens and all(token in text for token in relation_tokens) and all(concept in text for concept in concepts)):
+            if relation in text or (relation_tokens and all(token in text for token in relation_tokens) and all(concept_in_text(text, concept) for concept in concepts)):
                 return True
         return False
 
