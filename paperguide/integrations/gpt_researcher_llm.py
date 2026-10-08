@@ -4,6 +4,7 @@ import asyncio
 import inspect
 import json
 import re
+import threading
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +16,44 @@ from paperguide.analysis.exceptions import (
     AnalysisSchemaValidationError,
 )
 from paperguide.analysis.llm_protocol import StructuredModelT
+
+_LOOP_LOCK = threading.Lock()
+_LOOP: asyncio.AbstractEventLoop | None = None
+
+
+def _shared_event_loop() -> asyncio.AbstractEventLoop:
+    """Return the one event loop this process runs provider calls on.
+
+    The provider's HTTP client is cached for the whole process, and the
+    synchronisation primitives inside its connection pool bind to whichever
+    loop first touches them. Anything that gives a call a different loop
+    therefore breaks the client:
+
+    - ``asyncio.run`` per call closes the loop it just made, so the next call
+      found the pooled connection's loop gone and failed with "Event loop is
+      closed";
+    - one loop per thread fails the same way from the other side, because the
+      reader, ingestion and verifier stages each call from a thread pool, and
+      a worker's loop is not the loop that opened the connection — the failure
+      reads "bound to a different event loop".
+
+    One loop for the process is what the cached client actually requires. It
+    runs on its own daemon thread and callers hand work to it, so the stages
+    keep their concurrency: these calls wait on the network, and a single loop
+    multiplexes many of them. The loop is never closed; it lives as long as
+    the process that shares the client.
+    """
+
+    global _LOOP
+    with _LOOP_LOCK:
+        if _LOOP is None or _LOOP.is_closed():
+            _LOOP = asyncio.new_event_loop()
+            threading.Thread(
+                target=_LOOP.run_forever,
+                name="paperguide-llm-loop",
+                daemon=True,
+            ).start()
+    return _LOOP
 
 
 class GPTResearcherStructuredLLM:
@@ -126,7 +165,10 @@ class GPTResearcherStructuredLLM:
         try:
             asyncio.get_running_loop()
         except RuntimeError:
-            return asyncio.run(asyncio.wait_for(awaitable, timeout=timeout_seconds))
+            return asyncio.run_coroutine_threadsafe(
+                asyncio.wait_for(awaitable, timeout=timeout_seconds),
+                _shared_event_loop(),
+            ).result()
         if inspect.iscoroutine(awaitable):
             awaitable.close()
         raise AnalysisLLMInvocationError(
