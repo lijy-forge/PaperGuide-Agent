@@ -117,11 +117,27 @@ class FinalRelevancePolicy(BaseModel):
 
 
 class FinalCoreSelectionPolicy:
-    """Select top eligible CORE papers without promoting adjacent papers."""
+    """Select the papers a report may cite, best-supported first.
+
+    Eligibility is having verified evidence, not carrying the CORE label.
+    Two gates decide what a report is built from, and they are not equally
+    strong: the verifier reads the full text and checks every claim against a
+    quoted passage, while CORE is decided by matching the planner's wording
+    against that text. Measured on real candidates, the lexical test cannot be
+    satisfied — the planner writes phrases such as "device-to-device
+    cooperation" whose words occur in almost no paper — so requiring it
+    discarded evidence the expensive gate had already confirmed and left
+    reports with nothing to cite.
+
+    CORE still ranks first, so a paper that satisfies both is preferred; it is
+    no longer the price of admission. Every cited statement remains tied to
+    verified evidence, so widening what may be cited does not widen what may
+    be asserted.
+    """
 
     def select(self, assessments: Iterable[FinalRelevanceAssessment], papers: dict[UUID, PaperCandidate], max_core_papers: int) -> tuple[list[UUID], int]:
-        eligible = [item for item in assessments if item.assessment_status is AssessmentStatus.ASSESSED and item.final_classification is FinalRelevanceClassification.CORE]
-        eligible.sort(key=lambda item: (-item.overall_score, -item.relation_evidence_strength, -item.verified_evidence_coverage, item.paper_id.hex))
+        eligible = [item for item in assessments if item.assessment_status is AssessmentStatus.ASSESSED and item.supporting_evidence_keys]
+        eligible.sort(key=lambda item: (item.final_classification is not FinalRelevanceClassification.CORE, -item.overall_score, -item.relation_evidence_strength, -item.verified_evidence_coverage, item.paper_id.hex))
         selected = [item.paper_id for item in eligible[:max_core_papers] if item.paper_id in papers]
         return selected, max(0, len(eligible) - len(selected))
 

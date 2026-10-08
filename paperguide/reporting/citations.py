@@ -469,11 +469,12 @@ class CitationRegistry:
         candidates = []
         for paper in papers:
             assessment = final_relevance.get(paper.id) if final_relevance else None
+            # selected_for_report already carries the selection policy's
+            # decision, which prefers CORE but does not require it. Re-testing
+            # the label here would restore the requirement the policy drops
+            # and silently discard evidence the verifier confirmed.
             selected = final_relevance is None or (
-                assessment is not None
-                and
-                assessment.final_classification is FinalRelevanceClassification.CORE
-                and assessment.selected_for_report
+                assessment is not None and assessment.selected_for_report
             )
             if not selected:
                 continue

@@ -94,16 +94,71 @@ def test_sufficiency_full_survey_for_two_independent_core_papers():
     assert result.recommended_report_mode in {ReportMode.FULL_SURVEY, ReportMode.EVIDENCE_LIMITED_REVIEW}
 
 
-def test_core_selection_never_promotes_adjacent():
-    first_paper, first_analysis, first_verified = make_result(0)
+def test_selection_requires_verified_evidence_not_the_core_label():
+    """An adjacent paper the verifier confirmed is citable; CORE is not required.
+
+    This replaces an earlier rule that selected CORE papers only. That rule
+    made the report depend on matching the planner's wording against the
+    paper, which real literature does not satisfy, so verified evidence was
+    discarded and reports had nothing to cite.
+    """
+    paper, analysis, verified = make_result(0)
     service = EvidenceAwareFinalRelevanceService()
-    assessment = service.assess(first_paper, first_analysis, first_verified, make_intent())
-    selected, not_selected = FinalCoreSelectionPolicy().select([assessment], {first_paper.id: first_paper}, 1)
-    if assessment.final_classification is FinalRelevanceClassification.CORE:
-        assert selected == [first_paper.id]
-    else:
-        assert selected == []
+    assessment = service.assess(paper, analysis, verified, make_intent())
+    assert assessment.supporting_evidence_keys
+
+    selected, not_selected = FinalCoreSelectionPolicy().select(
+        [assessment], {paper.id: paper}, 1
+    )
+
+    assert selected == [paper.id]
     assert not_selected == 0
+
+
+def test_selection_still_refuses_a_paper_without_verified_evidence():
+    """The guard that matters: nothing unverified may be cited.
+
+    Widening selection past the CORE label must not widen it past the
+    verifier, or a report could cite a paper no evidence supports.
+    """
+    paper, analysis, verified = make_result(0)
+    service = EvidenceAwareFinalRelevanceService()
+    assessment = service.assess(paper, analysis, verified, make_intent())
+    unsupported = assessment.model_copy(update={"supporting_evidence_keys": []})
+
+    selected, _ = FinalCoreSelectionPolicy().select(
+        [unsupported], {paper.id: paper}, 1
+    )
+
+    assert selected == []
+
+
+def test_core_still_outranks_adjacent_when_both_have_evidence():
+    """Preferring CORE is kept; only the hard requirement is dropped."""
+    paper, analysis, verified = make_result(0)
+    other_paper, other_analysis, other_verified = make_result(1)
+    service = EvidenceAwareFinalRelevanceService()
+    intent = make_intent()
+    adjacent = service.assess(paper, analysis, verified, intent).model_copy(
+        update={
+            "final_classification": FinalRelevanceClassification.ADJACENT,
+            "overall_score": 0.99,
+        }
+    )
+    core = service.assess(other_paper, other_analysis, other_verified, intent).model_copy(
+        update={
+            "final_classification": FinalRelevanceClassification.CORE,
+            "overall_score": 0.10,
+        }
+    )
+
+    selected, _ = FinalCoreSelectionPolicy().select(
+        [adjacent, core],
+        {paper.id: paper, other_paper.id: other_paper},
+        1,
+    )
+
+    assert selected == [other_paper.id]
 
 
 def test_assessment_json_is_safe_and_serializable():
